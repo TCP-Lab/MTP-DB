@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -e
+
+if [ -z ${1+x} ]; then
+    echo "Missing output directory. Aborting.";
+    exit 1
+fi
+
+if [ ! -d ${1} ]; then
+    echo "Target is not a directory. Aborting";
+    exit 1
+fi
+
+real=$(realpath $1)
+
+docker run -it --rm -v $real:/app/out dbrebuilder:latest
