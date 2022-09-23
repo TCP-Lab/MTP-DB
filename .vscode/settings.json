@@ -1,5 +1,8 @@
 {
     "rust-analyzer.linkedProjects": [
         "./src/mtpdb/Cargo.toml"
-    ]
+    ],
+    "python.analysis.extraPaths": [
+    "./src/db_rebuilder/",
+    ],
 }

@@ -1,6 +1,4 @@
-import os
-from daedalus import OUT_ANCHOR
+from daedalus.make_db import generate_database
+import asyncio
 
-print("Hello, world!")
-
-print(os.listdir(OUT_ANCHOR))
+asyncio.run(generate_database)
