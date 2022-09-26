@@ -89,12 +89,12 @@ INSERT INTO gene_ontology (
     ('GO:0000004', 'On earth', 'cellular_compartment');
 
 INSERT INTO channels (
-    enst, is_active_transport, conductance, permeability
+    enst, conductance, permeability
 ) VALUES
-    (20000000001, 1, 'very small', 'Na'),
-    (20000000002, 1, 'small', 'Ca, Na'),
-    (20000000003, 1, 'big', 'Si'),
-    (20000000004, 1, 'huge', 'Cations');
+    (20000000001, 'very small', 'Na'),
+    (20000000002, 'small', 'Ca, Na'),
+    (20000000003, 'big', 'Si'),
+    (20000000004, 'huge', 'Cations');
 
 INSERT INTO carriers (
     enst, class, is_secondary, to_lumen_pubchem_id, to_exterior_pubchem_id,

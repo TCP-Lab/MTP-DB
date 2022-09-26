@@ -83,14 +83,17 @@ CREATE TABLE gene_ontology (
 
 CREATE TABLE channels (
     enst INT PRIMARY KEY,
-    is_active_transport INT, -- bool
+    -- gating mechanism
     conductance TEXT,
     permeability TEXT
+    -- selectivity
+    -- voltage_threshold_coefficient
 );
 
 CREATE TABLE carriers (
     enst INT PRIMARY KEY,
     class TEXT, -- symport, antiport, ...
+    -- transport_type "passive", "primary", "secondary"
     is_secondary INT, -- bool, uses secondary energy?
     to_lumen_pubchem_id TEXT, -- pubchem IDs of molecules carried to the lumen
     to_exterior_pubchem_id TEXT,
