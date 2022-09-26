@@ -75,7 +75,7 @@ CREATE TABLE tcdb_families (
     is_superfamily INT -- bool
 );
 
-CREATE TABLE gene_onthology (
+CREATE TABLE gene_ontology (
     term TEXT PRIMARY KEY,
     term_name TEXT,
     onthology_type TEXT

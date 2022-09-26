@@ -80,7 +80,7 @@ INSERT INTO tcdb_families (
     ('1.A.2', 'Hill-like Channels', 0),
     ('5.C.2', 'Virtual electron carriers', 0);
 
-INSERT INTO gene_onthology (
+INSERT INTO gene_ontology (
     term, term_name, onthology_type 
 ) VALUES
     ('GO:0000001', 'Awesome property', 'biological_process'),
