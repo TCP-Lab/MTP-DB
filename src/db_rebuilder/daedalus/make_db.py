@@ -1,19 +1,15 @@
 import logging
-import aiosqlite
-from aiosqlite import Connection
+from pathlib import Path
+import sqlite3
+from sqlite3 import Connection
 
 from daedalus import SCHEMA
 
 log = logging.getLogger(__name__)
 
-async def make_empty(connection: Connection) -> None:
-    await connection.executescript(SCHEMA)
+def make_empty(connection: Connection) -> None:
+    connection.executescript(SCHEMA)
 
-async def populate_gene_keys(connection):
-    pass
-
-async def generate_database(anchor):
-    async with aiosqlite.connect(anchor) as connection:
-        await make_empty(connection)
-
-        await populate_gene_keys(connection)
+def generate_database(path: Path) -> None:
+    with sqlite3.connect(path) as connection:
+        make_empty(connection)

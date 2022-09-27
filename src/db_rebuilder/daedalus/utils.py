@@ -1,65 +1,49 @@
-import asyncio
-from collections import defaultdict
-from asyncio import Lock, Queue
 from copy import deepcopy
-
+from concurrent.futures import ProcessPoolExecutor
 import multiprocessing
 
 CPUS = multiprocessing.cpu_count()
 
-async def get_mock_data():
+def run(callable):
+    return callable()
+
+def get_mock_data():
     return "banana"
 
 class CacheKeyError(Exception):
-    pass
-
-async def retrieve_data(queue):
     pass
 
 class ResourceCache:
     __hooks = {
         "__mock": get_mock_data
     }
-    __locks = defaultdict(Lock)
-    __write_lock = Lock()
     __data = {}
-    __queue = Queue(CPUS)
-    __task_started = False
+    __populated = False
 
-    def __init__(self) -> None:
-        if not self.__task_started:
-            self.__task = asyncio.create_task(retrieve_data(self.__queue))
+    def __init__(self, key) -> None:
+        self.target_key = key
+
+    def populate(self):
+        with ProcessPoolExecutor(CPUS) as pool:
+            # Just to be sure the orders are ok
+            keys = deepcopy(list(self.__hooks.keys()))
+            workers = [self.__hooks[key] for key in keys]
+
+            items = pool.map(run, workers)
+        
+        for key, value in zip(self.__hooks.keys(), items):
+            self.__data[key] = value
+
     
-    async def put(self, key):
-        async with self.__write_lock:
-            self.__data[key] = "banana"
-
-
-    async def get(self, key):
-        try:
-            return deepcopy(self.__data[ey])
-        except KeyError:
-            pass
-        
-        await self.__locks[key].acquire()
-        await self.__queue.put(key)
-
-
-    async def __aenter__(self):
-        
-        
-        try:
-            worker = await self.__hooks[self.__key]
-        except KeyError:
+    def __enter__(self):
+        if self.target_key not in self.__hooks.keys():
             raise CacheKeyError(f"Invalid key: {self.__key}")
         
-        await self.__queue.put()
-        
-        async with self.__write_lock:
-            self.__data[self.__key] = insert
-        
-        return deepcopy(insert)
+        if self.__populated is False:
+            self.populate()
+
+        return deepcopy(self.__data[self.target_key])
 
     
-    async def __aexit__(self, exc_type, exc, tb):
-        self.__locks[self.__key].release()
+    def __exit__(self, exc_type, exc, tb):
+        pass
