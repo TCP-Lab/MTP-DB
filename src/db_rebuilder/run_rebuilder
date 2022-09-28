@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+if [ $# != 3 ]; then
+    echo "Isufficient args. Usage: run_rebuilder OUT_FOLDER, COSMIC_USERNAME, COSMIC_PASSWORD"
+
 if [ -z ${1+x} ]; then
     echo "Missing output directory. Aborting.";
     exit 1
@@ -13,4 +16,4 @@ fi
 
 real=$(realpath $1)
 
-docker run -it --rm -v $real:/app/out dbrebuilder:latest
+docker run -it --rm -v $real:/app/out dbrebuilder:latest $2 $3

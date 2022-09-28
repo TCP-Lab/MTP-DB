@@ -5,8 +5,8 @@ import pandas as pd
 
 from logging import getLogger
 
-from daedalus.url_hardpoints import BIOMART_XML_REQUESTS, BIOMART, TCDB
-from daedalus.utils import pbar_get
+from daedalus.url_hardpoints import BIOMART_XML_REQUESTS, BIOMART, COSMIC, TCDB
+from daedalus.utils import pbar_get, request_cosmic_download_url
 
 log = getLogger(__name__)
 
@@ -28,7 +28,7 @@ def retrieve_biomart() -> dict[pd.DataFrame]:
 
 
 def retrieve_tcdb() -> dict[pd.DataFrame]:
-    log.info("Retrieving data for TCDB.")
+    log.info("Retrieving data from TCDB.")
     
     result = {}
     for key, value in TCDB.items():
@@ -40,5 +40,23 @@ def retrieve_tcdb() -> dict[pd.DataFrame]:
 
         result[key] = df
     
+    log.info("Got all data from TCDB.")
+    
     return result
 
+def retrieve_cosmic_genes(auth_hash) -> pd.DataFrame:
+    log.info("Retrieving COSMIC data...")
+
+    result = {}
+    for key, value in COSMIC.items():
+        log.info(f"Retrieving data for {key}")
+        secure_url = request_cosmic_download_url(value, auth_hash)
+
+        data = pbar_get(secure_url)
+
+        result[key] = data
+    
+    log.info("Done retrieving COSMIC data.")
+
+    return result
+        

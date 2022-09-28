@@ -50,3 +50,8 @@ TCDB = {
     "RefSeq_to_TC": "https://www.tcdb.org/cgi-bin/projectv/public/refseq.py",
     "TC_definitions": "https://www.tcdb.org/cgi-bin/projectv/public/families.py"
 }
+
+COSMIC = {
+    "census": "https://cancer.sanger.ac.uk/cosmic/file_download/GRCh38/cosmic/v96/cancer_gene_census.csv",
+    "IDs": "https://cancer.sanger.ac.uk/cosmic/file_download/GRCh38/cosmic/v96/CosmicHGNC.tsv.gz"
+}

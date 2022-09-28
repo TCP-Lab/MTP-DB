@@ -1,8 +1,10 @@
 from copy import deepcopy
 from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
+import json
 import multiprocessing
 import shutil
+import base64
 
 import requests
 from tqdm.auto import tqdm
@@ -74,3 +76,22 @@ def pbar_get(url, params = {}) -> requests.Response:
     bytes.seek(0)
     return bytes
 
+def request_cosmic_download_url(url, auth_hash) -> str:
+    payload = requests.get(url, headers={"Authorization": f"Basic {auth_hash}"})
+
+    if payload.status_code != 200:
+        log.error(f"Could not log into COSMIC. Resp {payload.status_code} -- {payload.reason}")
+        raise Abort
+    
+    log.info("Decoding response...")
+    blob = payload.content.decode("UTF-8")
+    response = json.loads(blob)
+    secure_url: str = response["url"]
+    
+    log.info("Success! Retrieved secure COSMIC download URL.")
+    return secure_url
+
+def make_cosmic_hash(username: str, password: str) -> str:
+    # Cosmic are idiots, so they actually expect a newline in the encoded str
+    # What the actual fuck.
+    return base64.b64encode(f"{username}:{password}\n".encode()).decode()
