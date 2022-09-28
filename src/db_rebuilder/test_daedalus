@@ -5,4 +5,8 @@ temporary=$(mktemp -d)
 
 docker build . --tag dbrebuilder:bleeding --target test
 
-docker run -v $temporary:/app/out dbrebuilder:bleeding
+if [ "$1" = "--all" ]; then
+    docker run -v $temporary:/app/out dbrebuilder:bleeding --runslow
+else
+    docker run -v $temporary:/app/out dbrebuilder:bleeding
+fi

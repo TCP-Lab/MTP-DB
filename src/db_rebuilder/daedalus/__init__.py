@@ -11,6 +11,6 @@ DB_PATH = OUT_ANCHOR / f"MTPDB_v{__version__}.sqlite"
 if DB_PATH.exists():
     raise Exception(f"Target DB already exists @{DB_PATH}. Aborting")
 
-logging.basicConfig()
+logging.basicConfig(level=logging.getLevelName("DEBUG"))
 
 SCHEMA = "BEGIN;\n{}\nEND;".format(Path("/app/schema.sql").read_text())

@@ -13,7 +13,7 @@ RUN pip install -r requirements.txt
 COPY . .
 
 FROM base AS test
-CMD [ "python", "-m", "pytest", "-s", "./daedalus" ]
+ENTRYPOINT [ "python", "-m", "pytest", "-s", "./daedalus"]
 
 FROM base AS production
-CMD [ "python", "-m", "daedalus" ]
+ENTRYPOINT [ "python", "-m", "daedalus" ]
