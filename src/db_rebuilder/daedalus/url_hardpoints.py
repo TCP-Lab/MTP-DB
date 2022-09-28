@@ -43,3 +43,10 @@ BIOMART_XML_REQUESTS = {
 	</Dataset>
 </Query>'''
 }
+
+
+TCDB = {
+    "GO_to_TC": "https://www.tcdb.org/cgi-bin/projectv/public/go.py",
+    "RefSeq_to_TC": "https://www.tcdb.org/cgi-bin/projectv/public/refseq.py",
+    "TC_definitions": "https://www.tcdb.org/cgi-bin/projectv/public/families.py"
+}
