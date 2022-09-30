@@ -1,12 +1,13 @@
-import requests
-from io import BytesIO
-
+import re
 import pandas as pd
+from io import StringIO
 
 from logging import getLogger
 
-from daedalus.url_hardpoints import BIOMART_XML_REQUESTS, BIOMART, COSMIC, TCDB
-from daedalus.utils import pbar_get, request_cosmic_download_url
+import zipfile
+
+from daedalus.url_hardpoints import BIOMART_XML_REQUESTS, BIOMART, COSMIC, IUPHAR_DB, TCDB
+from daedalus.utils import pbar_get, request_cosmic_download_url, pqdm
 
 log = getLogger(__name__)
 
@@ -59,4 +60,70 @@ def retrieve_cosmic_genes(auth_hash) -> pd.DataFrame:
     log.info("Done retrieving COSMIC data.")
 
     return result
+
+
+class IUPHARGobbler:
+    copy_line_re = re.compile("COPY (.*?) \\((.*?)\\) FROM stdin;")
+
+    def __init__(self) -> None:
+        self.tables = {}
+        self.opened_table = False
+        self.current_table_name = None
+        self.current_table_cols = []
+        self.current_table_data = []
+        self.current_table_len = None
+    
+    def reset(self):
+        self.current_table_name = None
+        self.current_table_cols = []
+        self.current_table_data = []
+        self.current_table_len = None
+
+    def gobble(self, line: str):
+        line = line.rstrip("\n")
+
+        if line.startswith("COPY") and self.opened_table is False:
+            self.opened_table = True
+            
+            match = self.copy_line_re.match(line)
+            self.current_table_name = match.groups()[0]
+            self.current_table_cols = match.groups()[1].split(", ")
+            self.current_table_len = len(self.current_table_cols)
+
+            return
         
+        if self.opened_table and line.startswith("\\."):
+            self.opened_table = False
+
+            df = pd.DataFrame(self.current_table_data, columns=self.current_table_cols)
+            self.tables[self.current_table_name] = df
+
+            self.reset()
+
+            return
+        
+        if self.opened_table:
+            if not len(line.split("\t")) == self.current_table_len:
+                raise RuntimeError(f"Line {line} does not fit in the current schema for table {self.current_table_name}: {self.current_table_cols}")
+            
+            raw_data = line.split("\t")
+            data = [x if x != "\\N" else None for x in raw_data]
+            self.current_table_data.append(data)
+
+            return
+
+def retrieve_iuphar() -> dict[pd.DataFrame]:
+    log.info("Getting IUPHAR database...")
+    bytes = pbar_get(IUPHAR_DB)
+
+    zip = zipfile.ZipFile(bytes)
+
+    log.info("Running preliminary parsing operations...")
+    gobbler = IUPHARGobbler()
+    for line in pqdm(zip.open(zip.namelist()[0]).readlines()):
+        line = line.decode("utf-8")
+        gobbler.gobble(line)
+    
+    log.info("Done retrieving IUPHAR data")
+
+    return gobbler.tables

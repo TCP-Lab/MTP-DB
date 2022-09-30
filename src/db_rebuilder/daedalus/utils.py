@@ -1,7 +1,9 @@
 from copy import deepcopy
 from concurrent.futures import ProcessPoolExecutor
+import functools
 from io import BytesIO
 import json
+import logging
 import multiprocessing
 import shutil
 import base64
@@ -58,10 +60,13 @@ class ResourceCache:
     def __exit__(self, exc_type, exc, tb):
         pass
 
-def pbar_get(url, params = {}) -> requests.Response:
+def pbar_get(url, params = {}, disable = False) -> BytesIO:
     resp = requests.get(url=url, params=params, stream=True)
 
-    if resp.status_code != 200:
+    # Show only if we can show INFOs
+    disable = disable or log.getEffectiveLevel() > 20
+
+    if resp.status_code > 299 or resp.status_code < 200:
         log.error(f"Request got response {resp.status_code} -- {resp.reason}. Aborting.")
         raise Abort
     
@@ -70,7 +75,7 @@ def pbar_get(url, params = {}) -> requests.Response:
 
     desc = "[Unknown file size]" if size == 0 else ""
     bytes = BytesIO()
-    with tqdm.wrapattr(resp.raw, "read", total=size, desc = desc) as read_raw:
+    with tqdm.wrapattr(resp.raw, "read", total=size, desc = desc, disable = disable) as read_raw:
         shutil.copyfileobj(read_raw, bytes)
     
     bytes.seek(0)
@@ -79,7 +84,7 @@ def pbar_get(url, params = {}) -> requests.Response:
 def request_cosmic_download_url(url, auth_hash) -> str:
     payload = requests.get(url, headers={"Authorization": f"Basic {auth_hash}"})
 
-    if payload.status_code != 200:
+    if payload.status_code > 299 or payload.status_code < 200:
         log.error(f"Could not log into COSMIC. Resp {payload.status_code} -- {payload.reason}")
         raise Abort
     
@@ -95,3 +100,6 @@ def make_cosmic_hash(username: str, password: str) -> str:
     # Cosmic are idiots, so they actually expect a newline in the encoded str
     # What the actual fuck.
     return base64.b64encode(f"{username}:{password}\n".encode()).decode()
+
+
+pqdm = functools.partial(tqdm, disable = log.getEffectiveLevel() > 20)
