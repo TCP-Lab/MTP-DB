@@ -14,13 +14,8 @@ from daedalus.url_hardpoints import (
     IUPHAR_DB,
     TCDB,
 )
-from daedalus.utils import (
-    get_mock_data,
-    pbar_get,
-    pqdm,
-    request_cosmic_download_url,
-    run,
-)
+from daedalus.utils import pbar_get, pqdm, request_cosmic_download_url, run
+from typing_extensions import Self
 
 log = getLogger(__name__)
 
@@ -62,7 +57,7 @@ def retrieve_tcdb() -> dict[pd.DataFrame]:
     return result
 
 
-def retrieve_cosmic_genes(auth_hash) -> pd.DataFrame:
+def retrieve_cosmic_genes(auth_hash) -> dict[pd.DataFrame]:
     log.info("Retrieving COSMIC data...")
 
     result = {}
@@ -150,20 +145,19 @@ def retrieve_iuphar() -> dict[pd.DataFrame]:
 
 
 class ResourceCache:
-    __hooks = {
-        "__mock": get_mock_data,
-        "cosmic_genes": retrieve_cosmic_genes,
-        "biomart": retrieve_biomart,
-        "iuphar": retrieve_iuphar,
-        "tcdb": retrieve_tcdb,
-    }
     __data = {}
     __populated = False
 
-    def __init__(self, key) -> None:
+    def __init__(self, hooks) -> None:
+        self.target_key = None
+        self.__hooks = hooks
+
+    def __call__(self, key: str) -> Self:
         self.target_key = key
+        return self
 
     def populate(self):
+        log.info("Populating resource cache...")
         with ProcessPoolExecutor(CPUS) as pool:
             # Just to be sure the orders are ok
             keys = deepcopy(list(self.__hooks.keys()))

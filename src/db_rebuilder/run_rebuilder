@@ -2,7 +2,8 @@
 set -e
 
 if [ $# != 3 ]; then
-    echo "Insufficient args. Usage: run_rebuilder OUT_FOLDER, COSMIC_USERNAME, COSMIC_PASSWORD"
+    echo "Insufficient args. Usage: run_rebuilder OUT_FOLDER, COSMIC_HASH, COSMIC_PASSWORD"
+fi
 
 if [ -z ${1+x} ]; then
     echo "Missing output directory. Aborting.";

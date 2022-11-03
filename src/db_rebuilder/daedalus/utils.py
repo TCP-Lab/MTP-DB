@@ -68,7 +68,9 @@ def request_cosmic_download_url(url, auth_hash) -> str:
 def make_cosmic_hash(username: str, password: str) -> str:
     # Cosmic are idiots, so they actually expect a newline in the encoded str
     # What the actual fuck.
-    return base64.b64encode(f"{username}:{password}\n".encode()).decode()
+    hash = base64.b64encode(f"{username}:{password}\n".encode("UTF-8")).decode("UTF-8")
+    log.info(f"Computed hash: {hash}")
+    return hash
 
 
 pqdm = functools.partial(tqdm, disable=log.getEffectiveLevel() > 20)
