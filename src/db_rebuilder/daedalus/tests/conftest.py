@@ -1,5 +1,5 @@
 import pytest
-import logging
+
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -9,7 +9,8 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "slow: mark test as slow to run")
-    #logging.basicConfig(level=logging.getLevelName("WARNING"), force=True)
+    # logging.basicConfig(level=logging.getLevelName("WARNING"), force=True)
+
 
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--runslow"):

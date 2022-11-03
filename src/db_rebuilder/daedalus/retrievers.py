@@ -1,15 +1,31 @@
+import multiprocessing
 import re
-import pandas as pd
-from io import StringIO
-
+import zipfile
+from concurrent.futures import ProcessPoolExecutor
+from copy import deepcopy
 from logging import getLogger
 
-import zipfile
-
-from daedalus.url_hardpoints import BIOMART_XML_REQUESTS, BIOMART, COSMIC, IUPHAR_DB, TCDB
-from daedalus.utils import pbar_get, request_cosmic_download_url, pqdm
+import pandas as pd
+from daedalus.errors import CacheKeyError
+from daedalus.url_hardpoints import (
+    BIOMART,
+    BIOMART_XML_REQUESTS,
+    COSMIC,
+    IUPHAR_DB,
+    TCDB,
+)
+from daedalus.utils import (
+    get_mock_data,
+    pbar_get,
+    pqdm,
+    request_cosmic_download_url,
+    run,
+)
 
 log = getLogger(__name__)
+
+CPUS = multiprocessing.cpu_count()
+
 
 def retrieve_biomart() -> dict[pd.DataFrame]:
     log.info("Starting to retrieve from BioMart.")
@@ -17,12 +33,12 @@ def retrieve_biomart() -> dict[pd.DataFrame]:
     result = {}
     for key, value in BIOMART_XML_REQUESTS.items():
         log.info(f"Attempting to retrieve {key}...")
-        data = pbar_get(url = BIOMART, params={"query": value})
+        data = pbar_get(url=BIOMART, params={"query": value})
         log.info("Casting response...")
         df = pd.read_csv(data)
 
         result[key] = df
-    
+
     log.info("Got all necessary data from BioMart.")
 
     return result
@@ -30,20 +46,21 @@ def retrieve_biomart() -> dict[pd.DataFrame]:
 
 def retrieve_tcdb() -> dict[pd.DataFrame]:
     log.info("Retrieving data from TCDB.")
-    
+
     result = {}
     for key, value in TCDB.items():
         log.info(f"Getting TCDB data {key}...")
-        data = pbar_get(url = value)
+        data = pbar_get(url=value)
 
         log.info("Casting...")
         df = pd.read_csv(data, sep="\t")
 
         result[key] = df
-    
+
     log.info("Got all data from TCDB.")
-    
+
     return result
+
 
 def retrieve_cosmic_genes(auth_hash) -> pd.DataFrame:
     log.info("Retrieving COSMIC data...")
@@ -56,7 +73,7 @@ def retrieve_cosmic_genes(auth_hash) -> pd.DataFrame:
         data = pbar_get(secure_url)
 
         result[key] = data
-    
+
     log.info("Done retrieving COSMIC data.")
 
     return result
@@ -72,7 +89,7 @@ class IUPHARGobbler:
         self.current_table_cols = []
         self.current_table_data = []
         self.current_table_len = None
-    
+
     def reset(self):
         self.current_table_name = None
         self.current_table_cols = []
@@ -84,14 +101,14 @@ class IUPHARGobbler:
 
         if line.startswith("COPY") and self.opened_table is False:
             self.opened_table = True
-            
+
             match = self.copy_line_re.match(line)
             self.current_table_name = match.groups()[0]
             self.current_table_cols = match.groups()[1].split(", ")
             self.current_table_len = len(self.current_table_cols)
 
             return
-        
+
         if self.opened_table and line.startswith("\\."):
             self.opened_table = False
 
@@ -101,16 +118,19 @@ class IUPHARGobbler:
             self.reset()
 
             return
-        
+
         if self.opened_table:
             if not len(line.split("\t")) == self.current_table_len:
-                raise RuntimeError(f"Line {line} does not fit in the current schema for table {self.current_table_name}: {self.current_table_cols}")
-            
+                raise RuntimeError(
+                    f"Line {line} does not fit in the current schema for table {self.current_table_name}: {self.current_table_cols}"
+                )
+
             raw_data = line.split("\t")
             data = [x if x != "\\N" else None for x in raw_data]
             self.current_table_data.append(data)
 
             return
+
 
 def retrieve_iuphar() -> dict[pd.DataFrame]:
     log.info("Getting IUPHAR database...")
@@ -123,7 +143,45 @@ def retrieve_iuphar() -> dict[pd.DataFrame]:
     for line in pqdm(zip.open(zip.namelist()[0]).readlines()):
         line = line.decode("utf-8")
         gobbler.gobble(line)
-    
+
     log.info("Done retrieving IUPHAR data")
 
     return gobbler.tables
+
+
+class ResourceCache:
+    __hooks = {
+        "__mock": get_mock_data,
+        "cosmic_genes": retrieve_cosmic_genes,
+        "biomart": retrieve_biomart,
+        "iuphar": retrieve_iuphar,
+        "tcdb": retrieve_tcdb,
+    }
+    __data = {}
+    __populated = False
+
+    def __init__(self, key) -> None:
+        self.target_key = key
+
+    def populate(self):
+        with ProcessPoolExecutor(CPUS) as pool:
+            # Just to be sure the orders are ok
+            keys = deepcopy(list(self.__hooks.keys()))
+            workers = [self.__hooks[key] for key in keys]
+
+            items = pool.map(run, workers)
+
+        for key, value in zip(self.__hooks.keys(), items):
+            self.__data[key] = value
+
+    def __enter__(self):
+        if self.target_key not in self.__hooks.keys():
+            raise CacheKeyError(f"Invalid key: {self.__key}")
+
+        if self.__populated is False:
+            self.populate()
+
+        return deepcopy(self.__data[self.target_key])
+
+    def __exit__(self, exc_type, exc, tb):
+        pass

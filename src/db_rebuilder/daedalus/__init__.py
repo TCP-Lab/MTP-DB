@@ -1,7 +1,8 @@
-from pathlib import Path
 import logging
 from logging import StreamHandler
-from colorama import Fore, Style, Back
+from pathlib import Path
+
+from colorama import Back, Fore, Style
 
 OUT_ANCHOR: Path = Path("/app/out")
 
@@ -15,6 +16,7 @@ if DB_PATH.exists():
 
 
 SCHEMA = "BEGIN;\n{}\nEND;".format(Path("/app/schema.sql").read_text())
+
 
 class ColorFormatter(logging.Formatter):
     # Change this dictionary to suit your coloring needs!
@@ -30,7 +32,7 @@ class ColorFormatter(logging.Formatter):
         reset = Fore.RESET + Back.RESET + Style.NORMAL
         color = self.COLORS.get(record.levelname, "")
         if color:
-            record.name = Style.BRIGHT + Fore.BLACK + record.name + reset
+            record.name = Style.BRIGHT + Fore.CYAN + record.name + reset
             if record.levelname != "INFO":
                 record.msg = color + record.msg + reset
             record.levelname = color + record.levelname + reset

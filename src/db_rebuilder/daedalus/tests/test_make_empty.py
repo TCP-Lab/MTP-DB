@@ -1,8 +1,8 @@
-import pytest
 from sqlite3 import Cursor
 
-from daedalus.tests.fixtures import *
+import pytest
 from daedalus.make_db import make_empty
+from daedalus.tests.fixtures import *
 
 
 @pytest.mark.usefixtures("setup_db")
@@ -13,7 +13,21 @@ def test_schema(session: Cursor):
 
     tables = [x[0] for x in tables]
 
-    assert tables == ["gene_ids", "transcript_ids", "gene_names", "iuphar_ids", "iuphar_ligands", "iuphar_interaction", "tcdb_ids", "tcdb_subfamily", "tcdb_families", "gene_ontology", "channels", "carriers"]
+    assert tables == [
+        "gene_ids",
+        "transcript_ids",
+        "gene_names",
+        "iuphar_ids",
+        "iuphar_ligands",
+        "iuphar_interaction",
+        "tcdb_ids",
+        "tcdb_subfamily",
+        "tcdb_families",
+        "gene_ontology",
+        "channels",
+        "carriers",
+    ]
+
 
 @pytest.mark.usefixtures("setup_db")
 def test_mock_data_was_inserted(session: Cursor):
@@ -21,6 +35,7 @@ def test_mock_data_was_inserted(session: Cursor):
     res = res.fetchall()
 
     assert res != []
+
 
 @pytest.mark.usefixtures("setup_db")
 def test_make_empty(session: Cursor):
@@ -33,4 +48,3 @@ def test_make_empty(session: Cursor):
         test_schema = test_schema.fetchall()
 
     assert test_schema == expected_schema
-    

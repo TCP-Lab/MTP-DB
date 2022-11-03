@@ -1,10 +1,8 @@
-import base64
+import argparse
+
 from daedalus import OUT_ANCHOR
 from daedalus.errors import Abort
 from daedalus.make_db import generate_database
-
-import argparse
-
 from daedalus.utils import make_cosmic_hash
 
 parser = argparse.ArgumentParser()
