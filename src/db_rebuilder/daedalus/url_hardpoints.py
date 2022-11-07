@@ -1,6 +1,7 @@
 BIOMART = "http://www.ensembl.org/biomart/martservice"
 BIOMART_XML_REQUESTS = {
-    "IDs+desc": """<?xml version="1.0" encoding="UTF-8"?>
+    "IDs+desc": {
+        "query": """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
 <Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
 
@@ -16,7 +17,19 @@ BIOMART_XML_REQUESTS = {
 		<Attribute name = "refseq_mrna" />
 	</Dataset>
 </Query>""",
-    "hugo_symbols": """<?xml version="1.0" encoding="UTF-8"?>
+        "colnames": [
+            "ensembl_gene_id_version",
+            "ensembl_transcript_id_version",
+            "description",
+            "external_gene_name",
+            "ensembl_peptide_id_version",
+            "entrezgene_id",
+            "pdb",
+            "refseq_mrna",
+        ],
+    },
+    "hugo_symbols": {
+        "query": """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
 <Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
 
@@ -27,7 +40,10 @@ BIOMART_XML_REQUESTS = {
 		<Attribute name = "ensembl_gene_id_version" />
 	</Dataset>
 </Query>""",
-    "GO_transcrips": """<?xml version="1.0" encoding="UTF-8"?>
+        "colnames": ["hgnc_id", "hgnc_symbol", "ensembl_gene_id_version"],
+    },
+    "GO_transcrips": {
+        "query": """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
 <Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
 
@@ -41,13 +57,31 @@ BIOMART_XML_REQUESTS = {
 		<Attribute name = "namespace_1003" />
 	</Dataset>
 </Query>""",
+        "colnames": [
+            "ensembl_transcript_id_version",
+            "go_id",
+            "definition_1006",
+            "name_1006",
+            "go_linkage_type",
+            "namespace_1003",
+        ],
+    },
 }
 
 
 TCDB = {
-    "GO_to_TC": "https://www.tcdb.org/cgi-bin/projectv/public/go.py",
-    "RefSeq_to_TC": "https://www.tcdb.org/cgi-bin/projectv/public/refseq.py",
-    "TC_definitions": "https://www.tcdb.org/cgi-bin/projectv/public/families.py",
+    "GO_to_TC": {
+        "url": "https://www.tcdb.org/cgi-bin/projectv/public/go.py",
+        "colnames": ["go_id", "tc_id", "family_name"],
+    },
+    "RefSeq_to_TC": {
+        "url": "https://www.tcdb.org/cgi-bin/projectv/public/refseq.py",
+        "colnames": ["refseq_id", "tc_id", "family_name"],
+    },
+    "TC_definitions": {
+        "url": "https://www.tcdb.org/cgi-bin/projectv/public/families.py",
+        "colnames": ["tc_id", "definition"],
+    },
 }
 
 COSMIC = {

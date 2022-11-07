@@ -1,3 +1,4 @@
+import gzip
 import multiprocessing
 import re
 import zipfile
@@ -28,9 +29,9 @@ def retrieve_biomart() -> dict[pd.DataFrame]:
     result = {}
     for key, value in BIOMART_XML_REQUESTS.items():
         log.info(f"Attempting to retrieve {key}...")
-        data = pbar_get(url=BIOMART, params={"query": value})
+        data = pbar_get(url=BIOMART, params={"query": value["query"]})
         log.info("Casting response...")
-        df = pd.read_csv(data)
+        df = pd.read_csv(data, names=value["colnames"])
 
         result[key] = df
 
@@ -45,10 +46,10 @@ def retrieve_tcdb() -> dict[pd.DataFrame]:
     result = {}
     for key, value in TCDB.items():
         log.info(f"Getting TCDB data {key}...")
-        data = pbar_get(url=value)
+        data = pbar_get(url=value["url"])
 
         log.info("Casting...")
-        df = pd.read_csv(data, sep="\t")
+        df = pd.read_csv(data, sep="\t", names=value["colnames"])
 
         result[key] = df
 
@@ -64,8 +65,18 @@ def retrieve_cosmic_genes(auth_hash) -> dict[pd.DataFrame]:
     for key, value in COSMIC.items():
         log.info(f"Retrieving data for {key}")
         secure_url = request_cosmic_download_url(value, auth_hash)
-
         data = pbar_get(secure_url)
+
+        log.info("Casting response...")
+        if key == "IDs":
+            # The IDS are given as a compressed TSV file
+            data = pd.read_csv(gzip.GzipFile(fileobj=data), sep="\t")
+        else:
+            try:
+                data = pd.read_csv(data)
+            except UnicodeDecodeError:
+                log.info("Failed to parse data. Trying to uncompress...")
+                data = pd.read_csv(gzip.GzipFile(fileobj=data))
 
         result[key] = data
 
