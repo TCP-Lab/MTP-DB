@@ -27,7 +27,7 @@ CREATE TABLE protein_structures (
 );
 
 CREATE TABLE gene_names (
-    enst TEXT, -- from biomart > IDs+desc > ensembl_gene_id_version
+    ensg TEXT, -- from biomart > IDs+desc > ensembl_gene_id_version
     hugo_gene_id TEXT PRIMARY KEY, -- from biomart > hugo_symbols > hgnc_id
     hugo_gene_symbol TEXT UNIQUE NOT NULL, -- from biomart > hugo_symbols > hugo_gene symbol
     -- (double check with the description field below)

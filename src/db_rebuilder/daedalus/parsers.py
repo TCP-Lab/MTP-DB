@@ -91,3 +91,21 @@ def get_transcripts_ids_transaction(mart_data):
     )
 
     return to_transaction(transcript_ids, "transcript_ids")
+
+
+def get_refseq_transaction(mart_data):
+    refseq = mart_data["IDs+desc"][["ensembl_transcript_id_version", "refseq_mrna"]]
+
+    refseq = refseq.drop_duplicates()
+
+    refseq = pd.DataFrame(
+        {
+            "refseq_transcript_id": refseq["refseq_mrna"],
+            "enst": lmap(
+                lambda x: split_ensembl_ids(x).full_id_no_version,
+                refseq["ensembl_transcript_id_version"],
+            ),
+        }
+    )
+
+    return to_transaction(refseq, "mrna_refseq")
