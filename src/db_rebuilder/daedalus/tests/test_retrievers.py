@@ -11,6 +11,7 @@ from daedalus.utils import make_cosmic_hash
 
 
 @pytest.mark.slow
+@pytest.mark.download
 def test_biomart_retriever():
     data = retrieve_biomart()
 
@@ -18,6 +19,7 @@ def test_biomart_retriever():
     assert data is not {}
 
 
+@pytest.mark.download
 def test_tcdb_retriever():
     data = retrieve_tcdb()
 
@@ -25,17 +27,20 @@ def test_tcdb_retriever():
     assert data is not {}
 
 
+@pytest.mark.download
 def test_cosmic_retrievers(secrets):
     data = retrieve_cosmic_genes(secrets["cosmic_hash"])
 
     assert True
 
 
+@pytest.mark.download
 def test_cosmic_hash(secrets):
     new_hash = make_cosmic_hash(secrets["cosmic_username"], secrets["cosmic_password"])
     assert secrets["cosmic_hash"] == new_hash
 
 
+@pytest.mark.download
 def test_iuphar_retriever():
     data = retrieve_iuphar()
 

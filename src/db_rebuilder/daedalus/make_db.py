@@ -1,4 +1,5 @@
 import logging
+import pickle
 import sqlite3
 from functools import partial
 from pathlib import Path
@@ -7,11 +8,13 @@ from sqlite3 import Connection
 from daedalus import SCHEMA
 from daedalus.errors import Abort
 from daedalus.retrievers import (
+    ResourceCache,
     retrieve_biomart,
     retrieve_cosmic_genes,
     retrieve_iuphar,
     retrieve_tcdb,
 )
+from daedalus.utils import split_ensembl_ids
 
 log = logging.getLogger(__name__)
 
@@ -26,41 +29,45 @@ def generate_database(path: Path, auth_hash) -> None:
     with sqlite3.connect(path / "db.sqlite") as connection:
         try:
             make_empty(connection)
-        except FileExistsError:
+        except sqlite3.OperationalError:
             log.error("Database already exists. Refusing to overwrite.")
             raise Abort
 
     retrieve_cosmic_wrapper = partial(retrieve_cosmic_genes, auth_hash)
 
-    if False:
-        try:
-            cosmic_data = retrieve_cosmic_wrapper()
-            for key, value in cosmic_data.items():
-                value.to_csv(f"/app/out/cosmic_{key}.csv")
-        except Exception as e:
-            log.exception(e)
+    cache = ResourceCache(
+        hooks={
+            "biomart": retrieve_biomart,
+            "cosmic": retrieve_cosmic_wrapper,
+            "iuphar": retrieve_iuphar,
+            "tcdb": retrieve_tcdb,
+        }
+    )
 
-    if False:
-        try:
-            biomart_data = retrieve_biomart()
+    ## TEMP -- remove me
+    # Cache the data to a pickle so that we don't download it every time
+    pickle_path = path / "datacache.pickle"
+    if not pickle_path.exists():
+        cache.populate()
+        data = cache._ResourceCache__data
+        with pickle_path.open("w+b") as stream:
+            pickle.dump(data, stream)
+        log.info("Dumped pickled data.")
+    else:
+        with pickle_path.open("rb") as stream:
+            data = pickle.load(stream)
+        cache._ResourceCache__populated = True
+        cache._ResourceCache__data = data
+        log.debug("Loaded from pickled data.")
+    ## TEMP -- remove me
 
-            for key, value in biomart_data.items():
-                value.to_csv(f"/app/out/biomart_{key}.csv")
-        except Exception as e:
-            log.exception(e)
+    log.info("Connecting to empty database...")
+    connection = sqlite3.connect(path / "db.sqlite")
 
-    if False:
-        try:
-            iuphar = retrieve_iuphar()
-            for key, value in iuphar.items():
-                value.to_csv(f"/app/out/iuphar_{key}.csv")
-        except Exception as e:
-            log.exception(e)
+    log.info("Populating IDs...")
+    with cache("biomart") as mart_data:
+        # First, we populate the gene IDs from ensembl
+        ensg = mart_data["IDs+desc"]["ensembl_gene_id_version"]
+        ensg = ensg.map(split_ensembl_ids)
 
-    if True:
-        try:
-            tcdb = retrieve_tcdb()
-            for key, value in tcdb.items():
-                value.to_csv(f"/app/out/tcdb_{key}.csv")
-        except Exception as e:
-            log.exception(e)
+        print(ensg)

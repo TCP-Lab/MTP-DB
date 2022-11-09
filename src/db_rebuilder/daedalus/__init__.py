@@ -50,6 +50,6 @@ console_formatter = ColorFormatter(format)
 
 stream_h = StreamHandler()
 stream_h.setFormatter(console_formatter)
-stream_h.setLevel(logging.INFO)
+stream_h.setLevel(logging.DEBUG)
 
 log.addHandler(stream_h)

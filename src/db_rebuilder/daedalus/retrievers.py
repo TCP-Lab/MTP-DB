@@ -179,9 +179,11 @@ class ResourceCache:
         for key, value in zip(self.__hooks.keys(), items):
             self.__data[key] = value
 
+        self.__populated = True
+
     def __enter__(self):
         if self.target_key not in self.__hooks.keys():
-            raise CacheKeyError(f"Invalid key: {self.__key}")
+            raise CacheKeyError(f"Invalid key: {self.target_key}")
 
         if self.__populated is False:
             self.populate()

@@ -1,11 +1,11 @@
 BEGIN;
 
-INSERT INTO gene_ids (ensg, ensg_version_leaf, refseq_gene_id, refseq_gene_id_version, go_terms) 
+INSERT INTO gene_ids (ensg, ensg_version_leaf, refseq_gene_id, refseq_gene_id_version, go_terms)
     VALUES
-    (100000000001, 1, 'NM_000000001', 5, NULL),
+    (100000000001, 1, 'NM_000000001', 5, 'GO:0000001, GO:0000003'),
     (100000000002, 2, 'NM_000000002', 6, 'GO:0000001, GO:0000002'),
     (100000000003, 3, 'NM_000000003', 7, 'GO:0000003'),
-    (100000000004, 4, 'NM_000000004', 8, NULL);
+    (100000000004, 4, 'NM_000000004', 8, 'GO:0000002');
 
 
 INSERT INTO transcript_ids (ensg, enst, is_primary_transcript, pdb_id, refseq_protein_id)
@@ -47,13 +47,13 @@ INSERT INTO iuphar_interaction (
     ligand_action, ligand_action_extras, ligand_selectivity, is_primary_target,
     receptor_site, ligand_context
 ) VALUES
-    ('1::9009', 1, 9009, 0, 'covalent binding', 'inhibition', 
+    ('1::9009', 1, 9009, 0, 'covalent binding', 'inhibition',
     NULL, 'high', 1, 'intracellular', 'some_context'),
-    ('20::1010', 20, 1010, 1, 'reversible', 'activation', 
+    ('20::1010', 20, 1010, 1, 'reversible', 'activation',
     'Does not work when bananas are involved', 0, 'low', 'in the middle', 'No context at all'),
-    ('300::1111', 300, 1111, 0, 'covalent binding', 'inhibition', 
+    ('300::1111', 300, 1111, 0, 'covalent binding', 'inhibition',
     'Works only in the presence of Elrond', 0, 'medium', 'extracellular', NULL),
-    ('4000::1212', 4000, 1212, 1, 'covalent binding', NULL, 
+    ('4000::1212', 4000, 1212, 1, 'covalent binding', NULL,
     NULL, 1, NULL, NULL, NULL);
 
 INSERT INTO tcdb_ids (
@@ -81,7 +81,7 @@ INSERT INTO tcdb_families (
     ('5.C.2', 'Virtual electron carriers', 0);
 
 INSERT INTO gene_ontology (
-    term, term_name, onthology_type 
+    term, term_name, onthology_type
 ) VALUES
     ('GO:0000001', 'Awesome property', 'biological_process'),
     ('GO:0000002', 'Lame property', 'biological_process'),
@@ -89,12 +89,12 @@ INSERT INTO gene_ontology (
     ('GO:0000004', 'On earth', 'cellular_compartment');
 
 INSERT INTO channels (
-    enst, conductance, permeability
+    enst, conductance -- TODO: need extra data here
 ) VALUES
-    (20000000001, 'very small', 'Na'),
-    (20000000002, 'small', 'Ca, Na'),
-    (20000000003, 'big', 'Si'),
-    (20000000004, 'huge', 'Cations');
+    (20000000001, 'very small'),
+    (20000000002, 'small'),
+    (20000000003, 'big'),
+    (20000000004, 'huge');
 
 INSERT INTO carriers (
     enst, class, is_secondary, to_lumen_pubchem_id, to_exterior_pubchem_id,

@@ -1,38 +1,40 @@
 CREATE TABLE gene_ids (
-    ensg INT PRIMARY KEY, 
-    ensg_version_leaf INT NOT NULL,
-    refseq_gene_id TEXT UNIQUE NOT NULL,
-    refseq_gene_id_version INT NOT NULL,
-    go_terms TEXT
+    ensg INT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_gene_id_version
+    ensg_version_leaf INT NOT NULL, -- from biomart > IDs+desc > ensembl_gene_id_version
+    refseq_gene_id TEXT UNIQUE NOT NULL, -- from biomart > IDs+desc > refseq_mrna
+    refseq_gene_id_version INT NOT NULL, -- MISSING?? No version for refseq?
+    go_terms TEXT -- comma-delimited, from biomart > go_transcripts > go_id
+    hugo_gene_id INT NOT NULL -- from biomart > hugo_symbols > hgnc_id
 );
 
 CREATE TABLE transcript_ids (
-    ensg INT NOT NULL,
-    enst INT PRIMARY KEY,
+    ensg INT NOT NULL, -- from biomart > IDs+desc > ensembl_gene_id_version
+    enst INT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_transcript_id_version
     is_primary_transcript INT NOT NULL, -- bool
-    pdb_id TEXT UNIQUE,
-    refseq_protein_id TEXT UNIQUE NOT NULL
+    pdb_id TEXT UNIQUE, -- from biomart > IDs+desc > pdb
+    refseq_protein_id TEXT UNIQUE NOT NULL -- from biomart > IDs+desc > refseq_mrna
 );
 
 CREATE TABLE gene_names (
-    ensg INT PRIMARY KEY,
-    hugo_gene_symbol TEXT UNIQUE NOT NULL,
-    hugo_gene_name TEXT NOT NULL,
-    gene_symbol_synonyms TEXT
+    ensg INT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_gene_id_version
+    hugo_gene_symbol TEXT UNIQUE NOT NULL, -- from biomart > hugo_symbols > hugo_gene symbol
+    -- (double check with the description field below)
+    hugo_gene_name TEXT NOT NULL, -- from biomart > IDs+desc > description
+    gene_symbol_synonyms TEXT -- ???
 );
 
 CREATE TABLE iuphar_ids (
-    ensg INT PRIMARY KEY,
+    ensg INT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_gene_id_version
     target_id TEXT UNIQUE NOT NULL, -- unsure if this is unique
-    target_name TEXT NOT NULL,
-    family_id INT NOT NULL, 
+    target_name TEXT NOT NULL, --
+    family_id INT NOT NULL,
     family_name TEXT NOT NULL
 );
 
 CREATE TABLE iuphar_ligands (
     ligand_id TEXT PRIMARY KEY,
     is_proteic INT NOT NULL, -- Bool
-    ensg INT UNIQUE, -- If is_proteic 
+    ensg INT UNIQUE, -- If is_proteic
     gene_symbol TEXT, -- If is_proteic
     pubchem_sid INT, -- If not is_proteic,
     is_endogenous INT, -- bool
@@ -81,13 +83,30 @@ CREATE TABLE gene_ontology (
     onthology_type TEXT
 );
 
+-- "Channels" are all
 CREATE TABLE channels (
     enst INT PRIMARY KEY,
-    -- gating mechanism
+    -- How do we represent conductance?
     conductance TEXT,
-    permeability TEXT
     -- selectivity
-    -- voltage_threshold_coefficient
+    is_calcium_permeable INT,
+    is_potassium_permeable INT,
+    is_chlorine_permeable INT,
+    is_iron_permeable INT,
+    is_phosphate_permeable INT,
+    is_magnesium_permeable INT,
+    is_chromium_permeable INT,
+    is_copper_permeable INT,
+    is_zinc_permeable INT,
+    is_iodine_permeable INT,
+    is_bicarbonate_permeable INT,
+    is_proton_permeable INT,
+    -- general selectivity
+    is_cation_permeable INT,
+    is_anion_permeable INT,
+    -- gating
+    gating_mechanism TEXT,
+    voltage_threshold_coefficient INT
 );
 
 CREATE TABLE carriers (
@@ -100,5 +119,3 @@ CREATE TABLE carriers (
     rate_coefficient TEXT, -- trasport carry rate, like 1/2 Vmax
     rate_maximum TEXT -- Vmax
 );
-
-

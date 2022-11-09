@@ -1,9 +1,12 @@
 import base64
 import functools
 import json
+import re
 import shutil
+from dataclasses import dataclass
 from io import BytesIO
 from logging import getLogger
+from typing import Optional
 
 import requests
 from daedalus.errors import Abort
@@ -74,3 +77,63 @@ def make_cosmic_hash(username: str, password: str) -> str:
 
 
 pqdm = functools.partial(tqdm, disable=log.getEffectiveLevel() > 20)
+
+
+@dataclass
+class EnsemblID:
+    full_id: str
+    type: str
+    type_letter_prefix: str
+    identifier: int
+    version_number: Optional[int]
+
+
+ENS_ID_MATCHER = re.compile("ENS(FM|GT|[EGPRT])([0-9]{11})(?:.([0-9]+))?")
+
+
+def split_ensembl_ids(ensembl_id: str):
+    """Splits an ensembl ID string into its components
+
+    Args:
+        ensembl_id (str): The ensembl id to split
+    """
+    assert ensembl_id.startswith("ENS"), "The passed string is not a valid ensembl ID."
+    assert len(ensembl_id) >= 11, "The passed ensembl ID is too short."
+
+    types = {
+        "E": "exon",
+        "FM": "protein family",
+        "G": "gene",
+        "GT": "gene tree",
+        "P": "protein",
+        "R": "regulatory feature",
+        "T": "transcript",
+    }
+
+    match = ENS_ID_MATCHER.match(ensembl_id)
+
+    if not match:
+        log.error(f"Cannot match ID {ensembl_id}.")
+        raise Abort
+
+    try:
+        type = types[match.groups()[0]]
+    except KeyError:
+        log.error(
+            f"Error: cannot parse ENSEMBL ID. Type {match.groups()[0]} not valid."
+        )
+        raise Abort
+
+    ver = match.groups()[2]
+    if ver:
+        ver = int(ver)
+
+    parsed = EnsemblID(
+        full_id=ensembl_id,
+        type=type,
+        type_letter_prefix=match.groups()[0],
+        identifier=int(match.groups()[1]),
+        version_number=ver,
+    )
+
+    return parsed
