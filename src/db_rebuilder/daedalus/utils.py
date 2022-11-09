@@ -167,8 +167,12 @@ def represent_sql_type(data: pd.Series) -> list:
 
 
 def to_transaction(data: pd.DataFrame, table: str) -> str:
+    log.info(
+        f"Converting a {data.shape[0]} rows by {data.shape[1]} cols dataframe to a transaction string..."
+    )
+
     sql = ["INSERT INTO " + table + " (" + ", ".join(data.columns) + ") VALUES "]
-    for _, row in data.iterrows():
+    for _, row in tqdm(data.iterrows(), total=data.shape[0]):
         sql.append("(" + ", ".join(represent_sql_type(row.values)) + "),")
     sql = "\n".join(sql)
     sql = sql.strip()[:-1]  # remove the trailing \n and the last comma
@@ -178,5 +182,15 @@ def to_transaction(data: pd.DataFrame, table: str) -> str:
 
 def sanity_check(check, message):
     log.info(f"Sanity check: {message}")
-    assert check
+    try:
+        assert check
+    except AssertionError:
+        log.critical(f"SANITY CHECK FAILED: {message}")
+        raise Abort
+
     log.debug("Sanity check passed.")
+
+
+def lmap(*args, **kwargs) -> list:
+    "A not-lazy map."
+    return list(map(*args, **kwargs))

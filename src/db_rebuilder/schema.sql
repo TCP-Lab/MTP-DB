@@ -5,19 +5,30 @@ CREATE TABLE gene_ids (
 );
 
 CREATE TABLE transcript_ids (
-    ensg INT NOT NULL, -- from biomart > IDs+desc > ensembl_gene_id_version
-    enst INT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_transcript_id_version
-    is_primary_transcript INT NOT NULL, -- bool
-    pdb_id TEXT UNIQUE, -- from biomart > IDs+desc > pdb
-    refseq_gene_id TEXT UNIQUE NOT NULL, -- from biomart > IDs+desc > refseq_mrna
-    refseq_gene_id_version INT NOT NULL, -- MISSING?? No version for refseq?
-    refseq_protein_id TEXT UNIQUE NOT NULL, -- from biomart > IDs+desc > refseq_mrna
-    go_terms TEXT -- comma-delimited, from biomart > go_transcripts > go_id
+    ensg TEXT NOT NULL, -- from biomart > IDs+desc > ensembl_gene_id_version
+    enst TEXT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_transcript_id_version
+    enst_version TEXT UNIQUE NOT NULL, -- same as enst
+    enst_version_leaf INT NOT NULL, -- same as enst
+    is_canonical_isoform INT NOT NULL -- bool
+);
+
+CREATE TABLE mrna_refseq (
+    enst TEXT, -- from biomart > IDs+desc > ensembl_transcript_id_version
+    refseq_transcript_id TEXT UNIQUE NOT NULL -- from biomart > IDs+desc > refseq_mrna
+    -- refseq_transcript_id_version INT NOT NULL -- MISSING?? No version for refseq?
+    -- refseq_transcrpit_id_version_leaf INT NOT NULL -- See aboveref
+);
+
+-- There are more pdb_ids than ensts, as a single transcript can have multiple deposited structs
+CREATE TABLE protein_structures (
+    enst TEXT,
+    pdb_id TEXT,
+    refseq_protein_id TEXT
 );
 
 CREATE TABLE gene_names (
-    ensg INT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_gene_id_version
-    hugo_gene_id TEXT, -- from biomart > hugo_symbols > hgnc_id
+    enst TEXT, -- from biomart > IDs+desc > ensembl_gene_id_version
+    hugo_gene_id TEXT PRIMARY KEY, -- from biomart > hugo_symbols > hgnc_id
     hugo_gene_symbol TEXT UNIQUE NOT NULL, -- from biomart > hugo_symbols > hugo_gene symbol
     -- (double check with the description field below)
     hugo_gene_name TEXT NOT NULL, -- from biomart > IDs+desc > description
@@ -78,10 +89,15 @@ CREATE TABLE tcdb_families (
     is_superfamily INT -- bool
 );
 
-CREATE TABLE gene_ontology (
+CREATE TABLE gene_ontology_description (
     term TEXT PRIMARY KEY,
     term_name TEXT,
     onthology_type TEXT
+);
+
+CREATE TABLE transcript_gene_ontology (
+    term TEXT PRIMARY KEY,
+    enst TEXT
 );
 
 -- "Channels" are all

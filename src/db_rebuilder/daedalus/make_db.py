@@ -8,7 +8,7 @@ from sqlite3 import Connection
 
 from daedalus import SCHEMA
 from daedalus.errors import Abort
-from daedalus.parsers import get_gene_ids_transaction
+from daedalus.parsers import get_gene_ids_transaction, get_transcripts_ids_transaction
 from daedalus.retrievers import (
     ResourceCache,
     retrieve_biomart,
@@ -70,10 +70,20 @@ def generate_database(path: Path, auth_hash) -> None:
     with cache("biomart") as mart_data:
         transaction = get_gene_ids_transaction(mart_data)
 
+        log.info("Executing transaction...")
         connection.execute(transaction)
         connection.commit()
 
     log.info("Done populating IDs. Cleaning up.")
     gc.collect()
+
+    ## -- transcript_ids table --
+    log.info("Populating transcript IDs...")
+    with cache("biomart") as mart_data:
+        transaction = get_transcripts_ids_transaction(mart_data)
+
+        log.info("Executing transaction...")
+        connection.execute(transaction)
+        connection.commit()
 
     log.info(f"Finished populating database. Saved in {path / 'db.sqlite'}")
