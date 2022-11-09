@@ -1,3 +1,4 @@
+import gc
 import logging
 import pickle
 import sqlite3
@@ -7,6 +8,7 @@ from sqlite3 import Connection
 
 from daedalus import SCHEMA
 from daedalus.errors import Abort
+from daedalus.parsers import get_gene_ids_transaction
 from daedalus.retrievers import (
     ResourceCache,
     retrieve_biomart,
@@ -14,7 +16,6 @@ from daedalus.retrievers import (
     retrieve_iuphar,
     retrieve_tcdb,
 )
-from daedalus.utils import split_ensembl_ids
 
 log = logging.getLogger(__name__)
 
@@ -64,10 +65,15 @@ def generate_database(path: Path, auth_hash) -> None:
     log.info("Connecting to empty database...")
     connection = sqlite3.connect(path / "db.sqlite")
 
+    ## -- gene_ids table --
     log.info("Populating IDs...")
     with cache("biomart") as mart_data:
-        # First, we populate the gene IDs from ensembl
-        ensg = mart_data["IDs+desc"]["ensembl_gene_id_version"]
-        ensg = ensg.map(split_ensembl_ids)
+        transaction = get_gene_ids_transaction(mart_data)
 
-        print(ensg)
+        connection.execute(transaction)
+        connection.commit()
+
+    log.info("Done populating IDs. Cleaning up.")
+    gc.collect()
+
+    log.info(f"Finished populating database. Saved in {path / 'db.sqlite'}")

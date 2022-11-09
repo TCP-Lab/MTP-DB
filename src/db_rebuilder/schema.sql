@@ -1,10 +1,7 @@
 CREATE TABLE gene_ids (
-    ensg INT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_gene_id_version
-    ensg_version_leaf INT NOT NULL, -- from biomart > IDs+desc > ensembl_gene_id_version
-    refseq_gene_id TEXT UNIQUE NOT NULL, -- from biomart > IDs+desc > refseq_mrna
-    refseq_gene_id_version INT NOT NULL, -- MISSING?? No version for refseq?
-    go_terms TEXT -- comma-delimited, from biomart > go_transcripts > go_id
-    hugo_gene_id INT NOT NULL -- from biomart > hugo_symbols > hgnc_id
+    ensg_version TEXT NOT NULL, -- from biomart > IDs+desc > ensembl_gene_id_version
+    ensg TEXT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_gene_id_version
+    ensg_version_leaf INT NOT NULL -- from biomart > IDs+desc > ensembl_gene_id_version
 );
 
 CREATE TABLE transcript_ids (
@@ -12,11 +9,15 @@ CREATE TABLE transcript_ids (
     enst INT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_transcript_id_version
     is_primary_transcript INT NOT NULL, -- bool
     pdb_id TEXT UNIQUE, -- from biomart > IDs+desc > pdb
-    refseq_protein_id TEXT UNIQUE NOT NULL -- from biomart > IDs+desc > refseq_mrna
+    refseq_gene_id TEXT UNIQUE NOT NULL, -- from biomart > IDs+desc > refseq_mrna
+    refseq_gene_id_version INT NOT NULL, -- MISSING?? No version for refseq?
+    refseq_protein_id TEXT UNIQUE NOT NULL, -- from biomart > IDs+desc > refseq_mrna
+    go_terms TEXT -- comma-delimited, from biomart > go_transcripts > go_id
 );
 
 CREATE TABLE gene_names (
     ensg INT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_gene_id_version
+    hugo_gene_id TEXT, -- from biomart > hugo_symbols > hgnc_id
     hugo_gene_symbol TEXT UNIQUE NOT NULL, -- from biomart > hugo_symbols > hugo_gene symbol
     -- (double check with the description field below)
     hugo_gene_name TEXT NOT NULL, -- from biomart > IDs+desc > description

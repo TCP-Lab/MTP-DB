@@ -1,13 +1,16 @@
 import base64
 import functools
 import json
+import math
 import re
 import shutil
 from dataclasses import dataclass
 from io import BytesIO
 from logging import getLogger
+from numbers import Number
 from typing import Optional
 
+import pandas as pd
 import requests
 from daedalus.errors import Abort
 from tqdm.auto import tqdm
@@ -82,6 +85,7 @@ pqdm = functools.partial(tqdm, disable=log.getEffectiveLevel() > 20)
 @dataclass
 class EnsemblID:
     full_id: str
+    full_id_no_version: str
     type: str
     type_letter_prefix: str
     identifier: int
@@ -130,6 +134,7 @@ def split_ensembl_ids(ensembl_id: str):
 
     parsed = EnsemblID(
         full_id=ensembl_id,
+        full_id_no_version=f"ENS{match.groups()[0]}{match.groups()[1]}",
         type=type,
         type_letter_prefix=match.groups()[0],
         identifier=int(match.groups()[1]),
@@ -137,3 +142,41 @@ def split_ensembl_ids(ensembl_id: str):
     )
 
     return parsed
+
+
+def represent_sql_type(data: pd.Series) -> list:
+    result = []
+
+    def tolerant_is_nan(item):
+        try:
+            check = math.isnan(item)
+        except TypeError:
+            check = False
+
+        return check
+
+    for item in data:
+        if pd.isnull(item) or tolerant_is_nan(item):
+            result.append("NULL")
+        elif isinstance(item, Number):
+            result.append(str(item))
+        elif isinstance(item, str):
+            result.append("'" + item + "'")
+
+    return result
+
+
+def to_transaction(data: pd.DataFrame, table: str) -> str:
+    sql = ["INSERT INTO " + table + " (" + ", ".join(data.columns) + ") VALUES "]
+    for _, row in data.iterrows():
+        sql.append("(" + ", ".join(represent_sql_type(row.values)) + "),")
+    sql = "\n".join(sql)
+    sql = sql.strip()[:-1]  # remove the trailing \n and the last comma
+    sql = sql + ";"
+    return sql
+
+
+def sanity_check(check, message):
+    log.info(f"Sanity check: {message}")
+    assert check
+    log.debug("Sanity check passed.")

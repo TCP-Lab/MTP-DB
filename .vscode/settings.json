@@ -6,8 +6,13 @@
     "./src/db_rebuilder/",
     ],
     "cSpell.words": [
+        "ensembl",
+        "ensg",
         "executescript",
+        "hgnc",
         "iuphar",
+        "mrna",
+        "refseq",
         "tcdb",
         "usefixtures"
     ],
