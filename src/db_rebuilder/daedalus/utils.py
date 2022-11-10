@@ -45,7 +45,7 @@ def pbar_get(url, params={}, disable=False) -> BytesIO:
     desc = "[Unknown file size]" if size == 0 else ""
     bytes = BytesIO()
     with tqdm.wrapattr(
-        resp.raw, "read", total=size, desc=desc, disable=disable
+        resp.raw, "read", total=size, desc=desc, disable=disable, delay=10
     ) as read_raw:
         shutil.copyfileobj(read_raw, bytes)
 
@@ -161,7 +161,7 @@ def represent_sql_type(data: pd.Series) -> list:
         elif isinstance(item, Number):
             result.append(str(item))
         elif isinstance(item, str):
-            result.append("'" + item + "'")
+            result.append("'" + item.replace("'", "''") + "'")
 
     return result
 
@@ -192,5 +192,40 @@ def sanity_check(check, message):
 
 
 def lmap(*args, **kwargs) -> list:
-    "A not-lazy map."
+    """A not-lazy map."""
     return list(map(*args, **kwargs))
+
+
+def execute_transaction(connection, transaction):
+    log.info("Executing transaction...")
+    connection.execute(transaction)
+
+
+def print_duplicates(data: pd.DataFrame) -> None:
+    print(data[~data.duplicated(keep=False)])
+
+
+GENE_DESC_MATCHER = re.compile("^(.*?)\\[Source:(.*?);Acc:(.*?)\\]$")
+
+
+@dataclass
+class GeneDescription:
+    original: str
+    desc: str
+    source: str
+    accession: str
+
+
+def split_gene_description(desc) -> GeneDescription:
+    match = GENE_DESC_MATCHER.match(desc)
+
+    if not match:
+        log.error(f"Cannot parse description: {desc}")
+        raise Abort
+
+    return GeneDescription(
+        original=desc,
+        desc=match.groups()[0],
+        source=match.groups()[1],
+        accession=match.groups()[2],
+    )

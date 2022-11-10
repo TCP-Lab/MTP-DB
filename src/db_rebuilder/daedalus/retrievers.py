@@ -12,6 +12,7 @@ from daedalus.url_hardpoints import (
     BIOMART,
     BIOMART_XML_REQUESTS,
     COSMIC,
+    IUPHAR_COMPILED,
     IUPHAR_DB,
     TCDB,
 )
@@ -192,3 +193,16 @@ class ResourceCache:
 
     def __exit__(self, exc_type, exc, tb):
         pass
+
+
+def retrieve_iuphar_compiled():
+    answer = {}
+    log.info("Retrieving compiled IUPHAR data...")
+    for key, item in IUPHAR_COMPILED.items():
+        bytes = pbar_get(item)
+
+        log.info(f"Casting {key}...")
+        answer[key] = pd.read_csv(gzip.GzipFile(fileobj=bytes))
+
+    log.info("Done retrieving IUPHAR casted data.")
+    return answer

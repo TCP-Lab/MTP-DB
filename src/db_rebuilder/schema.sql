@@ -13,25 +13,26 @@ CREATE TABLE transcript_ids (
 );
 
 CREATE TABLE mrna_refseq (
-    enst TEXT, -- from biomart > IDs+desc > ensembl_transcript_id_version
-    refseq_transcript_id TEXT UNIQUE NOT NULL -- from biomart > IDs+desc > refseq_mrna
-    -- refseq_transcript_id_version INT NOT NULL -- MISSING?? No version for refseq?
-    -- refseq_transcrpit_id_version_leaf INT NOT NULL -- See aboveref
+    -- These cannot be unique, as some refseq IDs are missing
+    enst TEXT NOT NULL, -- from biomart > IDs+desc > ensembl_transcript_id_version
+    refseq_transcript_id TEXT -- from biomart > IDs+desc > refseq_mrna
+    -- refseq_transcript_id_version INT -- MISSING?? No version for refseq?
+    -- refseq_transcrpit_id_version_leaf INT -- See aboveref
 );
 
 -- There are more pdb_ids than ensts, as a single transcript can have multiple deposited structs
 CREATE TABLE protein_structures (
-    enst TEXT,
-    pdb_id TEXT,
-    refseq_protein_id TEXT
+    enst TEXT, -- from biomart > IDs+desc > ensembl_transcript_id_version
+    pdb_id TEXT, -- from biomart > IDs+desc > pdb
+    refseq_protein_id TEXT -- missing - to be downloaded?
 );
 
 CREATE TABLE gene_names (
     ensg TEXT, -- from biomart > IDs+desc > ensembl_gene_id_version
-    hugo_gene_id TEXT PRIMARY KEY, -- from biomart > hugo_symbols > hgnc_id
-    hugo_gene_symbol TEXT UNIQUE NOT NULL, -- from biomart > hugo_symbols > hugo_gene symbol
+    hugo_gene_id TEXT, -- from biomart > hugo_symbols > hgnc_id
+    hugo_gene_symbol TEXT, -- from biomart > hugo_symbols > hugo_gene symbol
     -- (double check with the description field below)
-    hugo_gene_name TEXT NOT NULL, -- from biomart > IDs+desc > description
+    hugo_gene_name TEXT, -- from biomart > IDs+desc > description
     gene_symbol_synonyms TEXT -- ???
 );
 

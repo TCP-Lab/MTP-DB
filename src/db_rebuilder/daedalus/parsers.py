@@ -96,8 +96,6 @@ def get_transcripts_ids_transaction(mart_data):
 def get_refseq_transaction(mart_data):
     refseq = mart_data["IDs+desc"][["ensembl_transcript_id_version", "refseq_mrna"]]
 
-    refseq = refseq.drop_duplicates()
-
     refseq = pd.DataFrame(
         {
             "refseq_transcript_id": refseq["refseq_mrna"],
@@ -108,4 +106,60 @@ def get_refseq_transaction(mart_data):
         }
     )
 
+    refseq = refseq.drop_duplicates()
+
     return to_transaction(refseq, "mrna_refseq")
+
+
+def get_protein_structures_transaction(mart_data):
+    proteins = pd.DataFrame(
+        {
+            "enst": lmap(
+                lambda x: split_ensembl_ids(x).full_id_no_version,
+                mart_data["IDs+desc"]["ensembl_transcript_id_version"],
+            ),
+            "pdb_id": mart_data["IDs+desc"]["pdb"],
+            "refseq_protein_id": 0,
+        }
+    )
+
+    log.warn("Impossible to populate refseq_protein IDs: missing data.")
+
+    proteins = proteins.drop_duplicates()
+
+    return to_transaction(proteins, "protein_structures")
+
+
+def get_gene_names_transaction(mart_data):
+
+    desc_data: pd.DataFrame = mart_data["IDs+desc"][
+        ["ensembl_gene_id_version", "description"]
+    ]
+    hugo_data: pd.DataFrame = mart_data["hugo_symbols"]
+
+    desc_data = desc_data.drop_duplicates()
+
+    # Merge the ensg and the data
+    log.info("Merging ensembl gene IDs with HUGO symbols...")
+    data = hugo_data.merge(desc_data, on="ensembl_gene_id_version")
+
+    # Get rid of the descriptions
+    data = pd.DataFrame(
+        {
+            "ensg": lmap(
+                lambda x: split_ensembl_ids(x).full_id_no_version,
+                data["ensembl_gene_id_version"],
+            ),
+            "hugo_gene_id": data["hgnc_id"],
+            "hugo_gene_symbol": data["hgnc_symbol"],
+            "gene_symbol_synonyms": pd.NA,
+            "hugo_gene_name": data["description"],
+        }
+    )
+
+    log.warning("IMPOSSIBLE TO FIND GENE SYNONYMS.")
+    # TODO:: sanity checks?
+
+    data = data.drop_duplicates()
+
+    return to_transaction(data, "gene_names")

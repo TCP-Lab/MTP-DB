@@ -7,9 +7,10 @@ from pathlib import Path
 from sqlite3 import Connection
 
 from daedalus import SCHEMA
-from daedalus.errors import Abort
 from daedalus.parsers import (
     get_gene_ids_transaction,
+    get_gene_names_transaction,
+    get_protein_structures_transaction,
     get_refseq_transaction,
     get_transcripts_ids_transaction,
 )
@@ -18,8 +19,10 @@ from daedalus.retrievers import (
     retrieve_biomart,
     retrieve_cosmic_genes,
     retrieve_iuphar,
+    retrieve_iuphar_compiled,
     retrieve_tcdb,
 )
+from daedalus.utils import execute_transaction
 
 log = logging.getLogger(__name__)
 
@@ -36,7 +39,7 @@ def generate_database(path: Path, auth_hash) -> None:
             make_empty(connection)
         except sqlite3.OperationalError:
             log.error("Database already exists. Refusing to overwrite.")
-            raise Abort
+            raise
 
     retrieve_cosmic_wrapper = partial(retrieve_cosmic_genes, auth_hash)
 
@@ -45,6 +48,7 @@ def generate_database(path: Path, auth_hash) -> None:
             "biomart": retrieve_biomart,
             "cosmic": retrieve_cosmic_wrapper,
             "iuphar": retrieve_iuphar,
+            "iuphar_compiled": retrieve_iuphar_compiled,
             "tcdb": retrieve_tcdb,
         }
     )
@@ -67,32 +71,52 @@ def generate_database(path: Path, auth_hash) -> None:
     ## TEMP -- remove me
 
     log.info("Connecting to empty database...")
-    connection = sqlite3.connect(path / "db.sqlite")
+    connection = sqlite3.connect(path / "db.sqlite", isolation_level=None)
 
-    ## -- gene_ids table --
-    log.info("Populating IDs...")
-    with cache("biomart") as mart_data:
-        transaction = get_gene_ids_transaction(mart_data)
+    if False:
+        ## -- gene_ids table --
+        log.info("Populating IDs...")
+        with cache("biomart") as mart_data:
+            transaction = get_gene_ids_transaction(mart_data)
 
-        log.info("Executing transaction...")
-        connection.execute(transaction)
-        connection.commit()
+            execute_transaction(connection, transaction)
 
-    gc.collect()
+        gc.collect()
 
-    ## -- transcript_ids table --
-    log.info("Populating transcript IDs...")
-    with cache("biomart") as mart_data:
-        transaction = get_transcripts_ids_transaction(mart_data)
+        ## -- transcript_ids table --
+        log.info("Populating transcript IDs...")
+        with cache("biomart") as mart_data:
+            transaction = get_transcripts_ids_transaction(mart_data)
 
-        log.info("Executing transaction...")
-        connection.execute(transaction)
-        connection.commit()
+            execute_transaction(connection, transaction)
 
-    gc.collect()
+        gc.collect()
 
-    with cache("biomart") as mart_data:
-        transaction = get_refseq_transaction(mart_data)
+        ## -- mrna_refseq table --
+        log.info("Populating refseq_mrna...")
+        with cache("biomart") as mart_data:
+            transaction = get_refseq_transaction(mart_data)
 
-        print(transaction[:500])
+            execute_transaction(connection, transaction)
+
+        gc.collect()
+
+        ## -- protein_structures table --
+        log.info("Populating pdb structure identifiers...")
+        with cache("biomart") as mart_data:
+            transaction = get_protein_structures_transaction(mart_data)
+
+            execute_transaction(connection, transaction)
+
+        ## -- gene_names table --
+        log.info("Populating gene names...")
+        with cache("biomart") as mart_data:
+            transaction = get_gene_names_transaction(mart_data)
+
+            print(transaction[:1000])
+
+            execute_transaction(connection, transaction)
+        gc.collect()
+
+    connection.close()
     log.info(f"Finished populating database. Saved in {path / 'db.sqlite'}")
