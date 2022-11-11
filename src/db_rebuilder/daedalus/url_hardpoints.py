@@ -91,5 +91,7 @@ COSMIC = {
 
 IUPHAR_DB = "https://www.guidetopharmacology.org/DATA/public_iuphardb_v2022.2.zip"
 IUPHAR_COMPILED = {
-    "targets+families": "https://www.guidetopharmacology.org/DATA/targets_and_families.csv"
+    "targets+families": "https://www.guidetopharmacology.org/DATA/targets_and_families.csv",
+    "ligands": "https://www.guidetopharmacology.org/DATA/ligands.csv",
+    "interactions": "https://www.guidetopharmacology.org/DATA/interactions.csv",
 }

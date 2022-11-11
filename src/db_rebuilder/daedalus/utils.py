@@ -229,3 +229,20 @@ def split_gene_description(desc) -> GeneDescription:
         source=match.groups()[1],
         accession=match.groups()[2],
     )
+
+
+def recast(data: pd.DataFrame, mold: dict) -> pd.DataFrame:
+    relevant: pd.DataFrame = data[list(mold.keys())]
+    return relevant.rename(columns=mold)
+
+
+def expand_column(data: pd.DataFrame, col: str, sep: str) -> pd.DataFrame:
+    def split_strings(x):
+        if isinstance(x, str):
+            return x.split(sep)
+        else:
+            return x
+
+    data[col] = lmap(lambda x: split_strings(x), data[col])
+
+    return data.explode(col).drop_duplicates()

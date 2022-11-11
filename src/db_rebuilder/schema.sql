@@ -36,36 +36,35 @@ CREATE TABLE gene_names (
     gene_symbol_synonyms TEXT -- ???
 );
 
-CREATE TABLE iuphar_ids (
-    ensg INT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_gene_id_version
-    target_id TEXT UNIQUE NOT NULL, -- unsure if this is unique
+CREATE TABLE iuphar_targets (
+    ensg TEXT,
+    target_id TEXT NOT NULL, -- unsure if this is unique UPDATE: it is not
     target_name TEXT NOT NULL, --
     family_id INT NOT NULL,
     family_name TEXT NOT NULL
+    -- Add an "aliases" col with the 'target systematic' + 'target abbreviated' cols
 );
 
 CREATE TABLE iuphar_ligands (
-    ligand_id TEXT PRIMARY KEY,
-    is_proteic INT NOT NULL, -- Bool
-    ensg INT UNIQUE, -- If is_proteic
-    gene_symbol TEXT, -- If is_proteic
-    pubchem_sid INT, -- If not is_proteic,
-    is_endogenous INT, -- bool
-    name TEXT NOT NULL
+    ligand_id TEXT PRIMARY KEY, -- Ligand ID
+    ligand_type TEXT NOT NULL, -- Type
+    ligand_name TEXT NOT NULL, -- Name
+    ensembl_id INT, -- Ensembl ID (this has non-human proteins)
+    pubchem_sid INT, -- PubChem SID
+    pubchem_cid INT, -- PubChem CID
+    is_approved_drug INT, -- Approved
+    is_withdrawn_drug INT -- Withdrawn
 );
 
 CREATE TABLE iuphar_interaction (
-    interaction_id TEXT PRIMARY KEY,
-    target_id TEXT NOT NULL,
-    ligand_id TEXT NOT NULL,
-    is_approved_drug INT NOT NULL, -- bool
-    interaction_type TEXT NOT NULL,
-    ligand_action TEXT,
-    ligand_action_extras TEXT,
-    ligand_selectivity TEXT,
-    is_primary_target INT, -- bool
-    receptor_site TEXT,
-    ligand_context TEXT
+    -- Filter the csv to just human stuff
+    target_id INT, -- Target ID (why not null?)
+    ligand_id INT NOT NULL, -- Ligand ID
+    is_approved_drug INT, -- Approved
+    ligand_action TEXT, -- Action
+    ligand_selectivity TEXT, -- Selectivity
+    is_endogenous INT, -- Endogenous
+    is_primary_target INT -- Primary Target
 );
 
 CREATE TABLE tcdb_ids (
@@ -101,6 +100,7 @@ CREATE TABLE transcript_gene_ontology (
     enst TEXT
 );
 
+----- NOVEL DATA ------
 -- "Channels" are all
 CREATE TABLE channels (
     enst INT PRIMARY KEY,

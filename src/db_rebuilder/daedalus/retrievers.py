@@ -202,7 +202,7 @@ def retrieve_iuphar_compiled():
         bytes = pbar_get(item)
 
         log.info(f"Casting {key}...")
-        answer[key] = pd.read_csv(gzip.GzipFile(fileobj=bytes))
+        answer[key] = pd.read_csv(gzip.GzipFile(fileobj=bytes), skiprows=1)
 
     log.info("Done retrieving IUPHAR casted data.")
     return answer
