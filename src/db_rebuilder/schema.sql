@@ -69,17 +69,23 @@ CREATE TABLE iuphar_interaction (
 );
 
 CREATE TABLE tcdb_ids (
-    enst INT PRIMARY KEY,
-    tcid TEXT UNIQUE, -- e.g. 1.A.4.5.11
+    ensp INT,
+    tcid TEXT, -- e.g. 1.A.4.5.11
     tcid_type INT, -- e.g. 1
     tcid_subtype TEXT, -- e.g. 1.A
     tcid_family TEXT, -- e.g. 1.A.4
-    tcid_subfamily TEXT -- e.g. 1.A.4.5
+    tcid_subfamily TEXT, -- e.g. 1.A.4.5
+    tcid_superfamily TEXT -- e.g. 1.A.4 - but only the superfamily
 );
 
-CREATE TABLE tcdb_subfamily (
-    tcid_subfamily TEXT PRIMARY KEY,
-    subfamily_name TEXT
+CREATE TABLE tcdb_types (
+    tcid_type INT,
+    type_name TEXT
+);
+
+CREATE TABLE tcdb_subtypes (
+    tcid_subtype TEXT,
+    subtype_name TEXT
 );
 
 -- This is from tcdb_TC_definitions.csv
@@ -94,11 +100,12 @@ CREATE TABLE tcdb_families (
 CREATE TABLE gene_ontology_description (
     term TEXT PRIMARY KEY,
     term_name TEXT,
-    onthology_type TEXT
+    go_namespace TEXT,
+    definition TEXT
 );
 
 CREATE TABLE transcript_gene_ontology (
-    term TEXT PRIMARY KEY,
+    term TEXT,
     enst TEXT
 );
 

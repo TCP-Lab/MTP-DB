@@ -246,3 +246,43 @@ def expand_column(data: pd.DataFrame, col: str, sep: str) -> pd.DataFrame:
     data[col] = lmap(lambda x: split_strings(x), data[col])
 
     return data.explode(col).drop_duplicates()
+
+
+@dataclass
+class TcId:
+    type: str
+    subtype: str
+    family: str
+    subfamily: str
+    full: str
+
+
+def split_tcdb_ids(tcdb_id: str) -> TcId:
+    parts = tcdb_id.split(".")
+
+    assert len(parts) == 5, f"Invalid TCDB id ({tcdb_id}). Is it complete?"
+
+    obj = TcId(
+        type=str(parts[0]),
+        subtype=".".join(parts[0:2]),
+        family=".".join(parts[0:3]),
+        subfamily=".".join(parts[0:4]),
+        full=tcdb_id,
+    )
+
+    return obj
+
+
+@dataclass
+class RefseqId:
+    full: str
+    id: str
+    version: str
+
+
+def split_refseq_ids(refseq_id: str) -> RefseqId:
+    parts = refseq_id.split(".")
+
+    assert len(parts) == 2, f"Invalid Refseq ID {refseq_id}. Is it complete?"
+
+    return RefseqId(full=refseq_id, id=parts[0], version=parts[1])

@@ -42,7 +42,7 @@ BIOMART_XML_REQUESTS = {
 </Query>""",
         "colnames": ["hgnc_id", "hgnc_symbol", "ensembl_gene_id_version"],
     },
-    "GO_transcrips": {
+    "GO_transcripts": {
         "query": """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
 <Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "1" count = "" datasetConfigVersion = "0.6" >

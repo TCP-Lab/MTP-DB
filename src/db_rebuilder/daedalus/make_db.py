@@ -10,11 +10,14 @@ from daedalus import SCHEMA
 from daedalus.parsers import (
     get_gene_ids_transaction,
     get_gene_names_transaction,
+    get_go_transactions,
     get_iuphar_interaction_transaction,
     get_iuphar_ligands_transaction,
     get_iuphar_targets_transaction,
     get_protein_structures_transaction,
     get_refseq_transaction,
+    get_tcdb_definitions_transactions,
+    get_tcdb_ids_transaction,
     get_transcripts_ids_transaction,
 )
 from daedalus.retrievers import (
@@ -76,75 +79,96 @@ def generate_database(path: Path, auth_hash) -> None:
     log.info("Connecting to empty database...")
     connection = sqlite3.connect(path / "db.sqlite", isolation_level=None)
 
-    if True:
-        ## -- gene_ids table --
-        log.info("Populating IDs...")
-        with cache("biomart") as mart_data:
-            transaction = get_gene_ids_transaction(mart_data)
+    ## -- gene_ids table --
+    log.info("Populating IDs...")
+    with cache("biomart") as mart_data:
+        transaction = get_gene_ids_transaction(mart_data)
 
-            execute_transaction(connection, transaction)
+        execute_transaction(connection, transaction)
 
-        gc.collect()
+    gc.collect()
 
-        ## -- transcript_ids table --
-        log.info("Populating transcript IDs...")
-        with cache("biomart") as mart_data:
-            transaction = get_transcripts_ids_transaction(mart_data)
+    ## -- transcript_ids table --
+    log.info("Populating transcript IDs...")
+    with cache("biomart") as mart_data:
+        transaction = get_transcripts_ids_transaction(mart_data)
 
-            execute_transaction(connection, transaction)
+        execute_transaction(connection, transaction)
 
-        gc.collect()
+    gc.collect()
 
-        ## -- mrna_refseq table --
-        log.info("Populating refseq_mrna...")
-        with cache("biomart") as mart_data:
-            transaction = get_refseq_transaction(mart_data)
+    ## -- mrna_refseq table --
+    log.info("Populating refseq_mrna...")
+    with cache("biomart") as mart_data:
+        transaction = get_refseq_transaction(mart_data)
 
-            execute_transaction(connection, transaction)
+        execute_transaction(connection, transaction)
 
-        gc.collect()
+    gc.collect()
 
-        ## -- protein_structures table --
-        log.info("Populating pdb structure identifiers...")
-        with cache("biomart") as mart_data:
-            transaction = get_protein_structures_transaction(mart_data)
+    ## -- protein_structures table --
+    log.info("Populating pdb structure identifiers...")
+    with cache("biomart") as mart_data:
+        transaction = get_protein_structures_transaction(mart_data)
 
-            execute_transaction(connection, transaction)
+        execute_transaction(connection, transaction)
 
-        ## -- gene_names table --
-        log.info("Populating gene names...")
-        with cache("biomart") as mart_data:
-            transaction = get_gene_names_transaction(mart_data)
+    ## -- gene_names table --
+    log.info("Populating gene names...")
+    with cache("biomart") as mart_data:
+        transaction = get_gene_names_transaction(mart_data)
 
-            execute_transaction(connection, transaction)
-        gc.collect()
+        execute_transaction(connection, transaction)
+    gc.collect()
 
-        ## -- iuphar_ids --
-        log.info("Populating iuphar targets...")
-        with cache("iuphar_compiled") as iuphar:
-            transaction = get_iuphar_targets_transaction(iuphar)
+    ## -- iuphar_ids --
+    log.info("Populating iuphar targets...")
+    with cache("iuphar_compiled") as iuphar:
+        transaction = get_iuphar_targets_transaction(iuphar)
 
-            execute_transaction(connection, transaction)
-        gc.collect()
+        execute_transaction(connection, transaction)
+    gc.collect()
 
-        ## -- iuphar_ligands --
-        log.info("Populating iuphar ligands...")
-        with cache("iuphar_compiled") as iuphar:
-            transaction = get_iuphar_ligands_transaction(iuphar)
+    ## -- iuphar_ligands --
+    log.info("Populating iuphar ligands...")
+    with cache("iuphar_compiled") as iuphar:
+        transaction = get_iuphar_ligands_transaction(iuphar)
 
-            execute_transaction(connection, transaction)
-        gc.collect()
+        execute_transaction(connection, transaction)
+    gc.collect()
 
-        ## -- iuphar_ids --
-        log.info("Populating iuphar interactions...")
-        with cache("iuphar_compiled") as iuphar:
-            transaction = get_iuphar_interaction_transaction(iuphar)
+    ## -- iuphar_interaction --
+    log.info("Populating iuphar interactions...")
+    with cache("iuphar_compiled") as iuphar:
+        transaction = get_iuphar_interaction_transaction(iuphar)
 
-            execute_transaction(connection, transaction)
-        gc.collect()
+        execute_transaction(connection, transaction)
+    gc.collect()
 
     ## -- TCDB ids --
     log.info("Populating TCDB to Ensembl IDs...")
+    with cache("tcdb") as tcdb, cache("biomart") as mart_data:
+        transaction = get_tcdb_ids_transaction(tcdb, mart_data)
+
+        execute_transaction(connection, transaction),
+    gc.collect()
+
+    ## -- TCDB types / subtypes / families --
+    log.info("Populating TCDB definitions...")
+    with cache("tcdb") as tcdb:
+        transactions = get_tcdb_definitions_transactions(tcdb)
+
+        for trans in transactions:
+            execute_transaction(connection, trans)
+    gc.collect()
+
+    log.info("Populating Gene Ontology tables...")
+    with cache("biomart") as mart_data:
+        transactions = get_go_transactions(mart_data)
+
+        for trans in transactions:
+            execute_transaction(connection, trans)
+    gc.collect()
 
     connection.close()
     log.info(f"Finished populating database. Saved in {path / 'db.sqlite'}")
