@@ -119,15 +119,24 @@ def get_protein_structures_transaction(mart_data):
                 mart_data["IDs+desc"]["ensembl_transcript_id_version"],
             ),
             "pdb_id": mart_data["IDs+desc"]["pdb"],
-            "refseq_protein_id": 0,
         }
     )
 
-    log.warn("Impossible to populate refseq_protein IDs: missing data.")
+    ids = recast(
+        mart_data["IDs"],
+        {
+            "ensembl_transcript_id": "enst",
+            "ensembl_peptide_id": "ensp",
+            "refseq_peptide": "refseq_protein_id",
+        },
+    )
+
+    log.info("Adding refseq and ensp data...")
+    proteins = proteins.merge(ids, on=["enst"])
 
     proteins = proteins.drop_duplicates()
 
-    return to_transaction(proteins, "protein_structures")
+    return to_transaction(proteins, "protein_ids")
 
 
 def get_gene_names_transaction(mart_data):

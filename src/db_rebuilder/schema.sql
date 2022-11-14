@@ -21,10 +21,11 @@ CREATE TABLE mrna_refseq (
 );
 
 -- There are more pdb_ids than ensts, as a single transcript can have multiple deposited structs
-CREATE TABLE protein_structures (
-    enst TEXT, -- from biomart > IDs+desc > ensembl_transcript_id_version
+CREATE TABLE protein_ids (
+    enst TEXT, -- from biomart > IDs > ensembl_transcript_id
+    ensp TEXT, -- from biomart > IDs > ensembl_peptide_id
     pdb_id TEXT, -- from biomart > IDs+desc > pdb
-    refseq_protein_id TEXT -- missing - to be downloaded?
+    refseq_protein_id TEXT -- from biomart > IDs > refseq_peptide
 );
 
 CREATE TABLE gene_names (
@@ -81,6 +82,7 @@ CREATE TABLE tcdb_subfamily (
     subfamily_name TEXT
 );
 
+-- This is from tcdb_TC_definitions.csv
 CREATE TABLE tcdb_families (
     tcid_family TEXT PRIMARY KEY,
     family_name TEXT,

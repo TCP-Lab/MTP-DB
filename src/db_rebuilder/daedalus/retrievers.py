@@ -32,7 +32,7 @@ def retrieve_biomart() -> dict[pd.DataFrame]:
         log.info(f"Attempting to retrieve {key}...")
         data = pbar_get(url=BIOMART, params={"query": value["query"]})
         log.info("Casting response...")
-        df = pd.read_csv(data, names=value["colnames"])
+        df = pd.read_csv(data, names=value["colnames"], low_memory=False)
 
         result[key] = df
 
@@ -202,7 +202,9 @@ def retrieve_iuphar_compiled():
         bytes = pbar_get(item)
 
         log.info(f"Casting {key}...")
-        answer[key] = pd.read_csv(gzip.GzipFile(fileobj=bytes), skiprows=1)
+        answer[key] = pd.read_csv(
+            gzip.GzipFile(fileobj=bytes), skiprows=1, low_memory=False
+        )
 
     log.info("Done retrieving IUPHAR casted data.")
     return answer

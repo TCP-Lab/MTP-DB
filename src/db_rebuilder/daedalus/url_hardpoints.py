@@ -3,7 +3,7 @@ BIOMART_XML_REQUESTS = {
     "IDs+desc": {
         "query": """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
-<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
+<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "1" count = "" datasetConfigVersion = "0.6" >
 
 	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
 		<Filter name = "biotype" value = "protein_coding"/>
@@ -31,7 +31,7 @@ BIOMART_XML_REQUESTS = {
     "hugo_symbols": {
         "query": """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
-<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
+<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "1" count = "" datasetConfigVersion = "0.6" >
 
 	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
 		<Filter name = "biotype" value = "protein_coding"/>
@@ -45,7 +45,7 @@ BIOMART_XML_REQUESTS = {
     "GO_transcrips": {
         "query": """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
-<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
+<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "1" count = "" datasetConfigVersion = "0.6" >
 
 	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
 		<Filter name = "biotype" value = "protein_coding"/>
@@ -64,6 +64,34 @@ BIOMART_XML_REQUESTS = {
             "name_1006",
             "go_linkage_type",
             "namespace_1003",
+        ],
+    },
+    "IDs": {
+        "query": """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Query>
+<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
+
+	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
+		<Filter name = "biotype" value = "protein_coding"/>
+		<Attribute name = "ensembl_gene_id" />
+		<Attribute name = "ensembl_transcript_id" />
+		<Attribute name = "ensembl_peptide_id" />
+		<Attribute name = "version" />
+		<Attribute name = "transcript_version" />
+		<Attribute name = "peptide_version" />
+		<Attribute name = "refseq_mrna" />
+		<Attribute name = "refseq_peptide" />
+	</Dataset>
+</Query>""",
+        "colnames": [
+            "ensembl_gene_id",
+            "ensembl_transcript_id",
+            "ensembl_peptide_id",
+            "version",
+            "transcript_version",
+            "peptide_version",
+            "refseq_mrna",
+            "refseq_peptide",
         ],
     },
 }
