@@ -144,16 +144,17 @@ def split_ensembl_ids(ensembl_id: str):
     return parsed
 
 
+def tolerant_is_nan(item):
+    try:
+        check = math.isnan(item)
+    except TypeError:
+        check = False
+
+    return check
+
+
 def represent_sql_type(data: pd.Series) -> list:
     result = []
-
-    def tolerant_is_nan(item):
-        try:
-            check = math.isnan(item)
-        except TypeError:
-            check = False
-
-        return check
 
     for item in data:
         if pd.isnull(item) or tolerant_is_nan(item):
@@ -173,6 +174,9 @@ def to_transaction(data: pd.DataFrame, table: str) -> str:
 
     sql = ["INSERT INTO " + table + " (" + ", ".join(data.columns) + ") VALUES "]
     for _, row in tqdm(data.iterrows(), total=data.shape[0]):
+        if all(lmap(lambda x: pd.isnull(x) or tolerant_is_nan(x), row.values)):
+            # This row is all NULLs. Skip it
+            continue
         sql.append("(" + ", ".join(represent_sql_type(row.values)) + "),")
     sql = "\n".join(sql)
     sql = sql.strip()[:-1]  # remove the trailing \n and the last comma

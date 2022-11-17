@@ -269,6 +269,8 @@ def get_tcdb_ids_transaction(tcdb_data, mart_data):
 
     log.warn("Cannot populate tcid_superfamilies at this time.")
 
+    tcdb_ids = tcdb_ids.drop_duplicates()
+
     return to_transaction(tcdb_ids, "tcdb_ids")
 
 
@@ -378,14 +380,14 @@ def get_go_transactions(mart_data):
     data = recast(
         mart_data["GO_transcripts"],
         {
-            "ensembl_transcript_id_version": "enst",
+            "ensembl_transcript_id": "enst",
             "go_id": "term",
         },
     ).drop_duplicates()
     transactions.append(to_transaction(data, "transcript_gene_ontology"))
 
     data = recast(
-        mart_data["GO_transcripts"],
+        mart_data["GO_definitions"],
         {
             "go_id": "term",
             "name_1006": "term_name",

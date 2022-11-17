@@ -1,5 +1,5 @@
 CREATE TABLE gene_ids (
-    ensg_version TEXT NOT NULL, -- from biomart > IDs+desc > ensembl_gene_id_version
+    ensg_version TEXT UNIQUE NOT NULL, -- from biomart > IDs+desc > ensembl_gene_id_version
     ensg TEXT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_gene_id_version
     ensg_version_leaf INT NOT NULL -- from biomart > IDs+desc > ensembl_gene_id_version
 );
@@ -69,32 +69,32 @@ CREATE TABLE iuphar_interaction (
 );
 
 CREATE TABLE tcdb_ids (
-    ensp INT,
-    tcid TEXT, -- e.g. 1.A.4.5.11
-    tcid_type INT, -- e.g. 1
-    tcid_subtype TEXT, -- e.g. 1.A
-    tcid_family TEXT, -- e.g. 1.A.4
-    tcid_subfamily TEXT, -- e.g. 1.A.4.5
-    tcid_superfamily TEXT -- e.g. 1.A.4 - but only the superfamily
+    ensp TEXT NOT NULL,
+    tcid TEXT NOT NULL, -- e.g. 1.A.4.5.11
+    tcid_type INT NOT NULL, -- e.g. 1
+    tcid_subtype TEXT NOT NULL, -- e.g. 1.A
+    tcid_family TEXT NOT NULL, -- e.g. 1.A.4
+    tcid_subfamily TEXT NOT NULL, -- e.g. 1.A.4.5
+    tcid_superfamily TEXT -- NOT NULL (eventually) e.g. 1.A.4 - but only the superfamily
 );
 
 CREATE TABLE tcdb_types (
-    tcid_type INT,
-    type_name TEXT
+    tcid_type INT PRIMARY KEY,
+    type_name TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE tcdb_subtypes (
-    tcid_subtype TEXT,
-    subtype_name TEXT
+    tcid_subtype TEXT PRIMARY KEY,
+    subtype_name TEXT UNIQUE NOT NULL
 );
 
 -- This is from tcdb_TC_definitions.csv
 CREATE TABLE tcdb_families (
     tcid_family TEXT PRIMARY KEY,
-    family_name TEXT,
+    family_name TEXT NOT NULL,
     -- There are only family IDs, and some are considered superfamilies,
     -- so we can just store if the family is, in reality, a superfamily
-    is_superfamily INT -- bool
+    is_superfamily INT NOT NULL -- bool
 );
 
 CREATE TABLE gene_ontology_description (
@@ -106,7 +106,7 @@ CREATE TABLE gene_ontology_description (
 
 CREATE TABLE transcript_gene_ontology (
     term TEXT,
-    enst TEXT
+    enst TEXT NOT NULL
 );
 
 ----- NOVEL DATA ------

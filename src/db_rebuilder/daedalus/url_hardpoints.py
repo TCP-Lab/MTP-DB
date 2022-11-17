@@ -49,19 +49,28 @@ BIOMART_XML_REQUESTS = {
 
 	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
 		<Filter name = "biotype" value = "protein_coding"/>
-		<Attribute name = "ensembl_transcript_id_version" />
+		<Attribute name = "ensembl_transcript_id" />
 		<Attribute name = "go_id" />
-		<Attribute name = "definition_1006" />
+	</Dataset>
+</Query>""",
+        "colnames": ["ensembl_transcript_id", "go_id"],
+    },
+    "GO_definitions": {
+        "query": """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Query>
+<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "1" count = "" datasetConfigVersion = "0.6" >
+
+	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
+		<Attribute name = "go_id" />
 		<Attribute name = "name_1006" />
-		<Attribute name = "go_linkage_type" />
+		<Attribute name = "definition_1006" />
 		<Attribute name = "namespace_1003" />
 	</Dataset>
 </Query>""",
         "colnames": [
-            "ensembl_transcript_id_version",
             "go_id",
-            "definition_1006",
             "name_1006",
+            "definition_1006",
             "go_linkage_type",
             "namespace_1003",
         ],
@@ -69,7 +78,7 @@ BIOMART_XML_REQUESTS = {
     "IDs": {
         "query": """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
-<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
+<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "1" count = "" datasetConfigVersion = "0.6" >
 
 	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
 		<Filter name = "biotype" value = "protein_coding"/>
