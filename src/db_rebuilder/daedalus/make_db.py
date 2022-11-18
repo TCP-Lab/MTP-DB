@@ -7,6 +7,7 @@ from pathlib import Path
 from sqlite3 import Connection
 
 from daedalus import SCHEMA
+from daedalus.errors import Abort
 from daedalus.parsers import (
     get_gene_ids_transaction,
     get_gene_names_transaction,
@@ -34,21 +35,40 @@ log = logging.getLogger(__name__)
 
 
 def make_empty(connection: Connection) -> None:
+    """Run the db schema on a connection
+
+    Most often, it is run on an empty database, hence the name "make_empty".
+
+    Args:
+        connection (Connection): The sqlite connection to use.
+    """
     connection.executescript(SCHEMA)
 
 
 def generate_database(path: Path, auth_hash) -> None:
+    """Generate the database - downloading and parsing all the data.
+
+    Fails if a db already exist in the target path.
+
+    Args:
+        path (Path): The path to generate the database to. Has to point to a folder.
+            It will always be "db.sqlite".
+        auth_hash (str): The COSMIC authentication hash used to log in to the COSMIC
+            server to download the COSMIC data.
+    """
     log.info("Making new database.")
-    log.info(f"Cosmic hash: {auth_hash}")
-    with sqlite3.connect(path / "db.sqlite") as connection:
-        try:
-            make_empty(connection)
-        except sqlite3.OperationalError:
-            log.error("Database already exists. Refusing to overwrite.")
-            raise
+
+    database_path = path / "db.sqlite"
+
+    if database_path.exists():
+        log.error("Database already exists: Refusing to overwrite.")
+        raise Abort
+
+    log.info("Executing schema...")
+    with sqlite3.connect(database_path) as connection:
+        make_empty(connection)
 
     retrieve_cosmic_wrapper = partial(retrieve_cosmic_genes, auth_hash)
-
     cache = ResourceCache(
         hooks={
             "biomart": retrieve_biomart,
@@ -77,8 +97,24 @@ def generate_database(path: Path, auth_hash) -> None:
     ## TEMP -- remove me
 
     log.info("Connecting to empty database...")
-    connection = sqlite3.connect(path / "db.sqlite", isolation_level=None)
+    connection = sqlite3.connect(database_path, isolation_level=None)
 
+    log.info("Populating database with data...")
+    populate_database(connection, cache)
+
+    connection.close()
+    log.info(f"Finished populating database. Saved in {database_path}")
+
+
+def populate_database(connection: Connection, cache: ResourceCache) -> None:
+    """Populate an empty database with data
+
+    The database has to be initialized with the schema.
+
+    Args:
+        connection (Connection): The connection to act upon
+        cache (ResourceCache): The cache with the data used by the parsers.
+    """
     ## -- gene_ids table --
     log.info("Populating IDs...")
     with cache("biomart") as mart_data:
@@ -169,6 +205,3 @@ def generate_database(path: Path, auth_hash) -> None:
         for trans in transactions:
             execute_transaction(connection, trans)
     gc.collect()
-
-    connection.close()
-    log.info(f"Finished populating database. Saved in {path / 'db.sqlite'}")

@@ -13,6 +13,10 @@ from daedalus.utils import (
 
 log = logging.getLogger(__name__)
 
+## NOTE: I don't add docstrings for these functions as they are a bit redundant:
+# Imagine that the typical docstring is "Parses the input data to digested data
+# for the database".
+
 
 def get_gene_ids_transaction(mart_data):
     log.info("Making gene_ids table transaction")

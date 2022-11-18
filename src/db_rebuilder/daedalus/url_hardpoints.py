@@ -1,4 +1,5 @@
 BIOMART = "http://www.ensembl.org/biomart/martservice"
+"""The Url used by Biomart to accept requests"""
 BIOMART_XML_REQUESTS = {
     "IDs+desc": {
         "query": """<?xml version="1.0" encoding="UTF-8"?>
@@ -104,7 +105,10 @@ BIOMART_XML_REQUESTS = {
         ],
     },
 }
+"""Hardpoints with Biomart data.
 
+In the form of 'table_name': {'query': xlm_query, 'colnames': [list of colnames]}
+"""
 
 TCDB = {
     "GO_to_TC": {
@@ -120,15 +124,22 @@ TCDB = {
         "colnames": ["tc_id", "definition"],
     },
 }
+"""TCDB hardpoints
+
+In the form of 'table_name': {'url': the download url, 'colnames': [list of colnames]}
+"""
 
 COSMIC = {
     "census": "https://cancer.sanger.ac.uk/cosmic/file_download/GRCh38/cosmic/v96/cancer_gene_census.csv",
     "IDs": "https://cancer.sanger.ac.uk/cosmic/file_download/GRCh38/cosmic/v96/CosmicHGNC.tsv.gz",
 }
+"""COSMIC download urls of precompiled data"""
 
 IUPHAR_DB = "https://www.guidetopharmacology.org/DATA/public_iuphardb_v2022.2.zip"
+"""URL to the download of the full IUPHAR database"""
 IUPHAR_COMPILED = {
     "targets+families": "https://www.guidetopharmacology.org/DATA/targets_and_families.csv",
     "ligands": "https://www.guidetopharmacology.org/DATA/ligands.csv",
     "interactions": "https://www.guidetopharmacology.org/DATA/interactions.csv",
 }
+"""URLs to the compiled IUPHAR data from their downloads page"""
