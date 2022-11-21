@@ -390,12 +390,14 @@ def get_go_transactions(mart_data):
     ).drop_duplicates()
     transactions.append(to_transaction(data, "transcript_gene_ontology"))
 
+    print(mart_data["GO_definitions"])
+
     data = recast(
         mart_data["GO_definitions"],
         {
             "go_id": "term",
             "name_1006": "term_name",
-            "namespace_1003": "go_namespace",
+            "go_linkage_type": "go_namespace",
             "definition_1006": "definition",
         },
     ).drop_duplicates()
