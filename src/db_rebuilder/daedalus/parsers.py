@@ -375,5 +375,3 @@ def get_tcdb_definitions_transactions(tcdb_data):
     transactions.append(to_transaction(tcdb_families, "tcdb_families"))
 
     return transactions
-
-

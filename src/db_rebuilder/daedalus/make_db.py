@@ -11,7 +11,6 @@ from daedalus.errors import Abort
 from daedalus.parsers import (
     get_gene_ids_transaction,
     get_gene_names_transaction,
-    get_go_transactions,
     get_iuphar_interaction_transaction,
     get_iuphar_ligands_transaction,
     get_iuphar_targets_transaction,
@@ -197,5 +196,3 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
         for trans in transactions:
             execute_transaction(connection, trans)
     gc.collect()
-
-    
