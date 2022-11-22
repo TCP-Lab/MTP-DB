@@ -113,7 +113,7 @@ def retrieve_cosmic_genes(auth_hash) -> DataDict:
             try:
                 data = pd.read_csv(data)
             except UnicodeDecodeError:
-                log.info("Failed to parse data. Trying to uncompress...")
+                log.info("Failed to parse data. Trying to decompress...")
                 data = pd.read_csv(gzip.GzipFile(fileobj=data))
 
         result[key] = data

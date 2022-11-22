@@ -97,17 +97,6 @@ CREATE TABLE tcdb_families (
     is_superfamily INT NOT NULL -- bool
 );
 
-CREATE TABLE gene_ontology_description (
-    term TEXT PRIMARY KEY,
-    term_name TEXT,
-    go_namespace TEXT,
-    definition TEXT
-);
-
-CREATE TABLE transcript_gene_ontology (
-    term TEXT,
-    enst TEXT NOT NULL
-);
 
 ----- NOVEL DATA ------
 -- "Channels" are all

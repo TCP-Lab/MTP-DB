@@ -198,10 +198,4 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
             execute_transaction(connection, trans)
     gc.collect()
 
-    log.info("Populating Gene Ontology tables...")
-    with cache("biomart") as mart_data:
-        transactions = get_go_transactions(mart_data)
-
-        for trans in transactions:
-            execute_transaction(connection, trans)
-    gc.collect()
+    

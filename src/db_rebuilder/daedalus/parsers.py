@@ -377,30 +377,3 @@ def get_tcdb_definitions_transactions(tcdb_data):
     return transactions
 
 
-def get_go_transactions(mart_data):
-    log.info("Extracting terms...")
-    transactions = []
-
-    data = recast(
-        mart_data["GO_transcripts"],
-        {
-            "ensembl_transcript_id": "enst",
-            "go_id": "term",
-        },
-    ).drop_duplicates()
-    transactions.append(to_transaction(data, "transcript_gene_ontology"))
-
-    print(mart_data["GO_definitions"])
-
-    data = recast(
-        mart_data["GO_definitions"],
-        {
-            "go_id": "term",
-            "name_1006": "term_name",
-            "go_linkage_type": "go_namespace",
-            "definition_1006": "definition",
-        },
-    ).drop_duplicates()
-    transactions.append(to_transaction(data, "gene_ontology_description"))
-
-    return transactions
