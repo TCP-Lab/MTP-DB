@@ -101,37 +101,38 @@ CREATE TABLE tcdb_families (
 ----- NOVEL DATA ------
 -- "Channels" are all
 CREATE TABLE channels (
-    enst INT PRIMARY KEY,
-    -- How do we represent conductance?
-    conductance TEXT,
-    -- selectivity
-    is_calcium_permeable INT,
-    is_potassium_permeable INT,
-    is_chlorine_permeable INT,
-    is_iron_permeable INT,
-    is_phosphate_permeable INT,
-    is_magnesium_permeable INT,
-    is_chromium_permeable INT,
-    is_copper_permeable INT,
-    is_zinc_permeable INT,
-    is_iodine_permeable INT,
-    is_bicarbonate_permeable INT,
-    is_proton_permeable INT,
-    -- general selectivity
-    is_cation_permeable INT,
-    is_anion_permeable INT,
+    ensg INT PRIMARY KEY,
+    relative_cesium_conductance REAL,
+    absolute_cesium_conductance REAL,
+    relative_potassium_conductance REAL,
+    absolute_potassium_conductance REAL,
+    relative_sodium_conductance REAL,
+    absolute_sodium_conductance REAL,
+    relative_calcium_conductance REAL,
+    absolute_calcium_conductance REAL,
+    relative_lithium_conductance REAL,
+    absolute_lithium_conductance REAL,
+    relative_rubidium_conductance REAL,
+    absolute_rubidium_conductance REAL,
+    relative_magnesium_conductance REAL,
+    absolute_magnesium_conductance REAL,
+    relative_ammonia_conductance REAL,
+    absolute_ammonia_conductance REAL,
+    relative_barium_conductance REAL,
+    absolute_barium_conductance REAL,
+    relative_zinc_conductance REAL,
+    absolute_zinc_conductance REAL,
+    relative_manganese_conductance REAL,
+    absolute_manganese_conductance REAL,
+    relative_strontium_conductance REAL,
+    absolute_strontium_conductance REAL,
+    relative_cadmium_conductance REAL,
+    absolute_cadmium_conductance REAL,
+    relative_nickel_conductance REAL,
+    absolute_nickel_conductance REAL,
+    relative_chlorine_conductance REAL,
+    absolute_chlorine_conductance REAL,
     -- gating
     gating_mechanism TEXT,
     voltage_threshold_coefficient INT
-);
-
-CREATE TABLE carriers (
-    enst INT PRIMARY KEY,
-    class TEXT, -- symport, antiport, ...
-    -- transport_type "passive", "primary", "secondary"
-    is_secondary INT, -- bool, uses secondary energy?
-    to_lumen_pubchem_id TEXT, -- pubchem IDs of molecules carried to the lumen
-    to_exterior_pubchem_id TEXT,
-    rate_coefficient TEXT, -- trasport carry rate, like 1/2 Vmax
-    rate_maximum TEXT -- Vmax
 );

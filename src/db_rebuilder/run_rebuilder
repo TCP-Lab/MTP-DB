@@ -17,4 +17,4 @@ fi
 
 real=$(realpath $1)
 
-docker run -it --rm -v $real:/app/out dbrebuilder:latest '$2' '$3'
+docker run -it --rm -v $real:/app/out dbrebuilder:latest "$2" "$3"

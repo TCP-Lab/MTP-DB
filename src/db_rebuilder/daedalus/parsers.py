@@ -1,6 +1,9 @@
 import logging
+from statistics import mean
+from typing import Iterable
 
 import pandas as pd
+from daedalus.errors import Abort
 from daedalus.utils import (
     lmap,
     recast,
@@ -375,3 +378,75 @@ def get_tcdb_definitions_transactions(tcdb_data):
     transactions.append(to_transaction(tcdb_families, "tcdb_families"))
 
     return transactions
+
+
+def calc_pseudo_mean(row: Iterable):
+    high, low, median = row[
+        ["conductance_high", "conductance_low", "conductance_median"]
+    ]
+    if median:
+        return row
+
+    if not high and not low:
+        log.warn("Found missing conductance data!!")
+        return
+
+    if not high:
+        row["conductance_median"] = high
+        return row
+    if not low:
+        row["conductance_median"] = low
+        return row
+
+    row["conductance_median"] = mean([float(high), float(low)])
+    return row
+
+
+def get_ion_channels_transaction(iuphar_data, iuphar_compiled):
+    log.info("Finding ion channels in TCDB...")
+
+    selectivity: pd.DataFrame = iuphar_data["selectivity"]
+
+    log.info("Purging human-incompatible conductance data...")
+    # 1 > human, 2 > mouse, 3 > rat, 20 > monkey, 18 > gorilla
+    selectivity = selectivity.loc[
+        selectivity["species_id"].isin(["1", "2", "3", "20", "18"])
+    ]
+
+    log.info("Calculating pseudo-median conductance values...")
+
+    selectivity = selectivity.apply(calc_pseudo_mean, axis=1).dropna(how="all")
+
+    sanity_check(
+        not any(selectivity["conductance_median"].isna()),
+        "Median conductance is not null",
+    )
+
+    # Drop the useless cols...
+    selectivity = selectivity.drop(columns=["conductance_high", "conductance_low"])
+
+    log.info("Returning to ensembl gene IDs...")
+    database_links = iuphar_data["database_link"]
+    # This drops everything not from ensembl
+    database_links = database_links.loc[database_links["database_id"] == "15"]
+    # We now select just human data
+    database_links = database_links.loc[database_links["species_id"] == "1"]
+    # Recast the frame...
+    database_links = recast(
+        database_links, {"placeholder": "ensg", "object_id": "object_id"}
+    )
+
+    # Merge, keeping all selectivity rows, dropping the others...
+    selectivity = selectivity.merge(database_links, how="left", on="object_id")
+
+    log.info("Dropping entries for which ENSG annotations are not available...")
+    selectivity = selectivity.dropna(subset=("ensg"))
+
+    log.info("Dropping useless columns...")
+    selectivity = selectivity.drop(
+        columns=["object_id", "selectivity_id", "species_id"]
+    )
+
+    print(selectivity)
+
+    raise Abort
