@@ -1,9 +1,10 @@
 import logging
+from copy import deepcopy
+from math import inf
 from statistics import mean
 from typing import Iterable
 
 import pandas as pd
-from daedalus.errors import Abort
 from daedalus.utils import (
     lmap,
     recast,
@@ -402,6 +403,114 @@ def calc_pseudo_mean(row: Iterable):
     return row
 
 
+ION_SHORT_TO_LONG = {
+    "K+": "potassium",
+    "Ca2+": "calcium",
+    "Na+": "sodium",
+    "Ni2+": "nickel",
+    "Cd2+": "cadmium",
+    "Ba2+": "barium",
+    "Sr2+": "strontium",
+    "Li+": "lithium",
+    "Zn2+": "zinc",
+    "Rb+": "rubidium",
+    "Cs+": "cesium",
+    "Mn2+": "manganese",
+    "Mg2+": "magnesium",
+    "Cl-": "chlorine",
+    "NH4+": "ammonia",
+}
+
+ION_ROW_TEMPLATE = {
+    "ensg": None,
+    "relative_cesium_conductance": None,
+    "absolute_cesium_conductance": None,
+    "relative_potassium_conductance": None,
+    "absolute_potassium_conductance": None,
+    "relative_sodium_conductance": None,
+    "absolute_sodium_conductance": None,
+    "relative_calcium_conductance": None,
+    "absolute_calcium_conductance": None,
+    "relative_lithium_conductance": None,
+    "absolute_lithium_conductance": None,
+    "relative_rubidium_conductance": None,
+    "absolute_rubidium_conductance": None,
+    "relative_magnesium_conductance": None,
+    "absolute_magnesium_conductance": None,
+    "relative_ammonia_conductance": None,
+    "absolute_ammonia_conductance": None,
+    "relative_barium_conductance": None,
+    "absolute_barium_conductance": None,
+    "relative_zinc_conductance": None,
+    "absolute_zinc_conductance": None,
+    "relative_manganese_conductance": None,
+    "absolute_manganese_conductance": None,
+    "relative_strontium_conductance": None,
+    "absolute_strontium_conductance": None,
+    "relative_cadmium_conductance": None,
+    "absolute_cadmium_conductance": None,
+    "relative_nickel_conductance": None,
+    "absolute_nickel_conductance": None,
+    "relative_chlorine_conductance": None,
+    "absolute_chlorine_conductance": None,
+    "gating_mechanism": None,
+    "voltage_threshold_coefficient": None,
+}
+
+
+def elongate_bool(code: str) -> bool:
+    return True if code == "t" else False
+
+
+def elongate_ion(short_ion: str) -> str:
+    return ION_SHORT_TO_LONG[short_ion]
+
+
+def insert_or_average(original, ion, hidden, conductance):
+    assert ion in ION_SHORT_TO_LONG.values(), f"Invalid ion: {ion}."
+
+    level = "relative" if hidden else "absolute"
+
+    if original[f"{level}_{ion}_conductance"]:
+        # There is a value in the original data
+        log.warn(f"Had to average ion {ion} for gene {original['ensg']}")
+        original[f"{level}_{ion}_conductance"] = mean(
+            (original[f"{level}_{ion}_conductance"], conductance)
+        )
+    else:
+        original[f"{level}_{ion}_conductance"] = conductance
+
+    if level == "absolute":
+        # We need to run this also for the relative slot
+        original = insert_or_average(
+            original, ion=ion, hidden=True, conductance=conductance
+        )
+
+    return original
+
+
+def calculate_relative_conductances(original: dict) -> dict:
+    denominator = -inf
+    for key, item in original.items():
+        if key.startswith("absolute") and item is not None:
+            denominator = max(denominator, item)
+
+    if denominator < 0:
+        for key, item in original.items():
+            if key.startswith("relative") and item is not None:
+                denominator = max(denominator, item)
+
+    assert denominator > 0
+
+    # Bad idea to edit what you're iterating on
+    itercopy = deepcopy(original)
+    for key, item in itercopy.items():
+        if key.startswith("relative") and item is not None:
+            original[key] = item / denominator
+
+    return original
+
+
 def get_ion_channels_transaction(iuphar_data, iuphar_compiled):
     log.info("Finding ion channels in TCDB...")
 
@@ -447,6 +556,23 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled):
         columns=["object_id", "selectivity_id", "species_id"]
     )
 
-    print(selectivity)
+    conductances = []
+    log.info("Populating absolute conductance values...")
+    for gene in set(selectivity["ensg"]):
+        conductance = deepcopy(ION_ROW_TEMPLATE)
+        conductance["ensg"] = gene
+        for _, row in selectivity.loc[selectivity["ensg"] == gene].iterrows():
+            # A row has: id, ion, conductance_median, hide_conductance, ensg
+            conductance = insert_or_average(
+                conductance,
+                ion=elongate_ion(row["ion"]),
+                hidden=elongate_bool(row["hide_conductance"]),
+                conductance=float(row["conductance_median"]),
+            )
 
-    raise Abort
+        conductances.append(calculate_relative_conductances(conductance))
+
+    conductances = pd.DataFrame(conductances)
+    print(conductances)
+
+    return to_transaction(conductances, "channels")

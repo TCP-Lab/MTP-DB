@@ -97,6 +97,12 @@ CREATE TABLE tcdb_families (
     is_superfamily INT NOT NULL -- bool
 );
 
+-- It is purpusefully generic, but we can talk about it...
+CREATE TABLE cosmic_genes (
+    ensg TEXT PRIMARY KEY, -- If the ensg is here, it is in the cosmic database
+    is_hallmark INT NOT NULL -- If true, the gene is a hallmark gene is some tumor type
+);
+
 
 ----- NOVEL DATA ------
 -- "Channels" are all
