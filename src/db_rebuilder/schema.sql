@@ -99,8 +99,11 @@ CREATE TABLE tcdb_families (
 
 -- It is purpusefully generic, but we can talk about it...
 CREATE TABLE cosmic_genes (
-    ensg TEXT PRIMARY KEY, -- If the ensg is here, it is in the cosmic database
-    is_hallmark INT NOT NULL -- If true, the gene is a hallmark gene is some tumor type
+    ensg TEXT NOT NULL, -- If the ensg is here, it is in the cosmic database
+    is_hallmark INT NOT NULL, -- If true, the gene is a hallmark gene is some tumor type
+    tumor_type NOT NULL, -- The tumor type related to this gene
+    is_somatic NOT NULL, -- If true, the gene was detected as somatically mutated
+    is_germline NOT NULL -- If true, the gene was detected as germline mutated
 );
 
 

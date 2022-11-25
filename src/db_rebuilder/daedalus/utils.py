@@ -227,6 +227,8 @@ def represent_sql_type(data: pd.Series) -> list[str]:
             result.append(str(item))
         elif isinstance(item, str):
             result.append("'" + item.replace("'", "''") + "'")
+        elif isinstance(item, bool):
+            result.append(int(item))
 
     return result
 

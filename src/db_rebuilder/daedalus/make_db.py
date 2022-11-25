@@ -9,6 +9,7 @@ from sqlite3 import Connection
 from daedalus import SCHEMA
 from daedalus.errors import Abort
 from daedalus.parsers import (
+    get_cosmic_transaction,
     get_gene_ids_transaction,
     get_gene_names_transaction,
     get_ion_channels_transaction,
@@ -199,10 +200,18 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
                 execute_transaction(connection, trans)
         gc.collect()
 
-    ## -- ion channels --
-    log.info("Populating ion channel metadata")
-    with cache("iuphar") as iuphar, cache("iuphar_compiled") as compiled:
-        transaction = get_ion_channels_transaction(iuphar, compiled)
+        ## -- ion channels --
+        log.info("Populating ion channel metadata")
+        with cache("iuphar") as iuphar, cache("iuphar_compiled") as compiled:
+            transaction = get_ion_channels_transaction(iuphar, compiled)
+
+            execute_transaction(connection, transaction)
+        gc.collect()
+
+    ## -- cosmic genes --
+    log.info("Populating COSMIC gene tables...")
+    with cache("cosmic") as cosmic, cache("biomart") as mart_data:
+        transaction = get_cosmic_transaction(cosmic, mart_data)
 
         execute_transaction(connection, transaction)
     gc.collect()
