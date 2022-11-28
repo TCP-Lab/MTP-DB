@@ -13,6 +13,7 @@ from daedalus.url_hardpoints import (
     BIOMART,
     BIOMART_XML_REQUESTS,
     COSMIC,
+    HUGO,
     IUPHAR_COMPILED,
     IUPHAR_DB,
     TCDB,
@@ -312,4 +313,22 @@ def retrieve_iuphar_compiled() -> DataDict:
         )
 
     log.info("Done retrieving IUPHAR casted data.")
+    return answer
+
+
+def retrieve_hugo() -> DataDict:
+    answer = {}
+
+    log.info("Retrieving HGNC data...")
+    bytes = pbar_get(HUGO["nomenclature"])
+    answer["nomenclature"] = pd.read_csv(bytes, sep="\t", low_memory=False)
+
+    log.info("Retrieving HUGO groups...")
+    group_endpoint = HUGO["groups"]["endpoint"]
+    for group, group_id in HUGO["groups"]["IDs"].items():
+        bytes = pbar_get(group_endpoint.format(id=group_id))
+        answer[group] = pd.read_csv(gzip.GzipFile(fileobj=bytes), sep="\t")
+
+    log.info("Done retrieving data for HGNC.")
+
     return answer

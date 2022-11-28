@@ -69,8 +69,11 @@ def pbar_get(url: str, params: dict = {}, disable: bool = False) -> BytesIO:
 
     desc = "[Unknown file size]" if size == 0 else ""
     bytes = BytesIO()
+    # I add some delay so the logging does not get (too) mangled up.
+    # The download bars are there just to check on very long download tasks,
+    # like from biomart.
     with tqdm.wrapattr(
-        resp.raw, "read", total=size, desc=desc, disable=disable, delay=10
+        resp.raw, "read", total=size, desc=desc, disable=disable, delay=30
     ) as read_raw:
         shutil.copyfileobj(read_raw, bytes)
 

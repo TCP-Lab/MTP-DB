@@ -465,7 +465,7 @@ def calc_pseudo_mean(row: Iterable):
         return row
 
     if not high and not low:
-        log.warn("Found missing conductance data!!")
+        log.warn(f"Found missing conductance data for object ID {row['object_id']}")
         return
 
     if not high:
@@ -649,6 +649,5 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled):
         conductances.append(calculate_relative_conductances(conductance))
 
     conductances = pd.DataFrame(conductances)
-    print(conductances)
 
     return to_transaction(conductances, "channels")

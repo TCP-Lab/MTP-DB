@@ -110,3 +110,21 @@ IUPHAR_COMPILED = {
     "interactions": "https://www.guidetopharmacology.org/DATA/interactions.csv",
 }
 """URLs to the compiled IUPHAR data from their downloads page"""
+
+HUGO = {
+    "nomenclature": "http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2021-03-01.txt",
+    "groups": {
+        # I could download json files, but most of the data is flat anyway, so...
+        "endpoint": "https://www.genenames.org/cgi-bin/genegroup/download?id={id}&type=branch",
+        "IDs": {
+            "ion_channels": 177,  # These names are the ones ending up in the DataDict
+            "sodium_ion_channels": 179,
+            "calcium_ion_channels": 182,
+            "potassium_ion_channels": 183,
+            "chloride_ion_channels": 278,
+            "aquaporins": 305,
+            "ligand_gated_ion_channels": 161,
+            "voltage_gated_ion_channels": 178,
+        },
+    },
+}
