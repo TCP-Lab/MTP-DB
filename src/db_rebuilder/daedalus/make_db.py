@@ -118,101 +118,145 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
         connection (Connection): The connection to act upon
         cache (ResourceCache): The cache with the data used by the parsers.
     """
-    ## -- gene_ids table --
-    log.info("Populating IDs...")
-    with cache("biomart") as mart_data:
-        transaction = get_gene_ids_transaction(mart_data)
 
-        execute_transaction(connection, transaction)
+    # Debugging purposes
+    SUPPRESS_ALL = True
 
-    gc.collect()
+    # Suppress_all controls all the debug guards, the False is there to
+    # override the suppress_all
+    if (not SUPPRESS_ALL) or False:
+        ## -- gene_ids table --
+        log.info("Populating IDs...")
+        with cache("biomart") as mart_data:
+            transaction = get_gene_ids_transaction(mart_data)
 
-    ## -- transcript_ids table --
-    log.info("Populating transcript IDs...")
-    with cache("biomart") as mart_data:
-        transaction = get_transcripts_ids_transaction(mart_data)
+            execute_transaction(connection, transaction)
 
-        execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating IDs.")
 
-    gc.collect()
+    if (not SUPPRESS_ALL) or False:
+        ## -- transcript_ids table --
+        log.info("Populating transcript IDs...")
+        with cache("biomart") as mart_data:
+            transaction = get_transcripts_ids_transaction(mart_data)
 
-    ## -- mrna_refseq table --
-    log.info("Populating refseq_mrna...")
-    with cache("biomart") as mart_data:
-        transaction = get_refseq_transaction(mart_data)
+            execute_transaction(connection, transaction)
 
-        execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating transcript IDs.")
 
-    gc.collect()
+    if (not SUPPRESS_ALL) or False:
+        ## -- mrna_refseq table --
+        log.info("Populating refseq_mrna...")
+        with cache("biomart") as mart_data:
+            transaction = get_refseq_transaction(mart_data)
 
-    ## -- protein_structures table --
-    log.info("Populating pdb structure identifiers...")
-    with cache("biomart") as mart_data:
-        transaction = get_protein_structures_transaction(mart_data)
+            execute_transaction(connection, transaction)
 
-        execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating refseq_mrna.")
 
-    ## -- gene_names table --
-    log.info("Populating gene names...")
-    with cache("biomart") as mart_data:
-        transaction = get_gene_names_transaction(mart_data)
+    if (not SUPPRESS_ALL) or False:
+        ## -- protein_structures table --
+        log.info("Populating pdb structure identifiers...")
+        with cache("biomart") as mart_data:
+            transaction = get_protein_structures_transaction(mart_data)
 
-        execute_transaction(connection, transaction)
-    gc.collect()
+            execute_transaction(connection, transaction)
 
-    ## -- iuphar_ids --
-    log.info("Populating iuphar targets...")
-    with cache("iuphar_compiled") as iuphar:
-        transaction = get_iuphar_targets_transaction(iuphar)
+        gc.collect()
+    else:
+        log.debug("Skipped populating protein structures.")
 
-        execute_transaction(connection, transaction)
-    gc.collect()
+    if (not SUPPRESS_ALL) or False:
+        ## -- gene_names table --
+        log.info("Populating gene names...")
+        with cache("biomart") as mart_data:
+            transaction = get_gene_names_transaction(mart_data)
 
-    ## -- iuphar_ligands --
-    log.info("Populating iuphar ligands...")
-    with cache("iuphar_compiled") as iuphar:
-        transaction = get_iuphar_ligands_transaction(iuphar)
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating gene names.")
 
-        execute_transaction(connection, transaction)
-    gc.collect()
+    if (not SUPPRESS_ALL) or False:
+        ## -- iuphar_ids --
+        log.info("Populating iuphar targets...")
+        with cache("iuphar_compiled") as iuphar:
+            transaction = get_iuphar_targets_transaction(iuphar)
 
-    ## -- iuphar_interaction --
-    log.info("Populating iuphar interactions...")
-    with cache("iuphar_compiled") as iuphar:
-        transaction = get_iuphar_interaction_transaction(iuphar)
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating iuphar targets.")
 
-        execute_transaction(connection, transaction)
-    gc.collect()
+    if (not SUPPRESS_ALL) or False:
+        ## -- iuphar_ligands --
+        log.info("Populating iuphar ligands...")
+        with cache("iuphar_compiled") as iuphar:
+            transaction = get_iuphar_ligands_transaction(iuphar)
 
-    ## -- TCDB ids --
-    log.info("Populating TCDB to Ensembl IDs...")
-    with cache("tcdb") as tcdb, cache("biomart") as mart_data:
-        transaction = get_tcdb_ids_transaction(tcdb, mart_data)
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating iuphar ligands")
 
-        execute_transaction(connection, transaction),
-    gc.collect()
+    if (not SUPPRESS_ALL) or False:
+        ## -- iuphar_interaction --
+        log.info("Populating iuphar interactions...")
+        with cache("iuphar_compiled") as iuphar:
+            transaction = get_iuphar_interaction_transaction(iuphar)
 
-    ## -- TCDB types / subtypes / families --
-    log.info("Populating TCDB definitions...")
-    with cache("tcdb") as tcdb:
-        transactions = get_tcdb_definitions_transactions(tcdb)
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating iuphar interactions.")
 
-        for trans in transactions:
-            execute_transaction(connection, trans)
-    gc.collect()
+    if (not SUPPRESS_ALL) or False:
+        ## -- TCDB ids --
+        log.info("Populating TCDB to Ensembl IDs...")
+        with cache("tcdb") as tcdb, cache("biomart") as mart_data:
+            transaction = get_tcdb_ids_transaction(tcdb, mart_data)
 
-    ## -- ion channels --
-    log.info("Populating ion channel metadata")
-    with cache("iuphar") as iuphar, cache("iuphar_compiled") as compiled:
-        transaction = get_ion_channels_transaction(iuphar, compiled)
+            execute_transaction(connection, transaction),
+        gc.collect()
+    else:
+        log.debug("Skipped populating TCDB to Ensembl IDs.")
 
-        execute_transaction(connection, transaction)
-    gc.collect()
+    if (not SUPPRESS_ALL) or False:
+        ## -- TCDB types / subtypes / families --
+        log.info("Populating TCDB definitions...")
+        with cache("tcdb") as tcdb:
+            transactions = get_tcdb_definitions_transactions(tcdb)
 
-    ## -- cosmic genes --
-    log.info("Populating COSMIC gene tables...")
-    with cache("cosmic") as cosmic, cache("biomart") as mart_data:
-        transaction = get_cosmic_transaction(cosmic, mart_data)
+            for trans in transactions:
+                execute_transaction(connection, trans)
+        gc.collect()
+    else:
+        log.debug("Skipped populating TCDB definitions")
 
-        execute_transaction(connection, transaction)
-    gc.collect()
+    if (not SUPPRESS_ALL) or True:
+        ## -- ion channels --
+        log.info("Populating ion channel metadata")
+        with cache("iuphar") as iuphar, cache("hugo") as hugo:
+            transaction = get_ion_channels_transaction(iuphar, hugo)
+
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating ion channel metadata")
+
+    if (not SUPPRESS_ALL) or False:
+        ## -- cosmic genes --
+        log.info("Populating COSMIC gene tables...")
+        with cache("cosmic") as cosmic, cache("biomart") as mart_data:
+            transaction = get_cosmic_transaction(cosmic, mart_data)
+
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating COSMIC tables")

@@ -587,7 +587,7 @@ def calculate_relative_conductances(original: dict) -> dict:
     return original
 
 
-def get_ion_channels_transaction(iuphar_data, iuphar_compiled):
+def get_ion_channels_transaction(iuphar_data, hugo):
     log.info("Finding ion channels in TCDB...")
 
     selectivity: pd.DataFrame = iuphar_data["selectivity"]
@@ -649,5 +649,19 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled):
         conductances.append(calculate_relative_conductances(conductance))
 
     conductances = pd.DataFrame(conductances)
+
+    log.info("Extending list with HGNC ion_channels")
+    hugo_channels = recast(
+        hugo["ion_channels"], {"Ensembl gene ID": "ensg"}
+    ).drop_duplicates()
+
+    sanity_check(
+        all(conductances["ensg"].isin(hugo_channels["ensg"])),
+        "All the IUPHAR channels are in the HUGO list.",
+    )
+
+    conductances = conductances.merge(hugo_channels, how="outer", on="ensg")
+
+    sanity_check(conductances["ensg"].is_unique, "All conductance ENSGs are unique.")
 
     return to_transaction(conductances, "channels")
