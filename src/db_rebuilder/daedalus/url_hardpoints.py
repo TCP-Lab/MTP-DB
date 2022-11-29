@@ -122,9 +122,11 @@ HUGO = {
             "calcium_ion_channels": 182,
             "potassium_ion_channels": 183,
             "chloride_ion_channels": 278,
+            "porins": 304,
             "aquaporins": 305,
             "ligand_gated_ion_channels": 161,
             "voltage_gated_ion_channels": 178,
         },
     },
 }
+"""Hugo downloads as found on their download pages"""

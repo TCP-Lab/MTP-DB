@@ -1,3 +1,6 @@
+This is the thing that downloads and parses data from a variety of servers to get the first "base" version of the database.
+
+It was not written with elegance in mind, so the code is terrible.
 
 ## Running tests
 To correctly run tests, we need a cosmic hash to log into the cosmic DB. Make a `secrets.json` file in `daedalus/tests/` and insert:

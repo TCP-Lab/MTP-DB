@@ -277,12 +277,10 @@ def sanity_check(check: bool, message: str):
         check (bool): The check to test
         message (str): The 'error' message
     """
-    log.info(f"Sanity check: {message}")
+    log.debug(f"Sanity check: {message}")
     if not check:
         log.critical(f"SANITY CHECK FAILED: {message}")
         raise Abort
-
-    log.debug("Sanity check passed.")
 
 
 def lmap(*args, **kwargs) -> list:

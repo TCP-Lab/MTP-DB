@@ -650,10 +650,17 @@ def get_ion_channels_transaction(iuphar_data, hugo):
 
     conductances = pd.DataFrame(conductances)
 
-    log.info("Extending list with HGNC ion_channels")
+    log.info("Extending list with HGNC ion_channels...")
     hugo_channels = recast(
         hugo["ion_channels"], {"Ensembl gene ID": "ensg"}
     ).drop_duplicates()
+
+    log.info("Removing porins...")
+    porins = recast(hugo["porins"], {"Ensembl gene ID": "ensg"})
+    original_len = len(hugo_channels)
+    hugo_channels = hugo_channels[~hugo_channels["ensg"].isin(porins["ensg"])]
+
+    sanity_check(len(hugo_channels) < original_len, "Porins were dropped successfully")
 
     sanity_check(
         all(conductances["ensg"].isin(hugo_channels["ensg"])),
@@ -663,5 +670,27 @@ def get_ion_channels_transaction(iuphar_data, hugo):
     conductances = conductances.merge(hugo_channels, how="outer", on="ensg")
 
     sanity_check(conductances["ensg"].is_unique, "All conductance ENSGs are unique.")
+
+    log.info("Setting channel types...")
+    voltage_gated = recast(
+        hugo["voltage_gated_ion_channels"], {"Ensembl gene ID": "ensg"}
+    ).drop_duplicates()
+    ligand_gated = recast(
+        hugo["ligand_gated_ion_channels"], {"Ensembl gene ID": "ensg"}
+    ).drop_duplicates()
+
+    conductances["gating_mechanism"] = pd.NA
+
+    conductances.loc[
+        conductances["ensg"].isin(voltage_gated["ensg"]), "gating_mechanism"
+    ] = "voltage_gated"
+    conductances.loc[
+        conductances["ensg"].isin(ligand_gated["ensg"]), "gating_mechanism"
+    ] = "ligand_gated"
+
+    sanity_check(
+        any(~conductances["gating_mechanism"].isnull()),
+        "At least one channel type was set",
+    )
 
     return to_transaction(conductances, "channels")
