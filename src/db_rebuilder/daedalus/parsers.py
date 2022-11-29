@@ -693,4 +693,6 @@ def get_ion_channels_transaction(iuphar_data, hugo):
         "At least one channel type was set",
     )
 
+    log.warn("Impossible to determine voltage dependence coefficients.")
+
     return to_transaction(conductances, "channels")
