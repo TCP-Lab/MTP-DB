@@ -108,9 +108,8 @@ CREATE TABLE cosmic_genes (
 
 
 ----- NOVEL DATA ------
--- "Channels" are all
 CREATE TABLE channels (
-    ensg INT PRIMARY KEY,
+    ensg TEXT PRIMARY KEY,
     relative_cesium_conductance REAL,
     absolute_cesium_conductance REAL,
     relative_potassium_conductance REAL,
@@ -144,4 +143,17 @@ CREATE TABLE channels (
     -- gating
     gating_mechanism TEXT,
     voltage_threshold_coefficient INT
+);
+
+CREATE TABLE solute_carriers (
+    ensg TEXT -- I don't make this a primary key as there will probably be duplicated rows:
+    -- Probably, each ensg - carried solute combo will be unique.
+);
+
+CREATE TABLE atp_driven_carriers (
+    ensg TEXT -- See the note on uniqueness for solute carriers
+);
+
+CREATE TABLE ABC_transporters (
+    ensg TEXT -- See the note on uniqueness for solute carriers
 );

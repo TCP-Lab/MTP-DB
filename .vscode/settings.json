@@ -6,6 +6,7 @@
     "./src/db_rebuilder/",
     ],
     "cSpell.words": [
+        "aquaporins",
         "BIOMART",
         "CEPT",
         "colnames",

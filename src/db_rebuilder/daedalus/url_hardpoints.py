@@ -126,6 +126,8 @@ HUGO = {
             "aquaporins": 305,
             "ligand_gated_ion_channels": 161,
             "voltage_gated_ion_channels": 178,
+            "ABC_transporters": 417,
+            "solute_carriers": 752,
         },
     },
 }

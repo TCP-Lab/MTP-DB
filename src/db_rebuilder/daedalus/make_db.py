@@ -9,6 +9,9 @@ from sqlite3 import Connection
 from daedalus import SCHEMA
 from daedalus.errors import Abort
 from daedalus.parsers import (
+    get_abc_transporters_transaction,
+    get_aquaporins_transaction,
+    get_atp_driven_carriers_transaction,
     get_cosmic_transaction,
     get_gene_ids_transaction,
     get_gene_names_transaction,
@@ -18,6 +21,7 @@ from daedalus.parsers import (
     get_iuphar_targets_transaction,
     get_protein_structures_transaction,
     get_refseq_transaction,
+    get_solute_carriers_transaction,
     get_tcdb_definitions_transactions,
     get_tcdb_ids_transaction,
     get_transcripts_ids_transaction,
@@ -239,7 +243,7 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     else:
         log.debug("Skipped populating TCDB definitions")
 
-    if (not SUPPRESS_ALL) or True:
+    if (not SUPPRESS_ALL) or False:
         ## -- ion channels --
         log.info("Populating ion channel metadata")
         with cache("iuphar") as iuphar, cache("hugo") as hugo:
@@ -260,3 +264,43 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
         gc.collect()
     else:
         log.debug("Skipped populating COSMIC tables")
+
+    if (not SUPPRESS_ALL) or False:
+        ## solute carriers
+        log.info("Populating solute carriers...")
+        with cache("hugo") as hugo:
+            transaction = get_solute_carriers_transaction(hugo)
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating solute carriers")
+
+    if (not SUPPRESS_ALL) or False:
+        ## solute carriers
+        log.info("Populating ABC transporters...")
+        with cache("hugo") as hugo:
+            transaction = get_abc_transporters_transaction(hugo)
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating ABC transporters")
+
+    if (not SUPPRESS_ALL) or False:
+        ## solute carriers
+        log.info("Populating aquaporins...")
+        with cache("hugo") as hugo:
+            transaction = get_aquaporins_transaction(hugo)
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating aquaporins")
+
+    if (not SUPPRESS_ALL) or False:
+        ## solute carriers
+        log.info("Populating ATP-driven carriers...")
+        with cache("hugo") as hugo:
+            transaction = get_atp_driven_carriers_transaction(hugo)
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating ATP-driven carriers")

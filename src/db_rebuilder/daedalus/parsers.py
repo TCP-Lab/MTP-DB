@@ -696,3 +696,19 @@ def get_ion_channels_transaction(iuphar_data, hugo):
     log.warn("Impossible to determine voltage dependence coefficients.")
 
     return to_transaction(conductances, "channels")
+
+
+def get_abc_transporters_transaction(hugo):
+    pass
+
+
+def get_solute_carriers_transaction(hugo):
+    pass
+
+
+def get_aquaporins_transaction(hugo):
+    pass
+
+
+def get_atp_driven_carriers_transaction(hugo):
+    pass
