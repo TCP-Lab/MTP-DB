@@ -148,7 +148,6 @@ CREATE TABLE channels (
 
 CREATE TABLE aquaporins (
     ensg TEXT,
-    water_permeability INT, -- magari anche no
     expression_tissue TEXT -- manual insertion
 );
 

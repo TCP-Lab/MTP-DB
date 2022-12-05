@@ -124,7 +124,7 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     """
 
     # Debugging purposes
-    SUPPRESS_ALL = False
+    SUPPRESS_ALL = True
 
     # Suppress_all controls all the debug guards, the False is there to
     # override the suppress_all
@@ -265,6 +265,16 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     else:
         log.debug("Skipped populating COSMIC tables")
 
+    if (not SUPPRESS_ALL) or True:
+        ## solute carriers
+        log.info("Populating aquaporins...")
+        with cache("hugo") as hugo:
+            transaction = get_aquaporins_transaction(hugo)
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating aquaporins")
+
     if False:
 
         if (not SUPPRESS_ALL) or False:
@@ -286,16 +296,6 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
             gc.collect()
         else:
             log.debug("Skipped populating ABC transporters")
-
-        if (not SUPPRESS_ALL) or False:
-            ## solute carriers
-            log.info("Populating aquaporins...")
-            with cache("hugo") as hugo:
-                transaction = get_aquaporins_transaction(hugo)
-                execute_transaction(connection, transaction)
-            gc.collect()
-        else:
-            log.debug("Skipped populating aquaporins")
 
         if (not SUPPRESS_ALL) or False:
             ## solute carriers

@@ -710,7 +710,11 @@ def get_solute_carriers_transaction(hugo):
 
 
 def get_aquaporins_transaction(hugo):
-    pass
+    aquaporins = recast(hugo["porins"], {"Ensembl gene ID": "ensg"}).drop_duplicates()
+
+    log.warn("Impossible to determine tissue of expression for aquaporins.")
+
+    return to_transaction(aquaporins, "aquaporins")
 
 
 def get_atp_driven_carriers_transaction(hugo):
