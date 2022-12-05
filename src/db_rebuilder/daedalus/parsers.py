@@ -529,8 +529,6 @@ ION_ROW_TEMPLATE = {
     "absolute_nickel_conductance": None,
     "relative_chlorine_conductance": None,
     "absolute_chlorine_conductance": None,
-    "gating_mechanism": None,
-    "voltage_threshold_coefficient": None,
 }
 
 
@@ -679,21 +677,26 @@ def get_ion_channels_transaction(iuphar_data, hugo):
         hugo["ligand_gated_ion_channels"], {"Ensembl gene ID": "ensg"}
     ).drop_duplicates()
 
-    conductances["gating_mechanism"] = pd.NA
+    conductances["is_voltage_gated"] = 0
+    conductances["is_ligand_gated"] = 0
 
     conductances.loc[
-        conductances["ensg"].isin(voltage_gated["ensg"]), "gating_mechanism"
-    ] = "voltage_gated"
+        conductances["ensg"].isin(voltage_gated["ensg"]), "is_voltage_gated"
+    ] = 1
     conductances.loc[
-        conductances["ensg"].isin(ligand_gated["ensg"]), "gating_mechanism"
-    ] = "ligand_gated"
+        conductances["ensg"].isin(ligand_gated["ensg"]), "is_ligand_gated"
+    ] = 1
 
     sanity_check(
-        any(~conductances["gating_mechanism"].isnull()),
-        "At least one channel type was set",
+        any(~conductances["is_voltage_gated"].isnull()),
+        "At least one voltage gated ion channel exists",
+    )
+    sanity_check(
+        any(~conductances["is_ligand_gated"].isnull()),
+        "At least one ligand gated ion channel exists",
     )
 
-    log.warn("Impossible to determine voltage dependence coefficients.")
+    log.warn("Impossible to annotate stretch-activated channels")
 
     return to_transaction(conductances, "channels")
 

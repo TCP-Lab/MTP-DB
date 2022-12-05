@@ -141,16 +141,28 @@ CREATE TABLE channels (
     relative_chlorine_conductance REAL,
     absolute_chlorine_conductance REAL,
     -- gating
-    gating_mechanism TEXT,
-    voltage_threshold_coefficient INT
+    is_voltage_gated INT,
+    is_ligand_gated INT,
+    is_stretch_activated INT -- Lasciata vuota
+);
+
+CREATE TABLE aquaporins (
+    ensg TEXT,
+    water_permeability INT, -- magari anche no
+    expression_tissue TEXT -- manual insertion
 );
 
 CREATE TABLE solute_carriers (
-    ensg TEXT -- I don't make this a primary key as there will probably be duplicated rows:
+    ensg TEXT, -- I don't make this a primary key as there will probably be duplicated rows:
     -- Probably, each ensg - carried solute combo will be unique.
+    carried_solute TEXT,
+    rate REAL,
+    stechiometry INT, -- o simili
+    port_type TEXT, -- uni- anti- symp-porter
+    is_secondary INT -- (active secondary)
 );
 
-CREATE TABLE atp_driven_carriers (
+CREATE TABLE atp_driven_transporters (
     ensg TEXT -- See the note on uniqueness for solute carriers
 );
 
