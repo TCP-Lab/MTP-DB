@@ -440,3 +440,16 @@ def split_refseq_ids(refseq_id: str) -> RefseqId:
     assert len(parts) == 2, f"Invalid Refseq ID {refseq_id}. Is it complete?"
 
     return RefseqId(full=refseq_id, id=parts[0], version=parts[1])
+
+
+def merge_lists(lst1: list, lst2: list) -> list:
+    """Extend one list by another.
+
+    Robust if one of the two inputs are not actually lists.
+    """
+    if not isinstance(lst1, list):
+        lst1 = [lst1]
+    if not isinstance(lst2, list):
+        lst2 = [lst2]
+    lst1.extend(lst2)
+    return lst1

@@ -155,10 +155,10 @@ CREATE TABLE solute_carriers (
     ensg TEXT, -- I don't make this a primary key as there will probably be duplicated rows:
     -- Probably, each ensg - carried solute combo will be unique.
     carried_solute TEXT,
-    rate REAL,
-    stechiometry INT, -- o simili
-    port_type TEXT, -- uni- anti- symp-porter
-    is_secondary INT -- (active secondary)
+    -- rate REAL,
+    -- stechiometry INT, -- o simili
+    port_type TEXT -- uni- anti- symp-porter
+    --is_secondary INT -- (active secondary)
 );
 
 CREATE TABLE atp_driven_transporters (

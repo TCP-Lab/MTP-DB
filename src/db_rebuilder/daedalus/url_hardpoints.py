@@ -132,3 +132,5 @@ HUGO = {
     },
 }
 """Hugo downloads as found on their download pages"""
+
+SLC_TABLES = "http://slc.bioparadigms.org/"

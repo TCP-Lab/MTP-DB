@@ -33,6 +33,7 @@ from daedalus.retrievers import (
     retrieve_hugo,
     retrieve_iuphar,
     retrieve_iuphar_compiled,
+    retrieve_slc,
     retrieve_tcdb,
 )
 from daedalus.utils import execute_transaction
@@ -83,6 +84,7 @@ def generate_database(path: Path, auth_hash) -> None:
             "iuphar_compiled": retrieve_iuphar_compiled,
             "tcdb": retrieve_tcdb,
             "hugo": retrieve_hugo,
+            "slc": retrieve_slc,
         }
     )
 
@@ -265,8 +267,8 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     else:
         log.debug("Skipped populating COSMIC tables")
 
-    if (not SUPPRESS_ALL) or True:
-        ## solute carriers
+    if (not SUPPRESS_ALL) or False:
+        ## -- aquaporins --
         log.info("Populating aquaporins...")
         with cache("hugo") as hugo:
             transaction = get_aquaporins_transaction(hugo)
@@ -275,18 +277,17 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     else:
         log.debug("Skipped populating aquaporins")
 
+    if (not SUPPRESS_ALL) or True:
+        ## -- solute carriers --
+        log.info("Populating solute carriers...")
+        with cache("hugo") as hugo, cache("iuphar") as iuphar, cache("slc") as slc:
+            transaction = get_solute_carriers_transaction(hugo, iuphar, slc)
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating solute carriers")
+
     if False:
-
-        if (not SUPPRESS_ALL) or False:
-            ## solute carriers
-            log.info("Populating solute carriers...")
-            with cache("hugo") as hugo:
-                transaction = get_solute_carriers_transaction(hugo)
-                execute_transaction(connection, transaction)
-            gc.collect()
-        else:
-            log.debug("Skipped populating solute carriers")
-
         if (not SUPPRESS_ALL) or False:
             ## solute carriers
             log.info("Populating ABC transporters...")

@@ -8,6 +8,7 @@ from logging import getLogger
 from typing import TypeAlias
 
 import pandas as pd
+from bs4 import BeautifulSoup
 from daedalus.errors import CacheKeyError
 from daedalus.url_hardpoints import (
     BIOMART,
@@ -16,6 +17,7 @@ from daedalus.url_hardpoints import (
     HUGO,
     IUPHAR_COMPILED,
     IUPHAR_DB,
+    SLC_TABLES,
     TCDB,
 )
 from daedalus.utils import pbar_get, pqdm, request_cosmic_download_url, run
@@ -332,3 +334,16 @@ def retrieve_hugo() -> DataDict:
     log.info("Done retrieving data for HGNC.")
 
     return answer
+
+
+def retrieve_slc() -> pd.DataFrame:
+    log.info("Retrieving solute carrier data...")
+    bytes = pbar_get(SLC_TABLES)
+    soup = BeautifulSoup(gzip.GzipFile(fileobj=bytes).read().decode("UTF-8"), "lxml")
+
+    tables = soup.find_all("table")
+    frames = [pd.read_html(x.prettify(), header=0)[0] for x in tables]
+
+    frame = pd.concat(frames)
+
+    return frame

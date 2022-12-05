@@ -1,12 +1,15 @@
 import logging
+import re
 from copy import deepcopy
 from math import inf
 from statistics import mean
-from typing import Iterable
+from typing import Iterable, Optional, Union
 
+import numpy as np
 import pandas as pd
 from daedalus.utils import (
     lmap,
+    merge_lists,
     recast,
     sanity_check,
     split_ensembl_ids,
@@ -701,12 +704,192 @@ def get_ion_channels_transaction(iuphar_data, hugo):
     return to_transaction(conductances, "channels")
 
 
+PAR_RE = re.compile("(\(.*?\))")
+BRA_RE = re.compile("(\[.*?\])")
+
+
+def purge_data_in_parenthesis(string: str) -> str:
+    matches = PAR_RE.search(string)
+    if not matches:
+        return string
+    for match in matches.groups():
+        string = string.replace(match, "").strip()
+
+    matches = BRA_RE.search(string)
+    if not matches:
+        return string
+    for match in matches.groups():
+        string = string.replace(match, "").strip()
+
+    return purge_data_in_parenthesis(string)
+
+
 def get_abc_transporters_transaction(hugo):
     pass
 
 
-def get_solute_carriers_transaction(hugo):
-    pass
+def explode_transport_type(in_str) -> Optional[Union[str, list[str]]]:
+    ## >>> BIG FAT WARNING <<<
+    # This is very experimental and very rough. It does not cover all edge cases,
+    # but works fairly well for most entries. But it needs manual tweakage.
+    if not isinstance(in_str, str):
+        return np.NaN
+
+    to_parse = in_str.split("/")
+    if len(to_parse) <= 1:
+        log.warn(
+            f"Cannot reliably discern if {in_str} has transported molecule information."
+        )
+    if len(to_parse) >= 2:
+        log.warn(
+            f"The string {in_str} has more than one slash annotation. Trying anyway..."
+        )
+
+    to_parse = to_parse[-1].strip()
+
+    to_parse = purge_data_in_parenthesis(to_parse)
+
+    return [x.strip() for x in to_parse.split(",")]
+
+
+def explode_solutes(in_str) -> Optional[str]:
+    if not isinstance(in_str, str):
+        return np.NaN
+    in_str = purge_data_in_parenthesis(in_str)
+    return in_str.split(",")
+
+
+def extract_slc_carrier_type(in_str) -> Optional[Union[str, list[str]]]:
+    ## >>> BIG FAT WARNING <<<
+    # This is very experimental and very rough. It does not cover all edge cases,
+    # but works fairly well for most entries. But it needs manual tweakage.
+
+    if not isinstance(in_str, str):
+        # this is not parseable.
+        return np.NaN
+
+    in_str = purge_data_in_parenthesis(in_str)
+
+    to_parse = in_str.split("/")
+    if len(to_parse) >= 2:
+        log.warn(
+            f"The input string '{in_str}' has more than one slash annotation. Returning NA"
+        )
+        return np.NaN
+
+    to_parse = to_parse[0].strip().replace("?", "").strip()
+
+    # Abbreviations for transport type: C: Cotransporter; E: Exchanger; F: Facilitated transporter; O: Orphan transporter.
+    t_types = {"C": "symport", "E": "antiporter", "F": "uniporter", "O": np.NaN}
+
+    if "," in to_parse:
+        log.warn(f"I had to split a carrier type: {to_parse}")
+        to_parse = to_parse.split(",")
+        try:
+            parsed = [t_types[x] for x in to_parse]
+        except KeyError:
+            return np.NaN
+        return parsed
+
+    try:
+        parsed = t_types[to_parse]
+    except KeyError as e:
+        return np.NaN
+
+    return parsed
+
+
+def explode_slc(data: pd.DataFrame) -> pd.DataFrame:
+    """Explode the solute carriers data.
+
+    The slc downloaded has comma-delimited data, and it is mixed with
+    info about the carrier type. This explodes the data and reorders it.
+
+    Let's hope that there is no "F" solute.
+
+    Expects a df with "driving" col with driving forces + transporter types,
+    and "solute" col with solutes.
+    """
+    data["port_type"] = data["driving"].apply(extract_slc_carrier_type)
+    log.warn(
+        "VERY BIG WARNING: The parsing of the carrier type is still experimental!!!oneone!!"
+    )
+
+    data["driving"] = data["driving"].apply(explode_transport_type)
+    log.warn(
+        "VERY BIG FAT WARNING PART2: The parsing of driver forces is still experimental!!!!!"
+    )
+    data["solutes"] = data["solutes"].apply(explode_solutes)
+
+    # Fuse together the data
+    data["carried_solute"] = [
+        merge_lists(x, y) for x, y in zip(data["solutes"], data["driving"])
+    ]
+
+    print(data.to_string())
+
+    data = data.drop(columns=["solutes", "driving"])
+    data = data.explode("carried_solute")
+
+    return data
+
+
+def get_solute_carriers_transaction(hugo, iuphar, slc):
+    solute_carriers = recast(
+        hugo["solute_carriers"],
+        {"Ensembl gene ID": "ensg", "Approved symbol": "hugo_symbol"},
+    ).drop_duplicates()
+
+    stoich: pd.DataFrame = (
+        recast(
+            iuphar["transporter"],
+            {
+                "object_id": "object_id",
+                "grac_stoichiometry": "stoichiometry_annotations",
+            },
+        )
+        .drop_duplicates()
+        .dropna(subset="stoichiometry_annotations")
+    )
+
+    object_infos = recast(
+        iuphar["database_link"],
+        {
+            "object_id": "object_id",
+            "database_id": "db",  # n. 15 is ensg,
+            "placeholder": "ensg",
+        },
+    )
+    object_infos: pd.DataFrame = object_infos.loc[
+        object_infos["db"] == "15",
+    ]
+    object_infos = object_infos.drop(columns="db")
+    # Drop the non-human IDs
+    object_infos = object_infos.loc[
+        lmap(lambda x: x.startswith("ENSG"), object_infos["ensg"]),
+    ]
+
+    # Merge with stochiometry info
+    stoich = stoich.merge(object_infos, how="left", on="object_id")
+
+    # Stoichiometry is there, but we chose to ignore its parsing (for now)
+    log.warning("Impossible to determine stoichiometry!")
+
+    log.info("Populating transported solutes...")
+    slc = recast(
+        slc,
+        {
+            "SLC name": "hugo_symbol",
+            "Transport type*": "driving",
+            "Substrates": "solutes",
+        },
+    )
+    solute_carriers = solute_carriers.merge(slc, on="hugo_symbol", how="left")
+
+    solute_carriers = explode_slc(solute_carriers)
+    solute_carriers = solute_carriers.drop(columns=["hugo_symbol"])
+
+    return to_transaction(solute_carriers, "solute_carriers")
 
 
 def get_aquaporins_transaction(hugo):
