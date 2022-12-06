@@ -126,7 +126,7 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     """
 
     # Debugging purposes
-    SUPPRESS_ALL = True
+    SUPPRESS_ALL = False
 
     # Suppress_all controls all the debug guards, the False is there to
     # override the suppress_all
@@ -277,7 +277,7 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     else:
         log.debug("Skipped populating aquaporins")
 
-    if (not SUPPRESS_ALL) or True:
+    if (not SUPPRESS_ALL) or False:
         ## -- solute carriers --
         log.info("Populating solute carriers...")
         with cache("hugo") as hugo, cache("iuphar") as iuphar, cache("slc") as slc:
@@ -287,23 +287,22 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     else:
         log.debug("Skipped populating solute carriers")
 
-    if False:
-        if (not SUPPRESS_ALL) or False:
-            ## solute carriers
-            log.info("Populating ABC transporters...")
-            with cache("hugo") as hugo:
-                transaction = get_abc_transporters_transaction(hugo)
-                execute_transaction(connection, transaction)
-            gc.collect()
-        else:
-            log.debug("Skipped populating ABC transporters")
+    if (not SUPPRESS_ALL) or False:
+        ## ABC transporters
+        log.info("Populating ABC transporters...")
+        with cache("hugo") as hugo:
+            transaction = get_abc_transporters_transaction(hugo)
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating ABC transporters")
 
-        if (not SUPPRESS_ALL) or False:
-            ## solute carriers
-            log.info("Populating ATP-driven carriers...")
-            with cache("hugo") as hugo:
-                transaction = get_atp_driven_carriers_transaction(hugo)
-                execute_transaction(connection, transaction)
-            gc.collect()
-        else:
-            log.debug("Skipped populating ATP-driven carriers")
+    if (not SUPPRESS_ALL) or False:
+        ## solute carriers
+        log.info("Populating ATP-driven carriers...")
+        with cache("hugo") as hugo:
+            transaction = get_atp_driven_carriers_transaction(hugo)
+            execute_transaction(connection, transaction)
+        gc.collect()
+    else:
+        log.debug("Skipped populating ATP-driven carriers")

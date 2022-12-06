@@ -725,7 +725,11 @@ def purge_data_in_parenthesis(string: str) -> str:
 
 
 def get_abc_transporters_transaction(hugo):
-    pass
+    data = recast(
+        hugo["ABC_transporters"], {"Ensembl gene ID": "ensg"}
+    ).drop_duplicates()
+
+    return to_transaction(data, "ABC_transporters")
 
 
 SLC_CARRIER_TYPES = {"C": "symport", "E": "antiporter", "F": "uniporter", "O": None}
@@ -880,4 +884,6 @@ def get_aquaporins_transaction(hugo):
 
 
 def get_atp_driven_carriers_transaction(hugo):
-    pass
+    data = recast(hugo["atpases"], {"Ensembl gene ID": "ensg"}).drop_duplicates()
+
+    return to_transaction(data, "atp_driven_transporters")

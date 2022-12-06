@@ -128,6 +128,7 @@ HUGO = {
             "voltage_gated_ion_channels": 178,
             "ABC_transporters": 417,
             "solute_carriers": 752,
+            "atpases": 412,
         },
     },
 }
