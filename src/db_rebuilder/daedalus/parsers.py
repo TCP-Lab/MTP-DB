@@ -3,13 +3,12 @@ import re
 from copy import deepcopy
 from math import inf
 from statistics import mean
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional
 
 import numpy as np
 import pandas as pd
 from daedalus.utils import (
     lmap,
-    merge_lists,
     recast,
     sanity_check,
     split_ensembl_ids,
@@ -709,17 +708,18 @@ BRA_RE = re.compile("(\[.*?\])")
 
 
 def purge_data_in_parenthesis(string: str) -> str:
-    matches = PAR_RE.search(string)
-    if not matches:
-        return string
-    for match in matches.groups():
-        string = string.replace(match, "").strip()
+    ci_matches = PAR_RE.search(string)
+    if ci_matches:
+        for match in ci_matches.groups():
+            string = string.replace(match, "").strip()
 
-    matches = BRA_RE.search(string)
-    if not matches:
+    sq_matches = BRA_RE.search(string)
+    if sq_matches:
+        for match in sq_matches.groups():
+            string = string.replace(match, "").strip()
+
+    if sq_matches is None and ci_matches is None:
         return string
-    for match in matches.groups():
-        string = string.replace(match, "").strip()
 
     return purge_data_in_parenthesis(string)
 
@@ -728,75 +728,58 @@ def get_abc_transporters_transaction(hugo):
     pass
 
 
-def explode_transport_type(in_str) -> Optional[Union[str, list[str]]]:
+SLC_CARRIER_TYPES = {"C": "symport", "E": "antiporter", "F": "uniporter", "O": None}
+
+
+def extract_slc_carrier_type(tokens: set[str]) -> Optional[str]:
     ## >>> BIG FAT WARNING <<<
     # This is very experimental and very rough. It does not cover all edge cases,
     # but works fairly well for most entries. But it needs manual tweakage.
-    if not isinstance(in_str, str):
+    if not isinstance(tokens, set):
+        return None
+
+    slc_type = None
+    for key, value in SLC_CARRIER_TYPES.items():
+        if key in tokens and slc_type is None:
+            slc_type = value
+        elif key in tokens and slc_type is not None:
+            log.warn(f"Got conflicting types ({tokens}). Returning NA")
+            return None
+
+    return slc_type
+
+
+def purge_carrier_types(tokens: set[str]):
+    if not isinstance(tokens, set):
+        return None
+
+    for tk in SLC_CARRIER_TYPES.keys():
+        if tk in tokens:
+            tokens.remove(tk)
+
+    return tokens
+
+
+def tokenize_slc(string: str):
+    if not isinstance(string, str):
         return np.NaN
+    # The spaces are important around and and or
+    tokens = ("/", ",", ";", " and ", " or ")
+    string = purge_data_in_parenthesis(string)
+    assert "(" not in string, f"Purging did not work on {string}"
+    assert ")" not in string, f"Purging did not work on {string}"
 
-    to_parse = in_str.split("/")
-    if len(to_parse) <= 1:
-        log.warn(
-            f"Cannot reliably discern if {in_str} has transported molecule information."
-        )
-    if len(to_parse) >= 2:
-        log.warn(
-            f"The string {in_str} has more than one slash annotation. Trying anyway..."
-        )
+    string = [string]
+    for tk in tokens:
+        string = [y for x in string for y in x.split(tk)]
+        # I strip later to preserve stuff like ' and ' and ' or '
 
-    to_parse = to_parse[-1].strip()
-
-    to_parse = purge_data_in_parenthesis(to_parse)
-
-    return [x.strip() for x in to_parse.split(",")]
+    return set([x.strip() for x in string])
 
 
-def explode_solutes(in_str) -> Optional[str]:
-    if not isinstance(in_str, str):
-        return np.NaN
-    in_str = purge_data_in_parenthesis(in_str)
-    return in_str.split(",")
-
-
-def extract_slc_carrier_type(in_str) -> Optional[Union[str, list[str]]]:
-    ## >>> BIG FAT WARNING <<<
-    # This is very experimental and very rough. It does not cover all edge cases,
-    # but works fairly well for most entries. But it needs manual tweakage.
-
-    if not isinstance(in_str, str):
-        # this is not parseable.
-        return np.NaN
-
-    in_str = purge_data_in_parenthesis(in_str)
-
-    to_parse = in_str.split("/")
-    if len(to_parse) >= 2:
-        log.warn(
-            f"The input string '{in_str}' has more than one slash annotation. Returning NA"
-        )
-        return np.NaN
-
-    to_parse = to_parse[0].strip().replace("?", "").strip()
-
-    # Abbreviations for transport type: C: Cotransporter; E: Exchanger; F: Facilitated transporter; O: Orphan transporter.
-    t_types = {"C": "symport", "E": "antiporter", "F": "uniporter", "O": np.NaN}
-
-    if "," in to_parse:
-        log.warn(f"I had to split a carrier type: {to_parse}")
-        to_parse = to_parse.split(",")
-        try:
-            parsed = [t_types[x] for x in to_parse]
-        except KeyError:
-            return np.NaN
-        return parsed
-
-    try:
-        parsed = t_types[to_parse]
-    except KeyError as e:
-        return np.NaN
-
-    return parsed
+def warn_long_solutes(string):
+    if isinstance(string, str) and len(string) >= 20:
+        log.warn(f"Found an unusually long solute: '{string}'")
 
 
 def explode_slc(data: pd.DataFrame) -> pd.DataFrame:
@@ -810,26 +793,22 @@ def explode_slc(data: pd.DataFrame) -> pd.DataFrame:
     Expects a df with "driving" col with driving forces + transporter types,
     and "solute" col with solutes.
     """
-    data["port_type"] = data["driving"].apply(extract_slc_carrier_type)
-    log.warn(
-        "VERY BIG WARNING: The parsing of the carrier type is still experimental!!!oneone!!"
-    )
-
-    data["driving"] = data["driving"].apply(explode_transport_type)
-    log.warn(
-        "VERY BIG FAT WARNING PART2: The parsing of driver forces is still experimental!!!!!"
-    )
-    data["solutes"] = data["solutes"].apply(explode_solutes)
-
     # Fuse together the data
+    log.info("Fusing carrier information...")
     data["carried_solute"] = [
-        merge_lists(x, y) for x, y in zip(data["solutes"], data["driving"])
+        tokenize_slc(f"{x},{y}") for x, y in zip(data["solutes"], data["driving"])
     ]
+    log.info("Extracting carrier types")
+    data["port_type"] = [extract_slc_carrier_type(x) for x in data["carried_solute"]]
+    log.info("Setting carrier solutes...")
+    data["carried_solute"] = data["carried_solute"].apply(purge_carrier_types)
 
-    print(data.to_string())
-
+    log.info("Exploding slc...")
     data = data.drop(columns=["solutes", "driving"])
     data = data.explode("carried_solute")
+
+    log.info("Checking possible anomalies...")
+    data["carried_solute"].apply(warn_long_solutes)
 
     return data
 

@@ -10,6 +10,7 @@ from logging import getLogger
 from numbers import Number
 from typing import Any, Optional
 
+import numpy as np
 import pandas as pd
 import requests
 from daedalus.errors import Abort
@@ -224,7 +225,7 @@ def represent_sql_type(data: pd.Series) -> list[str]:
     result = []
 
     for item in data:
-        if pd.isnull(item) or tolerant_is_nan(item):
+        if pd.isnull(item) or tolerant_is_nan(item) or item == np.NaN:
             result.append("NULL")
         elif isinstance(item, Number):
             result.append(str(item))
