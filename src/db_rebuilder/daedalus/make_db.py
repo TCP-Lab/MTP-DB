@@ -109,10 +109,36 @@ def generate_database(path: Path, auth_hash) -> None:
     connection = sqlite3.connect(database_path, isolation_level=None)
 
     log.info("Populating database with data...")
-    populate_database(connection, cache)
+    # populate_database(connection, cache)
+
+    apply_manual_tweaks(
+        connection, sql_folder_path=Path("./daedalus/post_build_hooks/").resolve()
+    )
 
     connection.close()
     log.info(f"Finished populating database. Saved in {database_path}")
+
+
+def apply_manual_tweaks(connection: Connection, sql_folder_path: Path):
+    log.info("Looking for post-build transactions...")
+    if not sql_folder_path.is_dir():
+        raise ValueError(f"Supplied path {sql_folder_path} is not a directory.")
+
+    to_apply: list[Path] = []
+    for item in sql_folder_path.iterdir():
+        if item.is_file() and item.suffix.lower() == ".sql":
+            to_apply.append(item)
+
+    if not to_apply:
+        log.info("Found no transactions to apply.")
+        return
+
+    log.info(f"Found {len(to_apply)} transactions to apply.")
+    for item in to_apply:
+        with item.open("r") as stream:
+            sql = stream.read()
+            log.info(f"Executing post-build hook {item.name}...")
+            execute_transaction(connection, sql)
 
 
 def populate_database(connection: Connection, cache: ResourceCache) -> None:
