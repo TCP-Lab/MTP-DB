@@ -109,7 +109,7 @@ def generate_database(path: Path, auth_hash) -> None:
     connection = sqlite3.connect(database_path, isolation_level=None)
 
     log.info("Populating database with data...")
-    # populate_database(connection, cache)
+    populate_database(connection, cache)
 
     apply_manual_tweaks(
         connection, sql_folder_path=Path("./daedalus/post_build_hooks/").resolve()
