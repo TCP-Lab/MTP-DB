@@ -454,3 +454,14 @@ def merge_lists(lst1: list, lst2: list) -> list:
         lst2 = [lst2]
     lst1.extend(lst2)
     return lst1
+
+
+# A very bad flattening function
+def flatten(l):
+    out = []
+    for item in l:
+        if isinstance(item, (list, tuple)):
+            out.extend(flatten(item))
+        else:
+            out.append(item)
+    return out
