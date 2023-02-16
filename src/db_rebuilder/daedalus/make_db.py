@@ -88,7 +88,6 @@ def generate_database(path: Path, auth_hash) -> None:
         }
     )
 
-    ## TEMP -- remove me
     # Cache the data to a pickle so that we don't download it every time
     pickle_path = path / "datacache.pickle"
     if not pickle_path.exists():
@@ -103,7 +102,6 @@ def generate_database(path: Path, auth_hash) -> None:
         cache._ResourceCache__populated = True
         cache._ResourceCache__data = data
         log.debug("Loaded from pickled data.")
-    ## TEMP -- remove me
 
     log.info("Connecting to empty database...")
     connection = sqlite3.connect(database_path, isolation_level=None)
@@ -151,7 +149,7 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
         cache (ResourceCache): The cache with the data used by the parsers.
     """
     # Debugging purposes
-    SUPPRESS_ALL = True
+    SUPPRESS_ALL = False
 
     # Suppress_all controls all the debug guards, the False is there to
     # override the suppress_all
@@ -315,14 +313,14 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     if (not SUPPRESS_ALL) or False:
         ## ABC transporters
         log.info("Populating ABC transporters...")
-        with cache("hugo") as hugo:
-            transaction = get_abc_transporters_transaction(hugo)
+        with cache("hugo") as hugo, cache("iuphar") as iuphar:
+            transaction = get_abc_transporters_transaction(hugo, iuphar)
             execute_transaction(connection, transaction)
         gc.collect()
     else:
         log.debug("Skipped populating ABC transporters")
 
-    if (not SUPPRESS_ALL) or True:
+    if (not SUPPRESS_ALL) or False:
         ## solute carriers
         log.info("Populating ATP-driven carriers...")
         with cache("hugo") as hugo, cache("iuphar") as iuphar:

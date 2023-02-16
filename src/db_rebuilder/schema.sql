@@ -156,6 +156,7 @@ CREATE TABLE solute_carriers (
     -- Probably, each ensg - carried solute combo will be unique.
     carried_solute TEXT,
     rate REAL,
+    net_charge INT,
     stoichiometry INT, -- o simili
     port_type TEXT, -- uni- anti- symp-porter
     is_secondary INT, -- (active secondary)
@@ -176,5 +177,9 @@ CREATE TABLE atp_driven_transporters (
 CREATE TABLE ABC_transporters (
     ensg TEXT, -- See the note on uniqueness for solute carriers
     carried_solute TEXT,
-    stoichiometry INT
+    net_charge INT,
+    stoichiometry INT,
+    rate REAL,
+    direction TEXT,
+    mode INT
 );

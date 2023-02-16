@@ -726,14 +726,6 @@ def purge_data_in_parenthesis(string: str) -> str:
     return purge_data_in_parenthesis(string)
 
 
-def get_abc_transporters_transaction(hugo):
-    data = recast(
-        hugo["ABC_transporters"], {"Ensembl gene ID": "ensg"}
-    ).drop_duplicates()
-
-    return to_transaction(data, "ABC_transporters")
-
-
 SLC_CARRIER_TYPES = {"C": "symport", "E": "antiporter", "F": "uniporter", "O": None}
 
 
@@ -1054,14 +1046,8 @@ def get_solute_carriers_transaction(hugo, iuphar, slc):
     solute_carriers = explode_slc(solute_carriers)
 
     solute_carriers = solute_carriers.drop(
-        columns=[
-            "hugo_symbol",
-            "exploded_solute",
-            "net_charge",  # This makes no sense for SLCs
-        ]
+        columns=["hugo_symbol", "exploded_solute"]
     ).drop_duplicates()
-
-    print(solute_carriers)
 
     return to_transaction(solute_carriers, "solute_carriers")
 
@@ -1077,73 +1063,12 @@ def get_aquaporins_transaction(hugo):
 def get_atp_driven_carriers_transaction(hugo, iuphar):
     data = recast(hugo["atpases"], {"Ensembl gene ID": "ensg"}).drop_duplicates()
 
-    stoich: pd.DataFrame = (
-        recast(
-            iuphar["transporter"],
-            {
-                "object_id": "object_id",
-                "grac_stoichiometry": "stoichiometry_annotations",
-            },
-        )
-        .drop_duplicates()
-        .dropna(subset="stoichiometry_annotations")
-    )
-
-    object_infos = recast(
-        iuphar["database_link"],
-        {
-            "object_id": "object_id",
-            "database_id": "db",  # n. 15 is ensg,
-            "placeholder": "ensg",
-        },
-    )
-
-    object_infos: pd.DataFrame = object_infos.loc[
-        object_infos["db"] == "15",
-    ]
-    object_infos = object_infos.drop(columns="db")
-    # Drop the non-human IDs
-    object_infos = object_infos.loc[
-        lmap(lambda x: x.startswith("ENSG"), object_infos["ensg"]),
-    ]
-
-    # Merge with stochiometry info
-    stoich = stoich.merge(object_infos, how="left", on="object_id")
-
-    # The first here is the row_id
-    # The first in the tuple is the object id
-    # We don't need them
-    log.info("Parsing stoichiometry information from IuPhar...")
-    entries = []
-    for _, (_, grac, ensg) in stoich.iterrows():
-        entry = grac_to_entry(ensg, grac)
-        if entry and not entry == [None]:
-            entries.append(entry)
-
-    # Convert to dicts
-    entries = flatten(entries)
-    entries = filter(lambda x: x is not None, entries)
-    entries = map(lambda x: x.__dict__, entries)
-    stoich_info = pd.DataFrame(entries)
-
-    # This makes (for some reason) duplicated rows. Drop them
-    stoich_info = stoich_info.drop_duplicates()
-
-    previous_len = len(data["ensg"])
-    data = data.merge(stoich_info, left_on="ensg", right_on="id", how="left")
-
-    print(any([x for x in data["ensg"] if x in stoich_info["id"]]))
-
-    sanity_check(
-        previous_len == len(set(data["ensg"])),
-        "The number of ENSGs is identical from before the merge",
-    )
-
-    data = data.drop(
-        columns=[
-            "id",
-        ]
-    )
-
-    # We now need to merge with the transporter data
     return to_transaction(data, "atp_driven_transporters")
+
+
+def get_abc_transporters_transaction(hugo, iuphar):
+    data = recast(
+        hugo["ABC_transporters"], {"Ensembl gene ID": "ensg"}
+    ).drop_duplicates()
+
+    return to_transaction(data, "ABC_transporters")
