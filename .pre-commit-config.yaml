@@ -1,23 +1,23 @@
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.1.0
+  rev: v4.4.0
   hooks:
   - id: check-added-large-files
   - id: end-of-file-fixer
   - id: trailing-whitespace
 - repo: https://github.com/pycqa/isort
-  rev: 5.10.1
+  rev: 5.12.0
   hooks:
     - id: isort
       name: isort (python)
       args: ["--profile", "black"]
 - repo: https://github.com/hadialqattan/pycln
-  rev: v1.2.5
+  rev: v2.1.3
   hooks:
   -   id: pycln
       args: ["--all"]
 - repo: https://github.com/psf/black
-  rev: 22.3.0
+  rev: 23.1.0
   hooks:
   - id: black
     args: ["./src/db_rebuilder/daedalus"]

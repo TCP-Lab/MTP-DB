@@ -7,7 +7,6 @@ from daedalus.tests.fixtures import *
 
 @pytest.mark.usefixtures("setup_db")
 def test_schema(session: Cursor):
-
     tables = session.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = tables.fetchall()
 

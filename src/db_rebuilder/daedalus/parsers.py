@@ -160,7 +160,6 @@ def get_protein_structures_transaction(mart_data):
 
 
 def get_gene_names_transaction(mart_data):
-
     desc_data: pd.DataFrame = mart_data["IDs+desc"][
         ["ensembl_gene_id_version", "description"]
     ]
@@ -1001,9 +1000,7 @@ def get_solute_carriers_transaction(hugo, iuphar, slc):
         },
     )
 
-    object_infos: pd.DataFrame = object_infos.loc[
-        object_infos["db"] == "15",
-    ]
+    object_infos: pd.DataFrame = object_infos.loc[object_infos["db"] == "15",]
     object_infos = object_infos.drop(columns="db")
     # Drop the non-human IDs
     object_infos = object_infos.loc[
