@@ -1060,6 +1060,11 @@ def get_aquaporins_transaction(hugo):
 def get_atp_driven_carriers_transaction(hugo, iuphar):
     data = recast(hugo["atpases"], {"Ensembl gene ID": "ensg"}).drop_duplicates()
 
+    log.info("Dropping AAA - Atpases since they are not transporters...")
+    p = len(data["ensg"])
+    aaa_atpases = recast(hugo["AAA_atpases"], {"Ensembl gene ID": "ensg"})
+    data = data.drop(data[data["ensg"].isin(aaa_atpases["ensg"])].index)
+    log.info(f"Dropped {p - len(data['ensg'])} entries.")
     return to_transaction(data, "atp_driven_transporters")
 
 

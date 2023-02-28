@@ -129,6 +129,7 @@ HUGO = {
             "ABC_transporters": 417,
             "solute_carriers": 752,
             "atpases": 412,
+            "AAA_atpases": 413,  # These are NOT transporters
         },
     },
 }
