@@ -109,41 +109,16 @@ CREATE TABLE cosmic_genes (
 
 ----- NOVEL DATA ------
 CREATE TABLE channels (
-    ensg TEXT PRIMARY KEY,
-    relative_cesium_conductance REAL,
-    absolute_cesium_conductance REAL,
-    relative_potassium_conductance REAL,
-    absolute_potassium_conductance REAL,
-    relative_sodium_conductance REAL,
-    absolute_sodium_conductance REAL,
-    relative_calcium_conductance REAL,
-    absolute_calcium_conductance REAL,
-    relative_lithium_conductance REAL,
-    absolute_lithium_conductance REAL,
-    relative_rubidium_conductance REAL,
-    absolute_rubidium_conductance REAL,
-    relative_magnesium_conductance REAL,
-    absolute_magnesium_conductance REAL,
-    relative_ammonia_conductance REAL,
-    absolute_ammonia_conductance REAL,
-    relative_barium_conductance REAL,
-    absolute_barium_conductance REAL,
-    relative_zinc_conductance REAL,
-    absolute_zinc_conductance REAL,
-    relative_manganese_conductance REAL,
-    absolute_manganese_conductance REAL,
-    relative_strontium_conductance REAL,
-    absolute_strontium_conductance REAL,
-    relative_cadmium_conductance REAL,
-    absolute_cadmium_conductance REAL,
-    relative_nickel_conductance REAL,
-    absolute_nickel_conductance REAL,
-    relative_chlorine_conductance REAL,
-    absolute_chlorine_conductance REAL,
+    ensg TEXT,
     -- gating
     is_voltage_gated INT,
     is_ligand_gated INT,
-    is_stretch_activated INT -- Lasciata vuota
+    is_leakage INT,
+    is_stretch_activated INT, -- Lasciata vuota
+    --
+    carried_solute TEXT,
+    relative_conductance REAL,
+    absolute_conductance REAL
 );
 
 CREATE TABLE aquaporins (

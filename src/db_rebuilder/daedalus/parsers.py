@@ -701,9 +701,76 @@ def get_ion_channels_transaction(iuphar_data, hugo):
         "At least one ligand gated ion channel exists",
     )
 
-    log.warn("Impossible to annotate stretch-activated channels")
+    log.info("Using conductances to populate table...")
+    ions = {
+        "cesium": "Cs+",
+        "potassium": "K+",
+        "sodium": "Na+",
+        "calcium": "Ca2+",
+        "lithium": "Li+",
+        "rubidium": "Rb+",
+        "magnesium": "Mg2+",
+        "ammonia": "NH4+",
+        "barium": "Ba2+",
+        "zinc": "Zn2+",
+        "manganese": "Mg2+",
+        "strontium": "Sr2+",
+        "cadmium": "Cd2+",
+        "nickel": "Ni2+",
+        "chlorine": "Cl-",
+    }
+    hgnc_groups = {
+        "sodium": "sodium_ion_channels",
+        "calcium": "calcium_ion_channels",
+        "potassium": "potassium_ion_channels",
+        "chlorine": "chloride_ion_channels",
+    }
 
-    return to_transaction(conductances, "channels")
+    # For safety, i reset the index here
+    conductances = conductances.reset_index()
+    table = []
+    for type, ion in ions.items():
+        log.debug(f"Populating for {type}")
+        # We just need to subset for the relative cond., as if the absolute is
+        # available we have the relative  cond. for sure
+        permeable = conductances["ensg"][
+            conductances[f"relative_{type}_conductance"].notna()
+        ]
+        if type in hgnc_groups:
+            hugo_permeable = recast(
+                hugo[hgnc_groups[type]], {"Ensembl gene ID": "ensg"}
+            )["ensg"]
+            permeable = pd.concat(
+                [permeable, hugo_permeable], axis=0, ignore_index=True
+            )
+
+        # In permeable we now have all the genes permeable for the type
+        for gene in permeable:
+            index = conductances.index[conductances["ensg"] == gene]
+            if index.empty:
+                log.warn(f"Failed to get index for gene {gene}")
+                continue
+            entry = {
+                "ensg": gene,
+                "is_voltage_gated": conductances.loc[index, "is_voltage_gated"].iloc[0],
+                "is_ligand_gated": conductances.loc[index, "is_ligand_gated"].iloc[0],
+                "is_stretch_activated": None,
+                "carried_solute": ion,
+                "relative_conductance": conductances.loc[
+                    index, f"relative_{type}_conductance"
+                ].iloc[0],
+                "absolute_conductance": conductances.loc[
+                    index, f"absolute_{type}_conductance"
+                ].iloc[0],
+            }
+            table.append(entry)
+
+    log.warn("Impossible to annotate stretch-activated channels")
+    log.warn("Impossible to know leakage channels")
+
+    table = pd.DataFrame(table)
+
+    return to_transaction(table, "channels")
 
 
 PAR_RE = re.compile(r"(\(.*?\))")
