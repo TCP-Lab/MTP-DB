@@ -9,7 +9,9 @@ import numpy as np
 import pandas as pd
 from daedalus.static_solute_hits import STATIC_HITS, Entry
 from daedalus.utils import (
+    explode_on,
     flatten,
+    get_local_data,
     lmap,
     recast,
     sanity_check,
@@ -704,8 +706,8 @@ def get_ion_channels_transaction(iuphar_data, hugo):
     return to_transaction(conductances, "channels")
 
 
-PAR_RE = re.compile("(\(.*?\))")
-BRA_RE = re.compile("(\[.*?\])")
+PAR_RE = re.compile(r"(\(.*?\))")
+BRA_RE = re.compile(r"(\[.*?\])")
 
 
 def purge_data_in_parenthesis(string: str) -> str:
@@ -1065,6 +1067,25 @@ def get_atp_driven_carriers_transaction(hugo, iuphar):
     aaa_atpases = recast(hugo["AAA_atpases"], {"Ensembl gene ID": "ensg"})
     data = data.drop(data[data["ensg"].isin(aaa_atpases["ensg"])].index)
     log.info(f"Dropped {p - len(data['ensg'])} entries.")
+
+    log.info("Adding local annotations")
+    local = get_local_data("atp_driven_ABC_data.csv")
+
+    local = recast(
+        local,
+        {
+            "ensg": "ensg",
+            "transported_solute": "carried_solute",
+            "rate": "rate",
+            "direction": "direction",
+            "stoichiometry": "stoichiometry",
+        },
+    )
+
+    local = explode_on(local, on=";", columns=["carried_solute", "direction"])
+
+    data = data.merge(local, how="left", on="ensg")
+
     return to_transaction(data, "atp_driven_transporters")
 
 
@@ -1072,5 +1093,23 @@ def get_abc_transporters_transaction(hugo, iuphar):
     data = recast(
         hugo["ABC_transporters"], {"Ensembl gene ID": "ensg"}
     ).drop_duplicates()
+
+    log.info("Adding local annotations")
+    local = get_local_data("atp_driven_ABC_data.csv")
+
+    local = recast(
+        local,
+        {
+            "ensg": "ensg",
+            "transported_solute": "carried_solute",
+            "rate": "rate",
+            "direction": "direction",
+            "stoichiometry": "stoichiometry",
+        },
+    )
+
+    local = explode_on(local, on=";", columns=["carried_solute", "direction"])
+
+    data = data.merge(local, how="left", on="ensg")
 
     return to_transaction(data, "ABC_transporters")

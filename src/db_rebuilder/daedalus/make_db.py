@@ -310,7 +310,7 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     else:
         log.debug("Skipped populating solute carriers")
 
-    if (not SUPPRESS_ALL) or False:
+    if (not SUPPRESS_ALL) or True:
         ## ABC transporters
         log.info("Populating ABC transporters...")
         with cache("hugo") as hugo, cache("iuphar") as iuphar:

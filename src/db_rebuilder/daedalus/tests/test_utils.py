@@ -36,3 +36,16 @@ def test_parse_ensembl_ids():
         assert result.identifier == value["num"]
         assert result.type_letter_prefix == value["tip"]
         assert result.version_number == value["ver"]
+
+
+def test_explode_on():
+    original = pd.DataFrame(
+        {"a": ["abb:acc", "abb", "acc:abb"], "b": ["kkk", "kkk:lll", "lll"]}
+    )
+    exploded = pd.DataFrame(
+        {
+            "a": ["abb", "acc", "abb", "abb", "acc", "abb"],
+            "b": ["kkk", "kkk", "kkk", "lll", "lll", "lll"],
+        }
+    )
+    assert explode_on(original, on=":").equals(exploded)

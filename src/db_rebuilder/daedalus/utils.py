@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from logging import getLogger
 from numbers import Number
+from pathlib import Path
 from typing import Any, Optional
 
 import numpy as np
@@ -465,3 +466,56 @@ def flatten(l):
         else:
             out.append(item)
     return out
+
+
+def get_local_data(file_name: str) -> pd.DataFrame:
+    """Get a local data file based on its file name.
+
+    The local data has to live in the ./manual_data folder and be a .csv file.
+
+    Args:
+        file_name (str): The name of the file to load.
+
+    Returns:
+        A `pd.DataFrame` with the loaded data.
+    """
+
+    # TODO: refactor this
+    PATH = Path("./daedalus/manual_data/")
+
+    with (PATH / file_name).open("r") as file:
+        return pd.read_csv(file)
+
+
+def explode_on(
+    data: pd.DataFrame, on: str, columns: Optional[list[str]] = None
+) -> pd.DataFrame:
+    """Explode a dataframe.
+
+    In all `columns`, split the value on the string `on`, then call `.explode()`
+    on the result.
+
+    Args:
+        data (pd.DataFrame): The data to explode.
+        on (str): The string to use to split
+        columns (Optional[list[str]], optional): Optional list of columns to act
+        upon. If unspecified, uses all of them. Defaults to None.
+
+    Returns:
+        pd.DataFrame: The exploded data
+    """
+    if not columns:
+        columns = list(data.columns)
+
+    def conservative_split(x):
+        if isinstance(x, str):
+            return x.split(on)
+        else:
+            return [x]
+
+    for col in columns:
+        data[col] = lmap(conservative_split, data[col])
+
+    data = data.explode(columns, ignore_index=True)
+
+    return data.drop_duplicates()
