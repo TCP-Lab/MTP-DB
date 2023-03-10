@@ -1,0 +1,29 @@
+{
+    "whole_transportome": [
+        "channels", "aquaporins", "solute_carriers", "atp_driven_transporters", "ABC_transporters"
+    ],
+    "pores": [
+        "channels", "aquaporins"
+    ],
+    "channels": [
+        "channels"
+    ],
+    "aquaporins": [
+        "aquaporins"
+    ],
+    "transporters": [
+        "solute_carriers", "atp_driven_transporters", "ABC_transporters"
+    ],
+    "solute_carriers": [
+        "solute_carriers"
+    ],
+    "atp_driven": [
+        "atp_driven_transporters", "ABC_transporters"
+    ],
+    "ABC": [
+        "ABC_transporters"
+    ],
+    "pumps": [
+        "atp_driven_transporters"
+    ]
+}
