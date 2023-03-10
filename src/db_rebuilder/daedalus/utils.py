@@ -230,6 +230,8 @@ def represent_sql_type(data: pd.Series) -> list[str]:
             result.append("NULL")
         elif isinstance(item, Number):
             result.append(str(item))
+        elif isinstance(item, str) and item == "NA":
+            result.append("NULL")
         elif isinstance(item, str):
             result.append("'" + item.replace("'", "''") + "'")
         elif isinstance(item, bool):
@@ -504,8 +506,11 @@ def explode_on(
     Returns:
         pd.DataFrame: The exploded data
     """
+
+    # This works very, very badly, but seems to work
+    original_cols = data.columns
     if not columns:
-        columns = list(data.columns)
+        columns = list(original_cols)
 
     def conservative_split(x):
         if isinstance(x, str):
@@ -513,9 +518,69 @@ def explode_on(
         else:
             return [x]
 
+    def to_list(x):
+        if isinstance(x, list):
+            return x
+        return [x]
+
     for col in columns:
         data[col] = lmap(conservative_split, data[col])
 
-    data = data.explode(columns, ignore_index=True)
+    # lists in the cols may have different lengths, but as long as they are all
+    # either the max or 1, we can still explode
+
+    new_rows = []
+    for _, row in data.iterrows():
+        row = lmap(to_list, row)
+
+        lengths = lmap(len, row)
+        max_len = max(lengths)
+
+        assert all(
+            lmap(lambda x: x == 1 or x == max_len, lengths)
+        ), f"Cols have incompatible split lengths (row {row})"
+
+        mults = [max_len if x == 1 else 1 for x in lengths]
+
+        row = [x * y for x, y in zip(row, mults)]
+
+        new_rows.append(row)
+
+    data = pd.DataFrame(new_rows, columns=original_cols)
+
+    data = data.explode(column=list(original_cols), ignore_index=True)
 
     return data.drop_duplicates()
+
+
+THESAURUS_FILE = "thesaurus.csv"
+
+
+def apply_thesaurus(frame: pd.DataFrame, col="carried_solute") -> pd.DataFrame:
+    """Apply the thesaurus on a dataframe,
+
+    Optionally specify which col has the carried solute information
+
+    Args:
+        frame (pd.DataFrame): The frame to act upon
+        col (str, optional): The col to act upon. Defaults to "carried_solute".
+
+    Returns:
+        pd.DataFrame: The (exploded) frame with the synonyms
+    """
+    thesaurus = get_local_data(THESAURUS_FILE)
+    # First, replace every entry with its "change_to" equivalent
+    change_to = thesaurus.dropna(axis=0, subset="change_to")
+
+    log.info("Applying thesaurus equivalences...")
+    for _, line in change_to.iterrows():
+        frame[col][frame[col] == line["original"]] = line["change_to"]
+
+    log.info("Adding thesaurus synonyms...")
+    synonyms = thesaurus.dropna(axis=0, subset="synonyms")
+    for _, line in synonyms.iterrows():
+        frame[col][
+            frame[col] == line["original"]
+        ] = f"{line['original']},{line['synonyms']}"
+
+    return explode_on(frame, ",", [col])

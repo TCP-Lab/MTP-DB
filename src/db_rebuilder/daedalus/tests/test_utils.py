@@ -49,3 +49,27 @@ def test_explode_on():
         }
     )
     assert explode_on(original, on=":").equals(exploded)
+
+
+def test_apply_thesaurus():
+    original = pd.DataFrame(
+        {"control": ["a", "b", "c"], "test": ["Na", "dopamine", "glucosylceramide"]}
+    )
+    exploded = pd.DataFrame(
+        {
+            "control": ["a", "a", "b", "b", "b", "c", "c"],
+            "test": [
+                "Na+",
+                "cation",
+                "dopamine",
+                "amine",
+                "neurotransmitter",
+                "glucosylceramide",
+                "lipid",
+            ],
+        }
+    )
+
+    res = apply_thesaurus(original, col="test")
+
+    assert res.equals(exploded)

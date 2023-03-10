@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from daedalus.static_solute_hits import STATIC_HITS, Entry
 from daedalus.utils import (
+    apply_thesaurus,
     explode_on,
     flatten,
     get_local_data,
@@ -770,6 +771,8 @@ def get_ion_channels_transaction(iuphar_data, hugo):
 
     table = pd.DataFrame(table)
 
+    table = apply_thesaurus(table)
+
     return to_transaction(table, "channels")
 
 
@@ -1115,6 +1118,8 @@ def get_solute_carriers_transaction(hugo, iuphar, slc):
         columns=["hugo_symbol", "exploded_solute"]
     ).drop_duplicates()
 
+    solute_carriers = apply_thesaurus(solute_carriers)
+
     return to_transaction(solute_carriers, "solute_carriers")
 
 
@@ -1153,6 +1158,8 @@ def get_atp_driven_carriers_transaction(hugo, iuphar):
 
     data = data.merge(local, how="left", on="ensg")
 
+    data = apply_thesaurus(data)
+
     return to_transaction(data, "atp_driven_transporters")
 
 
@@ -1178,5 +1185,7 @@ def get_abc_transporters_transaction(hugo, iuphar):
     local = explode_on(local, on=";", columns=["carried_solute", "direction"])
 
     data = data.merge(local, how="left", on="ensg")
+
+    data = apply_thesaurus(data)
 
     return to_transaction(data, "ABC_transporters")

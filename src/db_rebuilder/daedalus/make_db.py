@@ -149,7 +149,7 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
         cache (ResourceCache): The cache with the data used by the parsers.
     """
     # Debugging purposes
-    SUPPRESS_ALL = True
+    SUPPRESS_ALL = False
 
     # Suppress_all controls all the debug guards, the False is there to
     # override the suppress_all
