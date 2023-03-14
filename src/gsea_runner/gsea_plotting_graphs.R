@@ -107,7 +107,6 @@ result_to_graph <- function(result, base_edges, layers) {
 
 make_colours <- function(palette, values) {
   colour_fun <- colorRamp(palette)
-  values <- abs(as.numeric(igraph::vertex_attr(graph, "NES")))
   
   values <- (values - min(values)) / (max(values) - min(values))
   
@@ -170,22 +169,25 @@ calculate_angle_from_pos <- function(pos_dataframe, specials = NULL) {
   # From radians to degrees
   pos_dataframe$angle <- pos_dataframe$angle * 180 / pi 
   
-  print(pos_dataframe)
+  # Detect which labels do not lay on the outer circle, so that we can
+  # label them differently
+  hypothenuses <- sqrt(pos_dataframe$x ** 2 + pos_dataframe$y ** 2)
+  pos_dataframe[hypothenuses - max(hypothenuses) > max(hypothenuses) * 0.001,] |> print()
   
   pos_dataframe
 }
 
 plot_result <- function(result, base_edges, layers) {
   
-  graph <- result_to_graph(result, base_edges, layers)
-  colours <- make_colours(c("blue", "grey", "red"), igraph::vertex_attr(graph, "NES"))
+  data_graph <- result_to_graph(result, base_edges, layers)
+  colours <- make_colours(c("blue", "grey", "red"), as.numeric(igraph::vertex_attr(data_graph, "NES")))
   
   # "Plot" a graph with just the labels
-  p <- ggraph(graph, layout='dendrogram', circular = TRUE) +
+  p <- ggraph(data_graph, layout='dendrogram', circular = TRUE) +
     coord_fixed() +
     geom_node_text(
       aes(
-        label = parse_name_to_label(igraph::vertex_attr(graph, "name"))
+        label = parse_name_to_label(igraph::vertex_attr(data_graph, "name"))
       )
     )
   
@@ -194,15 +196,17 @@ plot_result <- function(result, base_edges, layers) {
   expand_vec <- c(0.15, 0.15)
   
   # Now we have the angles, we can build the real plot
-  pp <- ggraph(graph, layout='dendrogram', circular = TRUE) +
+  pp <- ggraph(data_graph, layout='dendrogram', circular = TRUE) +
     geom_edge_diagonal(aes(alpha = after_stat(index)), show.legend = FALSE) +
     coord_fixed() +
     scale_edge_colour_distiller(palette = "RdPu") +
     geom_node_point(
       aes(
-        size = as.numeric(igraph::vertex_attr(graph, "padj")),
-        color = as.numeric(igraph::vertex_attr(graph, "NES"))),
-      show.legend = setNames(c(TRUE, FALSE), c("color", "size"))
+        size = as.numeric(igraph::vertex_attr(data_graph, "padj")),
+        color = as.numeric(igraph::vertex_attr(data_graph, "NES")),
+        alpha = as.numeric((as.numeric(igraph::vertex_attr(data_graph, "padj")) < 0.05) + 1) / 2
+      ),
+      show.legend = setNames(c(TRUE, FALSE, FALSE), c("color", "size", "alpha"))
     ) +
     geom_node_text(
       aes(
@@ -212,7 +216,7 @@ plot_result <- function(result, base_edges, layers) {
       ), angle = plot_labels$angle,
       size = 2.5
     ) +
-    scale_color_continuous("viridis", guide = guide_legend(title = "NES")) +
+    scale_color_continuous(guide = guide_legend(title = "NES")) +
     theme(legend.position = "bottom", panel.background = element_blank()) +
     # Give more space to the plot area so the lables are drawn properly
     scale_x_continuous(expand = expand_vec) + scale_y_continuous(expand = expand_vec) +
@@ -221,12 +225,12 @@ plot_result <- function(result, base_edges, layers) {
   return(pp)
 }
 
-plot_result(results$`jankyr_Limma - DEG Table tumor-normal.csv`, base_edges = BASE_EDGE_LIST, LAYERS)
+plot_result(results$`wangh_Limma - DEG Table tumor-normal.csv`, base_edges = BASE_EDGE_LIST, LAYERS)
 
 
 ## tests
 
-graph <- result_to_graph(results$`jankyr_Limma - DEG Table tumor-normal.csv`, BASE_EDGE_LIST, LAYERS)
+graph <- result_to_graph(results$`wangh_Limma - DEG Table tumor-normal.csv`, BASE_EDGE_LIST, LAYERS)
 colours <- make_colours(c("blue", "grey", "red"), igraph::vertex_attr(graph, "NES"))
 
 p <- ggraph(graph, layout='igraph', algorithm = "tree", circular = TRUE) +
@@ -237,6 +241,15 @@ p <- ggraph(graph, layout='igraph', algorithm = "tree", circular = TRUE) +
     aes(
       size = as.numeric(igraph::vertex_attr(graph, "padj")),
       color = as.numeric(igraph::vertex_attr(graph, "NES"))),
+    show.legend = setNames(c(TRUE, FALSE), c("color", "size"))
+  ) +
+  geom_node_point(
+    aes(
+      size = 1,
+      color = "green",
+      shape = 13,
+      alpha = as.numeric(as.numeric(igraph::vertex_attr(graph, "padj")) < 0.05)
+    ),
     show.legend = setNames(c(TRUE, FALSE), c("color", "size"))
   ) +
   scale_color_continuous("viridis", guide = guide_legend(title = "NES")) +
