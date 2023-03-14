@@ -2,6 +2,9 @@
 
 library(tidyverse)
 
+requireNamespace("biomaRt")
+requireNamespace("fgsea")
+
 options(readr.num_columns = 0)
 
 load_genesets <- function(folder) {
@@ -99,15 +102,86 @@ run_all_gsea <- function(input_data_folder, genesets_folder_path) {
   return(results)
 }
 
+save_result <- function(result, out_dir, name, plot = FALSE) {
+  out_path <- file.path(out_dir, name)
+  
+  if (plot) {
+    for (i in seq_along(result)) {
+      pdf(paste0(out_path, names(result)[i], ".pdf"), width = 12, height = 8)
+      print(result[[i]])
+      dev.off()
+    }
+    return(TRUE)
+  }
+  
+  write_csv(result, out_path)
+  return(TRUE)
+}
 
-results <- run_all_gsea("/home/hedmad/Desktop/test_gsea_data/", "/home/hedmad/Files/repos/MTP-DB/src/geneset_maker/out/")
+save_results <- function(results, out_dir, skip_plots = FALSE) {
+  wrap <- function(x, name) {
+    print(paste0("Saving ", name))
+    
+    is_plot <- startsWith(name, "plot")
+    if (is_plot & skip_plots) {
+      print("Skipped.")
+      return()
+    }
+    save_result(x, out_dir, name, is_plot)
+  }
+  # I can't make it work with sapply so, get a for loop
+  for (i in seq_along(results)) {
+    wrap(results[[i]], names(results)[i])
+  }
+}
 
+select_results <- function(results, plots = FALSE) {
+  key <- startsWith(names(results), "plot")
+  if (plots) {
+    return(results[key])
+  } else {
+    return(results[! key])
+  }
+}
+
+results <- run_all_gsea(
+  "/home/hedmad/Files/data/mtpdb/input_deg_tables/",
+  "/home/hedmad/Files/data/mtpdb/genesets/"
+)
+
+save_results(results, out_dir = "/home/hedmad/Files/data/mtpdb/gsea_output/", skip_plots = TRUE)
+
+save_result(
+  result = results$`jankyr_Limma - DEG Table tumor-normal.csv`,
+  "/home/hedmad/Files/data/mtpdb/gsea_output/",
+  "jankyr_Limma - DEG Table tumor-normal.csv",
+  plot = FALSE
+)
+
+save_result(
+  result = results$`plot_jankyr_Limma - DEG Table tumor-normal.csv`,
+  "/home/hedmad/Files/data/mtpdb/gsea_output/",
+  "plot_jankyr_Limma - DEG Table tumor-normal.csv",
+  plot = TRUE
+)
+
+res_tables <- select_results(results, plots = FALSE)
+
+summarise_results <- function(result) {
+  sig_pathways <- result[result$padj < 0.05, , drop=FALSE]
+  
+  if (nrow(sig_pathways) == 0) {
+    cat("No significant enrichment found.\n")
+    return(invisible())
+  }
+  cat(paste0("Found ", nrow(sig_pathways), " enriched sets.\n"))
+  sig_pathways |> arrange(padj) |> select(all_of(c("pathway", "padj", "ES", "NES", "size"))) |> print()
+  return(invisible())
+}
 
 # TEST
 
-genesets <- load_genesets("/home/hedmad/Files/repos/MTP-DB/src/geneset_maker/out/")
-ranks <- extract_ranks("/home/hedmad/Desktop/test_gsea_data/wangh_Limma - DEG Table tumor-normal.csv")
-
-test_gsea <- run_gsea(genesets, ranks)
-
-fgsea::plotGseaTable(genesets, ranks, test_gsea)
+summarise_results(results$`jankyr_Limma - DEG Table tumor-normal.csv`)
+summarise_results(results$`jiang_Limma - DEG Table tumor-normal.csv`)
+summarise_results(results$`wangh_Limma - DEG Table tumor-normal.csv`)
+summarise_results(results$`zhang_Limma - DEG Table tumor-normal.csv`)

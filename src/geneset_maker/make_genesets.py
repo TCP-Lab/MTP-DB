@@ -75,11 +75,13 @@ def main(args: dict) -> None:
             table, min_pop_score=args.min_pop_score, min_set_size=args.min_set_size
         )
 
+    log.info("Writing lists to disk...")
     for table, lists in gene_lists.items():
         for name, list in lists.items():
-            log.info("Writing lists to disk...")
-            with (args.out_dir / f"{table}_{name}.txt").open("w+") as stream:
+            with (args.out_dir / f"{table}~{name}.txt").open("w+") as stream:
                 stream.writelines([f"{x}\n" for x in list])
+    
+    log.info("Finished!")
 
 
 def make_large_tables(conn: Connection, sets: dict) -> dict[pd.DataFrame]:
@@ -131,7 +133,7 @@ def generate_gene_list(
             ].drop_duplicates()
             if len(putative_list) < min_set_size:
                 continue
-            gene_lists[f"{column}_{element}"] = putative_list
+            gene_lists[f"{column}~{element}"] = putative_list
 
     log.info(f"Generated {len(gene_lists)} gene lists from table.")
 
