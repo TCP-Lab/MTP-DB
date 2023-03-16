@@ -222,9 +222,9 @@ plot_result <- function(result, base_edges, layers) {
     geom_node_point(
       aes(
         size = -log10(as.numeric(igraph::vertex_attr(data_graph, "padj"))),
-        color = colours,
-        alpha = as.numeric((as.numeric(igraph::vertex_attr(data_graph, "padj")) < 0.05) + 1) / 2
+        color = colours
       ),
+      alpha = (as.numeric(as.numeric(igraph::vertex_attr(data_graph, "padj")) < 0.05) + 0.2 ),
       show.legend = setNames(c(FALSE, FALSE, FALSE), c("color", "size", "alpha"))
     ) +
     geom_node_text(
@@ -244,7 +244,7 @@ plot_result <- function(result, base_edges, layers) {
   return(pp)
 }
 
-plot_result(results$`wangh_Limma - DEG Table tumor-normal.csv`, base_edges = BASE_EDGE_LIST, LAYERS)
+plot_result(results$`TCGA-ACC_vs_Adrenal_Gland.csv`, base_edges = BASE_EDGE_LIST, LAYERS)
 
 
 ## tests
