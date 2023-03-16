@@ -36,8 +36,6 @@ read_results <- function(input_dir) {
   return(res)
 }
 
-results <- read_results("/home/hedmad/Files/data/mtpdb/gsea_output/")
-
 assert <- function(exprs, message) {
   if (!exprs) {
     stop(message)
@@ -96,6 +94,8 @@ result_to_graph <- function(result, base_edges, layers) {
   vertice_frame <- do.call(rbind.data.frame, vres)
   colnames(vertice_frame) <- c(1, "NES", "padj")
 
+  vertice_frame$NES[is.na(vertice_frame$NES)] <- 0
+
   # We can now add the layers that the vertices will sit in
   vertice_frame$layers <- sapply(vertice_frame[[1]], name_to_layer, layers = layers)
 
@@ -107,11 +107,12 @@ result_to_graph <- function(result, base_edges, layers) {
 make_colours <- function(palette, values) {
   colour_fun <- colorRamp(palette)
 
-  values <- (values - min(values)) / (max(values) - min(values))
+  values <- (values-min(values))/(max(values)-min(values))
 
   col_values <- colour_fun(values)
 
   colours <- apply(col_values, 1, function(x) {
+    x[is.na(x)] <- 0
     rgb(x[1], x[2], x[3], maxColorValue = 255)
   })
 }
@@ -196,7 +197,7 @@ calculate_angle_from_pos <- function(pos_dataframe, specials = NULL) {
   pos_dataframe
 }
 
-plot_result <- function(result, base_edges, layers) {
+plot_result <- function(result, base_edges, layers, title = "") {
 
   data_graph <- result_to_graph(result, base_edges, layers)
   colours <- make_colours(c("blue", "gray", "red"), as.numeric(igraph::vertex_attr(data_graph, "NES")))
@@ -239,39 +240,38 @@ plot_result <- function(result, base_edges, layers) {
     theme(legend.position = "bottom", panel.background = element_blank()) +
     # Give more space to the plot area so the lables are drawn properly
     scale_x_continuous(expand = expand_vec) + scale_y_continuous(expand = expand_vec) +
-    ggtitle("A plot of nice data")
+    ggtitle(title)
 
   return(pp)
 }
 
-plot_result(results$`TCGA-ACC_vs_Adrenal_Gland.csv`, base_edges = BASE_EDGE_LIST, LAYERS)
+plot_result(results$`wangh_Limma - DEG Table tumor-normal.csv`, base_edges = BASE_EDGE_LIST, LAYERS)
 
+plot_all_results <- function(results, base_edges, layers, out_dir, width=10, height=8, png = TRUE) {
+  for (i in seq_along(results)) {
+    cat(paste0("Saving ", names(results)[i], "...\n"))
+    if (png) {
+      png(
+        file.path(out_dir, paste0(names(results)[i], ".png")),
+        width = width, height = height,
+        units = "in",
+        res = 400
+      )
+    } else {
+      pdf(
+          file.path(
+          out_dir, paste0(names(results[i], ".png")),
+          width = width, height = height
+        )
+      )
+    }
+    print(
+      plot_result(results[[i]], base_edges = base_edges, layers = layers, title = names(results)[i])
+    )
+    graphics.off()
+  }
+}
 
-## tests
+results <- read_results("/home/hedmad/Files/data/mtpdb/gsea_output/")
 
-graph <- result_to_graph(results$`wangh_Limma - DEG Table tumor-normal.csv`, BASE_EDGE_LIST, LAYERS)
-colours <- make_colours(c("blue", "grey", "red"), igraph::vertex_attr(graph, "NES"))
-
-p <- ggraph(graph, layout='igraph', algorithm = "tree", circular = TRUE) +
-  geom_edge_diagonal(aes(alpha = after_stat(index)), show.legend = FALSE) +
-  coord_fixed() +
-  scale_edge_colour_distiller(palette = "RdPu") +
-  geom_node_point(
-    aes(
-      size = as.numeric(igraph::vertex_attr(graph, "padj")),
-      color = as.numeric(igraph::vertex_attr(graph, "NES"))),
-    show.legend = setNames(c(TRUE, FALSE), c("color", "size"))
-  ) +
-  geom_node_point(
-    aes(
-      size = 1,
-      color = "green",
-      shape = 13,
-      alpha = as.numeric(as.numeric(igraph::vertex_attr(graph, "padj")) < 0.05)
-    ),
-    show.legend = setNames(c(TRUE, FALSE), c("color", "size"))
-  ) +
-  scale_color_continuous("viridis", guide = guide_legend(title = "NES")) +
-  theme(legend.position = "bottom", panel.background = element_blank()) +
-  ggtitle("A plot of nice data")
-print(p)
+plot_all_results(results, BASE_EDGE_LIST, LAYERS, "~/Files/data/mtpdb/graphs/")
