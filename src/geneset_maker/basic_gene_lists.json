@@ -1,29 +1,35 @@
 {
-    "whole_transportome": [
-        "channels", "aquaporins", "solute_carriers", "atp_driven_transporters", "ABC_transporters"
-    ],
-    "pores": [
-        "channels", "aquaporins"
-    ],
-    "channels": [
-        "channels"
-    ],
-    "aquaporins": [
-        "aquaporins"
-    ],
-    "transporters": [
-        "solute_carriers", "atp_driven_transporters", "ABC_transporters"
-    ],
-    "solute_carriers": [
-        "solute_carriers"
-    ],
-    "atp_driven": [
-        "atp_driven_transporters", "ABC_transporters"
-    ],
-    "ABC": [
-        "ABC_transporters"
-    ],
-    "pumps": [
-        "atp_driven_transporters"
-    ]
+    "genesets": {
+        "whole_transportome": [
+            "channels", "aquaporins", "solute_carriers", "atp_driven_transporters", "ABC_transporters"
+        ],
+        "pores": [
+            "channels", "aquaporins"
+        ],
+        "channels": [
+            "channels"
+        ],
+        "aquaporins": [
+            "aquaporins"
+        ],
+        "transporters": [
+            "solute_carriers", "atp_driven_transporters", "ABC_transporters"
+        ],
+        "solute_carriers": [
+            "solute_carriers"
+        ],
+        "atp_driven": [
+            "atp_driven_transporters", "ABC_transporters"
+        ],
+        "ABC": [
+            "ABC_transporters"
+        ],
+        "pumps": [
+            "atp_driven_transporters"
+        ]
+    },
+    "queries": {
+        "channels": "SELECT DISTINCT ensg, is_voltage_gated, is_ligand_gated, is_leakage, is_stretch_activated, carried_solute FROM channels;",
+        "solute_carriers": "SELECT DISTINCT ensg, carried_solute, net_charge, port_type, direction, is_secondary FROM solute_carriers;"
+    }
 }

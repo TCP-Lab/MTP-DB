@@ -3,6 +3,7 @@ requireNamespace("RColorBrewer")
 requireNamespace("igraph")
 library(ggraph) # This needs to be a library() call
 library(grid)
+library(assertthat)
 
 BASE_EDGE_LIST <- as.data.frame(rbind(
   c("whole_transportome", "pores"),
@@ -15,18 +16,13 @@ BASE_EDGE_LIST <- as.data.frame(rbind(
   c("atp_driven", "pumps")
 ))
 
-LAYERS <- as.data.frame(rbind(
-  c("whole_transportome", 1),
-  c("pores", 4),
-  c("transporters", 4),
-  c("atp_driven", 6),
-  c("solute_carriers", 6),
-  c("channels", 6),
-  c("aquaporins", 6),
-  c("ABC", 8),
-  c("pumps", 8)
-))
-
+#' Read a series of .csv files from a directory
+#'
+#' This is for the output files from fgsea::fgsea in the `run_gsea.R` file
+#'
+#' @param input_dir The input directory to read from. Reads ALL files.
+#'
+#' @returns A list with file names as names and tibbles as values.
 read_results <- function(input_dir) {
   files <- list.files(input_dir)
   res <- list()
@@ -36,25 +32,15 @@ read_results <- function(input_dir) {
   return(res)
 }
 
-assert <- function(exprs, message) {
-  if (!exprs) {
-    stop(message)
-  }
-  cat(paste0("Assertion Passed: ", message, "\n"))
-}
-
-name_to_layer <- function(x, layers) {
-  # x is the name of a pathway
-  keyword <- str_split_1(x, "~")[1]
-  value <- layers[layers[,1] == keyword, 2]
-  if (x %in% layers[,1]) {
-    return(as.numeric(value))
-  } else {
-    return(as.numeric(value) + 1)
-  }
-}
-
-result_to_graph <- function(result, base_edges, layers) {
+#' Convert a result table to a graph structure for plotting
+#'
+#' The graph structure is derived from the list names, using `~` as node name
+#' splitting character. E.g. `a~b~c.txt` becomes `a -> b -> c` in the graph.
+#'
+#' @param result The data.frame with the GSEA results. Needs at least the
+#'   "pathway", "NES" and "padj" columns, to add the data to the graph.
+#' @param base_edges A data.frame with base edges
+result_to_graph <- function(result, base_edges) {
   # This fun gets a results list (w/o plots) and converts it to a dataframe
   # that can be used by ggraph and igraph
 
@@ -63,7 +49,7 @@ result_to_graph <- function(result, base_edges, layers) {
   id_nodes <- result$pathway[endsWith(result$pathway, "id.txt")]
   available_nodes <- unique(sapply(id_nodes, \(x){str_split_1(x, "~")[1]}))
 
-  assert(all(req_nodes %in% available_nodes), "All base nodes are available")
+  assert_that(all(req_nodes %in% available_nodes), "All base nodes are available")
   # Ok, now we can add the edges to the resulting graph.
 
   res <- list()
@@ -74,7 +60,7 @@ result_to_graph <- function(result, base_edges, layers) {
   res <- do.call(rbind.data.frame, res)
   colnames(res) <- c(1, 2)
 
-  assert(all(unique(res[,1]) %in% req_nodes), "All nodes are children of base nodes")
+  assert_that(all(unique(res[,1]) %in% req_nodes), "All nodes are children of base nodes")
 
   # We can now build the frame
   edge_frame <- rbind(setNames(base_edges, names(res)), res)
@@ -95,9 +81,6 @@ result_to_graph <- function(result, base_edges, layers) {
   colnames(vertice_frame) <- c(1, "NES", "padj")
 
   vertice_frame$NES[is.na(vertice_frame$NES)] <- 0
-
-  # We can now add the layers that the vertices will sit in
-  vertice_frame$layers <- sapply(vertice_frame[[1]], name_to_layer, layers = layers)
 
   return(igraph::graph_from_data_frame(edge_frame, vertices = vertice_frame))
 }
@@ -197,9 +180,9 @@ calculate_angle_from_pos <- function(pos_dataframe, specials = NULL) {
   pos_dataframe
 }
 
-plot_result <- function(result, base_edges, layers, title = "") {
+plot_result <- function(result, base_edges, title = "") {
 
-  data_graph <- result_to_graph(result, base_edges, layers)
+  data_graph <- result_to_graph(result, base_edges)
   colours <- make_colours(c("blue", "gray", "red"), as.numeric(igraph::vertex_attr(data_graph, "NES")))
 
   # "Plot" a graph with just the labels
@@ -245,9 +228,9 @@ plot_result <- function(result, base_edges, layers, title = "") {
   return(pp)
 }
 
-plot_result(results$`wangh_Limma - DEG Table tumor-normal.csv`, base_edges = BASE_EDGE_LIST, LAYERS)
+plot_result(results$`wangh_Limma - DEG Table tumor-normal.csv`, base_edges = BASE_EDGE_LIST)
 
-plot_all_results <- function(results, base_edges, layers, out_dir, width=10, height=8, png = TRUE) {
+plot_all_results <- function(results, base_edges, out_dir, width=10, height=8, png = TRUE) {
   for (i in seq_along(results)) {
     cat(paste0("Saving ", names(results)[i], "...\n"))
     if (png) {
@@ -266,7 +249,7 @@ plot_all_results <- function(results, base_edges, layers, out_dir, width=10, hei
       )
     }
     print(
-      plot_result(results[[i]], base_edges = base_edges, layers = layers, title = names(results)[i])
+      plot_result(results[[i]], base_edges = base_edges, title = names(results)[i])
     )
     graphics.off()
   }
@@ -274,4 +257,4 @@ plot_all_results <- function(results, base_edges, layers, out_dir, width=10, hei
 
 results <- read_results("/home/hedmad/Files/data/mtpdb/gsea_output/")
 
-plot_all_results(results, BASE_EDGE_LIST, LAYERS, "~/Files/data/mtpdb/graphs/")
+plot_all_results(results, BASE_EDGE_LIST, "~/Files/data/mtpdb/graphs/")
