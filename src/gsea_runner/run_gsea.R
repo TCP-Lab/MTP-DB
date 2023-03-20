@@ -1,14 +1,54 @@
-# biocManager::install("fgsea")
+#!/usr/bin/env Rscript
 
-library(tidyverse)
+# This script runs GSEA on all the DEG tables with all the genesets
+# and saves the resulting deg tables to an output folder.
+
+# If you are running this from RStudio, you can skip this >>>>>>>>>>>>>>>>>>
+if (sys.nframe() == 0L) {
+  # Parsing arguments
+  requireNamespace("argparser")
+
+  parser <- argparser::arg_parser("Run GSEA on DEG tables")
+
+  parser |>
+    argparser::add_argument(
+      "input_deg_folder", help="Folder with DEG tables to run GSEA on.", type="character"
+    ) |>
+    argparser::add_argument(
+      "input_genesets_folder", help = "Folder with input genesets as .txt files",
+      type = "character"
+    ) |>
+    argparser::add_argument(
+      "output_dir", help = "Output directory",
+      type = "character"
+    ) |>
+    argparser::add_argument(
+      "--save-plots", help = "If specified, also save GSEA plots alongside tables.",
+      flag = TRUE, type = "logical"
+    ) -> parser
+
+  args <- argparser::parse_args(parser)
+}
+# To here <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 requireNamespace("biomaRt")
 requireNamespace("fgsea")
+library(tidyverse, quietly = TRUE)
 
+# This suppresses the messages from readr::read_table
 options(readr.num_columns = 0)
 
-load_genesets <- function(folder) {
-  # Load genesets as made by "make_genesets.py"
+load_genesets <- function(folder, biomart_data) {
+  #' Load all genesets from FOLDER.
+  #'
+  #' Genesets should have been made by make_genests.py
+  #'
+  #' @param folder The folder to find files in, all in .csv format.
+  #' @param biomart_data A data.frame with at least the "ensembl_gene_id" and
+  #'   "hgnc_symbol" columns, with the correspondence from ENSG to symbol.
+  #'   Such a table can be retrieved from Biomart with biomaRt.
+  #' @returns A list of vectors, each with the gene symbols of that gene set
+
   file_names <- list.files(folder)
   file_paths <- file.path(folder, file_names)
 
@@ -21,17 +61,9 @@ load_genesets <- function(folder) {
   filter_values <- unique(filter_values)
 
   # Convert from ENSG to gene symbol
-  embl <- biomaRt::useEnsembl(biomart = "genes")
-  hs.embl <- biomaRt::useDataset(dataset = "hsapiens_gene_ensembl", mart = embl)
-  annotations <- biomaRt::getBM(
-    attributes = c("ensembl_gene_id", "hgnc_symbol"),
-    filters = "ensembl_gene_id",
-    values = filter_values,
-    mart = hs.embl
-  )
-
+  biomart_data |> select(all_of("ensembl_gene_id", "hgnc_symbol")) -> biomart_data
   ensg_to_symbol <- function(ensgs) {
-    symbols <- annotations$hgnc_symbol[annotations$ensembl_gene_id %in% ensgs]
+    symbols <- biomart_data$hgnc_symbol[biomart_data$ensembl_gene_id %in% ensgs]
 
     return(symbols)
   }
@@ -42,6 +74,17 @@ load_genesets <- function(folder) {
 }
 
 extract_ranks <- function(deg_file, biomart_data) {
+  #' Make a frame ready for GSEA from a DEG file, made by BioTEA or DESeq2.
+  #'
+  #' Some compatibility is needed to parse DESeq2 files, as they have no
+  #' "SYMBOL" column.
+  #'
+  #' @param deg_file (full) Path to the DEG file that needs to be extracted, as .csv.
+  #' @param biomart_data A data.frame with at least the "ensembl_gene_id" and
+  #'   "gene_biotype" columns.
+  #'   Such a table can be retrieved from Biomart with biomaRt.
+  #'
+  #' @returns A named vector of gene_names : statistic, ready for fgsea::fgsea
   data <- read_csv(deg_file, show_col_types = FALSE)
 
   if (! "SYMBOL" %in% colnames(data)) {
@@ -77,6 +120,17 @@ extract_ranks <- function(deg_file, biomart_data) {
   return(named_vec)
 }
 
+
+#' Run GSEA with many genesets on some data
+#'
+#' This is a tiny wrapper for future compatibility in case we need to change
+#' from fgsea.
+#'
+#' @param genesets A list of genesets to check, with each geneset a vector of
+#'   gene names.
+#' @param ranks A named list of gene names: statistic to use as ranked list for gsea.
+#'
+#' @returns A table with GSEA results. See fgsea:fgsea for details.
 run_gsea <- function(genesets, ranks) {
   result <- fgsea::fgsea(
     pathways = genesets,
@@ -86,6 +140,13 @@ run_gsea <- function(genesets, ranks) {
   result
 }
 
+#' (run and) Plot GSEA
+#'
+#' @param genesets A list of genesets to check, with each geneset a vector of
+#'   gene names.
+#' @param ranks A named list of gene names: statistic to use as ranked list for gsea.
+#'
+#' @returns A list of geneset: ggplot object with the generated GSEA plots.
 plot_gsea <- function(genesets, ranks) {
   results <- list()
   for (i in seq_along(genesets)) {
@@ -96,12 +157,24 @@ plot_gsea <- function(genesets, ranks) {
   return(results)
 }
 
+
+#' Run GSEA on all DEG tables in a folder, with all genesets from another folder.
+#'
+#' @param input_data_folder (Full) path to the input data folder with the DEG
+#'   tables to be loaded with `extract_ranks`.
+#' @param genesets_folder_patdh (Full) path to the folder with genesets, as .txt
+#'   files with one gene id per row.
+#' @param biomart_data A data.frame with at least the "ensembl_gene_id",
+#'   "hgnc_symbol" and "gene_biotype" columns.
+#'   Such a table can be retrieved from Biomart with biomaRt.
+#'
+#' @returns A list of values with file names as names and GSEA results as values.
 run_all_gsea <- function(input_data_folder, genesets_folder_path, biomart_data) {
   file_names <- list.files(input_data_folder)
   file_paths <- file.path(input_data_folder, file_names)
 
   cat("Loading genesets...\n")
-  genesets <- load_genesets(genesets_folder_path)
+  genesets <- load_genesets(genesets_folder_path, biomart_data = biomart_data)
 
   results <- list()
   for (i in seq_along(file_names)) {
@@ -115,6 +188,15 @@ run_all_gsea <- function(input_data_folder, genesets_folder_path, biomart_data) 
   return(results)
 }
 
+
+#' Save a result from `run_all_gsea` to a file.
+#'
+#' @param result An item from a list made by `run_all_gsea`.
+#' @param out_dir The output directory.
+#' @param name The name to give to the output file
+#' @param plot If `result` is a plot, pass plot = TRUE to treat it as one.
+#'
+#' @returns NULL
 save_result <- function(result, out_dir, name, plot = FALSE) {
   out_path <- file.path(out_dir, name)
 
@@ -131,16 +213,27 @@ save_result <- function(result, out_dir, name, plot = FALSE) {
   return(TRUE)
 }
 
+#' Save all results from `run_all_gsea` to a series of files.
+#'
+#' Detects plots to save from their name in the list, starting with `plot`.
+#' Filenames are taken from the corresponding list names.
+#'
+#' @param results The list generated by `run_all_gsea`.
+#' @param out_dir The output directory to save to.
+#' @param skip_plots If TRUE, does not save plots to output directory.
+#'
+#' @returns NULL
 save_results <- function(results, out_dir, skip_plots = FALSE) {
   wrap <- function(x, name) {
-    print(paste0("Saving ", name))
+    cat(paste0("Saving ", name, "..."))
 
     is_plot <- startsWith(name, "plot")
     if (is_plot & skip_plots) {
-      print("Skipped.")
+      cat(" .. Skipped\n")
       return()
     }
     save_result(x, out_dir, name, is_plot)
+    cat(".. OK\n")
   }
   # I can't make it work with sapply so, get a for loop
   for (i in seq_along(results)) {
@@ -148,14 +241,7 @@ save_results <- function(results, out_dir, skip_plots = FALSE) {
   }
 }
 
-select_results <- function(results, plots = FALSE) {
-  key <- startsWith(names(results), "plot")
-  if (plots) {
-    return(results[key])
-  } else {
-    return(results[! key])
-  }
-}
+if (FALSE){ # LOCAL DEBUGGING RUN ONLY
 
 embl <- biomaRt::useEnsembl(biomart = "genes")
 hs.embl <- biomaRt::useDataset(dataset = "hsapiens_gene_ensembl", mart = embl)
@@ -171,3 +257,47 @@ results <- run_all_gsea(
 )
 
 save_results(results, out_dir = "/home/hedmad/Files/data/mtpdb/gsea_output/", skip_plots = TRUE)
+
+} # ----------------------------------------------------------------------------
+
+# If you are running this from RStudio, you can skip this >>>>>>>>>>>>>>>>>>
+if (sys.nframe() == 0L) {
+  requireNamespace("argparser")
+
+  parser <- argparser::arg_parser("Run GSEA on DEG tables")
+
+  parser |>
+    argparser::add_argument(
+      "input_deg_folder", help="Folder with DEG tables to run GSEA on.", type="character"
+    ) |>
+    argparser::add_argument(
+      "input_genesets_folder", help = "Folder with input genesets as .txt files",
+      type = "character"
+    ) |>
+    argparser::add_argument(
+      "output_dir", help = "Output directory",
+      type = "character"
+    ) |>
+    argparser::add_argument(
+      "--save-plots", help = "If specified, also save GSEA plots alongside tables.",
+      flag = TRUE, type = "logical"
+    ) -> parser
+
+  args <- argparser::parse_args(parser)
+
+  embl <- biomaRt::useEnsembl(biomart = "genes")
+  hs.embl <- biomaRt::useDataset(dataset = "hsapiens_gene_ensembl", mart = embl)
+  ensg_data <- biomaRt::getBM(
+    attributes = c("ensembl_gene_id", "hgnc_symbol", "gene_biotype"),
+    mart = hs.embl
+  )
+
+  results <- run_all_gsea(
+    args$input_deg_folder,
+    args$input_genesets_folder,
+    ensg_data
+  )
+
+  save_results(results, out_dir = args$output_dir, skip_plots = !args$save_plots)
+}
+# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
