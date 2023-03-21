@@ -49,19 +49,19 @@ load_genesets <- function(folder, biomart_data) {
   #'   Such a table can be retrieved from Biomart with biomaRt.
   #' @returns A list of vectors, each with the gene symbols of that gene set
 
-  file_names <- list.files(folder)
-  file_paths <- file.path(folder, file_names)
+  files <- list.files(folder, full.names = TRUE, recursive = TRUE)
 
   data <- list()
-  for (i in seq_along(file_names)) {
-    data[[ file_names[i] ]] <- read_table(file_paths[i], col_names = "ensg")[["ensg"]]
+  for (file in files) {
+    file |> str_remove("\\/data\\.txt$") |> str_remove(paste0("^", folder)) -> id
+    data[[ id ]] <- read_table(file, col_names = "ensg")[["ensg"]]
   }
 
   filter_values <- reduce(data, c)
   filter_values <- unique(filter_values)
 
   # Convert from ENSG to gene symbol
-  biomart_data |> select(all_of("ensembl_gene_id", "hgnc_symbol")) -> biomart_data
+  biomart_data |> select(all_of(c("ensembl_gene_id", "hgnc_symbol"))) -> biomart_data
   ensg_to_symbol <- function(ensgs) {
     symbols <- biomart_data$hgnc_symbol[biomart_data$ensembl_gene_id %in% ensgs]
 
@@ -252,7 +252,7 @@ ensg_data <- biomaRt::getBM(
 
 results <- run_all_gsea(
   "/home/hedmad/Files/data/mtpdb/input_deg_tables/",
-  "/home/hedmad/Files/data/mtpdb/genesets/",
+  "/home/hedmad/Files/data/mtpdb/genesets/bottomup/root/",
   ensg_data
 )
 
