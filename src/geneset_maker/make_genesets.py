@@ -6,6 +6,7 @@ import logging
 import os
 from collections import Counter
 from copy import copy
+from enum import Enum
 from logging import StreamHandler
 from pathlib import Path
 from sqlite3 import Connection, connect
@@ -14,6 +15,11 @@ from uuid import uuid4 as id
 
 import pandas as pd
 from colorama import Back, Fore, Style
+
+
+class PruneDirection(Enum):
+    TOPDOWN = "topdown"
+    BOTTOMUP = "bottomup"
 
 
 class Node:
@@ -94,6 +100,12 @@ class Tree:
                 return False
         return True
 
+    def leaves(self) -> list[Node]:
+        """Get a list of all the leaves in the tree"""
+        leaves = [node for node in self.nodes.values() if self.is_leaf(node.id)]
+
+        return leaves
+
     def update_data(self, node_id, new_data):
         """Update the data of a given node"""
         if node_id not in self.nodes:
@@ -145,8 +157,73 @@ class Tree:
 
         return paths
 
+    def depth_of(self, node_id) -> Node:
+        assert node_id in self.nodes, f"Cannot find {node_id} in the tree"
+        if node_id == "0":
+            return 0
+        i = 1
+        parent = self.get_parent(node_id)
+        while parent is not None:
+            parent = self.get_parent(parent.id)
+            i += 1
+        return i
+
     def __str__(self) -> str:
         return f"Tree with {len(self.nodes)} nodes"
+
+
+def prune(
+    tree: Tree, similarity: float, max_size_diff: int, direction: PruneDirection
+) -> Tree:
+    original_len = len(tree.nodes)
+    log.info(f"Pruning {tree}.")
+
+    reverse_sort = direction == PruneDirection.BOTTOMUP
+
+    def is_similar(node: Node, nodes: list[Node]) -> bool:
+        for other in nodes:
+            if any([other.id == "0", node.id == "0"]):
+                continue
+            len_diff = len(other.data) - len(node.data)
+            if abs(len_diff) > max_size_diff:
+                continue
+            if (
+                len(set(other.data) ^ set(node.data))
+                / max(len(other.data), len(node.data))
+                < similarity
+            ):
+                continue
+            return True
+        return False
+
+    cycle = 0
+    pruned = True
+    while pruned:
+        pruned = False
+        log.info(f"Prune cycle {cycle} -- {len(tree.nodes)} nodes.")
+        # Find all leaves
+        leaves = tree.leaves()
+
+        # Sort them
+        leaves.sort(key=lambda x: tree.depth_of(x.id), reverse=reverse_sort)
+
+        # Prune
+        for node in leaves:
+            other_nodes = list(copy(list(tree.nodes.values())))
+            other_nodes.remove(node)
+            if is_similar(node, other_nodes):
+                log.debug(f"Pruned {node}")
+                pruned = True
+                tree.prune(node.id)
+
+        cycle += 1
+
+    len_diff = original_len - len(tree.nodes)
+    log.info(
+        f"Prune finished. Removed {len_diff} nodes - {round(len_diff / original_len * 100, 4)} %"
+    )
+
+    return tree
 
 
 def to_files(trees: Tree, out_dir: Path):
@@ -239,6 +316,19 @@ def main(args: dict) -> None:
             recurse=not args.no_recurse,
         )
         trees.append(tree)
+
+    if not args.no_prune:
+        pruned_trees = []
+        for tree in trees:
+            tree = prune(
+                tree,
+                similarity=args.prune_similarity,
+                max_size_diff=args.prune_max_size_diff,
+                direction=PruneDirection(args.prune_direction),
+            )
+            pruned_trees.append(tree)
+
+        trees = pruned_trees
 
     to_files(trees, args.out_dir)
 
@@ -446,6 +536,27 @@ if __name__ == "__main__":
         help="Minimum size of set to recurse on",
     )
     parser.add_argument("--no_recurse", help="Suppress recursion", action="store_true")
+    parser.add_argument(
+        "--no_prune", help="Do not run pruning on the gene lists", action="store_true"
+    )
+    parser.add_argument(
+        "--prune_similarity",
+        type=float,
+        help="Node similarity threshold for pruning",
+        default=0.9,
+    )
+    parser.add_argument(
+        "--prune_max_size_diff",
+        type=int,
+        help="Max +- size difference between pruned sets",
+        default=5,
+    )
+    parser.add_argument(
+        "--prune_direction",
+        choices=["topdown", "bottomup"],
+        help="Direction to prune nodes in",
+        default="topdown",
+    )
     parser.add_argument("--verbose", help="Increase verbosity", action="store_true")
 
     args = parser.parse_args()
