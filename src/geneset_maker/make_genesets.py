@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 
 """This script makes gene lists apt for GSEA from the db"""
 import json
@@ -20,6 +21,10 @@ from colorama import Back, Fore, Style
 class PruneDirection(Enum):
     TOPDOWN = "topdown"
     BOTTOMUP = "bottomup"
+
+
+class IntegrityError(Exception):
+    pass
 
 
 class Node:
@@ -62,33 +67,113 @@ class Tree:
 
         return node.id
 
-    def paste(self, other_tree, node_id, update_data=False):
-        """Paste the root of another tree to a leaf node in this tree"""
+    def subset(self, node_id, preserve_data=True) -> Tree:
+        """Get just a branch from this tree as a new tree"""
+        if node_id not in self.nodes:
+            raise ValueError(f"Node {node_id} not found.")
+
+        new_nodes = {}
+        for node in copy(self.nodes).values():
+            if node.id == node_id:
+                # This is the new root node
+                node.id == "0"
+                if not preserve_data:
+                    node.data = None
+                new_nodes[node.id] = node
+
+            if self.has_ancestor(node.id, node_id):
+                if node.parent == node_id:
+                    node.parent = "0"
+                new_nodes[node.id] = node
+
+        new_tree = Tree()
+        new_tree.nodes = new_nodes
+        new_tree.check_integrity()
+
+        return new_tree
+
+    def has_ancestor(self, node_id, ancestor_node_id) -> bool:
+        """Test if ancestor_node is a parent of node_id"""
+        if node_id not in self.nodes:
+            raise ValueError(f"Node {node_id} not found.")
+
+        if ancestor_node_id == "0":
+            return True
+        if node_id == "0":
+            return False
+
+        parent = self.get_parent(node_id)
+        while parent.parent is not None:
+            if parent.id == ancestor_node_id:
+                return True
+        return False
+
+    def paste(
+        self,
+        other_tree: Tree,
+        node_id: str,
+        other_node_id: str = "0",
+        update_data: bool = False,
+    ):
+        """Paste a node of another tree to a node in this tree"""
         if node_id not in self.nodes:
             raise ValueError(f"Node {node_id} in original tree not found.")
 
-        if not self.is_leaf(node_id):
-            # If we fuse roots, no child nodes need to be updated to the new ID
-            raise ValueError(f"Node {node_id} is not a leaf. Cannot paste.")
+        other_tree = other_tree.subset(other_node_id)
 
-        # Copy the current leaf node data to the root of the other tree
-        leaf_node = self.nodes[node_id]
+        # if we need to update this node with the other tree's root node,
+        # we can do it here
+        paste_node = self.nodes[node_id]
         if update_data:
-            leaf_node.data = other_tree.nodes["0"].data
+            paste_node.data = other_tree.nodes["0"].data
 
         # Update the parent IDs of children in the other tree to the new root
         # id
-        new_nodes = {leaf_node.id: leaf_node}
+        new_nodes = {paste_node.id: paste_node}
         for node in other_tree.nodes.values():
             if node.parent == "0":
                 node.parent = node_id
             new_nodes[node.id] = node
 
-        # Drop the current leaf node
-        self.prune(node_id)
-
         # Add the new tree to the current tree
         self.nodes.update(new_nodes)
+
+        self.check_integrity()
+
+    def check_integrity(self):
+        """Check if the tree is still valid"""
+        possible_values = list(self.nodes.keys())
+        found_root = False
+        for node in self.nodes.values():
+            if node.parent is None and not found_root:
+                found_root = True
+                continue
+            elif node.parent is None and found_root:
+                raise IntegrityError("Found two roots in the tree.")
+
+            if node.parent not in possible_values:
+                raise IntegrityError(f"Node {node} failed to validate.")
+
+        return True
+
+    def get_node_from_name(self, name: str) -> Node:
+        """Get a node from a name.
+
+        Raises ValueError if more than one node shares the same name
+        """
+        candidates = [x for x in self.nodes.values() if x.name == name]
+
+        if len(candidates) > 1:
+            candidates = [str(x) for x in candidates]
+            raise ValueError(
+                f"More than one node shares the same name '{name}': {candidates}"
+            )
+
+        if len(candidates) == 0:
+            candidates = [str(x) for x in candidates]
+            raise ValueError(f"No node found for query '{name}': {candidates}")
+
+        return candidates[0]
 
     def is_leaf(self, node_id) -> bool:
         """Return if a given node is a leaf"""
@@ -172,9 +257,7 @@ class Tree:
         return f"Tree with {len(self.nodes)} nodes"
 
 
-def prune(
-    tree: Tree, similarity: float, max_size_diff: int, direction: PruneDirection
-) -> Tree:
+def prune(tree: Tree, similarity: float, direction: PruneDirection) -> Tree:
     original_len = len(tree.nodes)
     log.info(f"Pruning {tree}.")
 
@@ -184,13 +267,10 @@ def prune(
         for other in nodes:
             if any([other.id == "0", node.id == "0"]):
                 continue
-            len_diff = len(other.data) - len(node.data)
-            if abs(len_diff) > max_size_diff:
-                continue
             if (
                 len(set(other.data) ^ set(node.data))
-                / max(len(other.data), len(node.data))
-                < similarity
+                / len(set(other.data) | set(node.data))
+                > similarity
             ):
                 continue
             return True
@@ -304,7 +384,7 @@ def main(args: dict) -> None:
 
     # 2. Generate lists from large tables
     log.info("Generating gene trees...")
-    trees = []
+    trees = {}
     for name, table in large_tables.items():
         log.info(f"Processing table {name}")
         tree = generate_gene_list_trees(
@@ -315,22 +395,29 @@ def main(args: dict) -> None:
             min_recurse_set_size=args.min_recurse_set_size,
             recurse=not args.no_recurse,
         )
-        trees.append(tree)
+        trees[name] = tree
+
+    # 3. Make the union of the genesets following the structure
+    log.info("Pasting trees together...")
+    large_tree = Tree()
+    for source, sink in sets["structure"]:
+        large_tree.paste(
+            trees[sink],
+            large_tree.get_node_from_name(source).id,
+            other_node_id=trees[sink].get_node_from_name(sink).id,
+            update_data=True,
+        )
+        print(large_tree)
 
     if not args.no_prune:
-        pruned_trees = []
-        for tree in trees:
-            tree = prune(
-                tree,
-                similarity=args.prune_similarity,
-                max_size_diff=args.prune_max_size_diff,
-                direction=PruneDirection(args.prune_direction),
-            )
-            pruned_trees.append(tree)
+        log.info("Pruning tree...")
+        large_tree = prune(
+            large_tree,
+            similarity=args.prune_similarity,
+            direction=PruneDirection(args.prune_direction),
+        )
 
-        trees = pruned_trees
-
-    to_files(trees, args.out_dir)
+    to_files(large_tree, args.out_dir)
 
     log.info("Finished!")
 
@@ -543,13 +630,7 @@ if __name__ == "__main__":
         "--prune_similarity",
         type=float,
         help="Node similarity threshold for pruning",
-        default=0.9,
-    )
-    parser.add_argument(
-        "--prune_max_size_diff",
-        type=int,
-        help="Max +- size difference between pruned sets",
-        default=5,
+        default=0.1,
     )
     parser.add_argument(
         "--prune_direction",
