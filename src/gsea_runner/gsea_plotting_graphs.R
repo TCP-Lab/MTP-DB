@@ -1,20 +1,25 @@
 library(tidyverse)
 requireNamespace("RColorBrewer")
 requireNamespace("igraph")
+requireNamespace("uuid")
 library(ggraph) # This needs to be a library() call
 library(grid)
 library(assertthat)
 
-BASE_EDGE_LIST <- as.data.frame(rbind(
-  c("whole_transportome", "pores"),
-  c("whole_transportome", "transporters"),
-  c("pores", "channels"),
-  c("pores", "aquaporins"),
-  c("transporters", "solute_carriers"),
-  c("transporters", "atp_driven"),
-  c("atp_driven", "ABC"),
-  c("atp_driven", "pumps")
-))
+{
+  BASE_EDGE_LIST <- as.data.frame(rbind(
+    c("whole_transportome", "pores"),
+    c("whole_transportome", "transporters"),
+    c("pores", "channels"),
+    c("pores", "aquaporins"),
+    c("transporters", "solute_carriers"),
+    c("transporters", "atp_driven"),
+    c("atp_driven", "ABC"),
+    c("atp_driven", "pumps")
+  ))
+  colnames(BASE_EDGE_LIST) <- c("source", "sink")
+}
+
 
 #' Read a series of .csv files from a directory
 #'
@@ -34,56 +39,112 @@ read_results <- function(input_dir) {
 
 #' Convert a result table to a graph structure for plotting
 #'
-#' The graph structure is derived from the list names, using `~` as node name
-#' splitting character. E.g. `a~b~c.txt` becomes `a -> b -> c` in the graph.
+#' The graph structure is derived from the list names, using `\` as node name
+#' splitting character. E.g. `a\b\c` becomes `a -> b -> c` in the graph.
 #'
 #' @param result The data.frame with the GSEA results. Needs at least the
 #'   "pathway", "NES" and "padj" columns, to add the data to the graph.
 #' @param base_edges A data.frame with base edges
-result_to_graph <- function(result, base_edges) {
+result_to_graph <- function(result) {
   # This fun gets a results list (w/o plots) and converts it to a dataframe
   # that can be used by ggraph and igraph
 
-  # First, we need to see if the base edges are in the results
-  req_nodes <- unique(unlist(base_edges))
-  id_nodes <- result$pathway[endsWith(result$pathway, "id.txt")]
-  available_nodes <- unique(sapply(id_nodes, \(x){str_split_1(x, "~")[1]}))
-
-  assert_that(all(req_nodes %in% available_nodes), "All base nodes are available")
-  # Ok, now we can add the edges to the resulting graph.
-
-  res <- list()
-  # We need all non-id nodes
-  for (item in result$pathway[! endsWith(result$pathway, "id.txt")]) {
-    res[[item]] <- c(str_split_1(item, "~")[1], item)
+  # Tiny wrapper to get the end of the file name
+  end_of <- function(string) {
+    parts <- str_split_1(string, "\\/")
+    return(parts[length(parts)])
   }
-  res <- do.call(rbind.data.frame, res)
-  colnames(res) <- c(1, 2)
 
-  assert_that(all(unique(res[,1]) %in% req_nodes), "All nodes are children of base nodes")
+  remove_leading_backslash <- function(str) {
+    str_remove(str, "^/")
+  }
 
-  # We can now build the frame
-  edge_frame <- rbind(setNames(base_edges, names(res)), res)
+  # We have to assign unique IDs to every node, so that we have
+  # no ambiguity when rebuilding the graph
+  available_nodes <- sapply(result$pathway, end_of)
+  uuids <- data.frame(
+    paths = sapply(result$pathway, remove_leading_backslash),
+    human_node_name = available_nodes,
+    uuids = uuid::UUIDgenerate(n = length(available_nodes))
+  )
 
-  vres <- list()
-  vertices <- unique(unlist(edge_frame))
-  for (i in seq_along(vertices)) {
-    item <- vertices[i]
-    if (item %in% req_nodes) {
-      # This is a base node. There is an entry with `_id.txt` in there somewhere
-      # with the value we need
-      vres[[i]] <- c(item, unlist(result[result$pathway == paste0(item, "~id.txt"), c("NES", "padj")]))
-    } else {
-      vres[[i]] <- c(item, unlist(result[result$pathway == item, c("NES", "padj")]))
+  to_uuid <- function(str) {
+    uuids$uuids[uuids$paths == str]
+  }
+
+  # We can now build the frame of edges, where each row is a source -> sink
+  # edge.
+  insert <- function(x, item) {
+    x[[length(x) + 1]] <- item
+
+    x
+  }
+
+  edges <- list()
+  for (i in seq_along(uuids$paths)) {
+    # For every path, we need to reconstruct the graph
+    parts <- str_split_1(uuids$paths[i], "\\/")
+
+    for (k in seq_along(parts)) {
+      if (length(parts) == 1) {
+        # This is a root node, we need to skip it.
+        next
+      }
+      if (k + 1 > length(parts)) {
+        # We have arrived at the last item in the list. We can skip it.
+        next
+      }
+      new_row <- c(
+        # The current node
+        to_uuid(paste0(parts[1:k], collapse="/")),
+        # The next node
+        to_uuid(paste0(parts[1:(k + 1)], collapse="/"))
+      )
+      assert_that(length(new_row) == 2)
+      edges <- insert(edges, new_row)
     }
   }
-  vertice_frame <- do.call(rbind.data.frame, vres)
-  colnames(vertice_frame) <- c(1, "NES", "padj")
+
+  edges <- as.data.frame(do.call(rbind, edges))
+  colnames(edges) <- c("source", "sink")
+
+  edges |> distinct() -> edges
+
+  # Now we have a frame of edges, so we can grab the node data from the results
+
+  vertice_data <- list()
+  vertices <- unique(unlist(edges))
+  for (i in seq_along(vertices)) {
+    item <- vertices[i]
+    print(paste0("/", uuids$paths[uuids$uuids == item]))
+
+    item_data <- c(
+      item,
+      uuids$human_node_name[uuids$uuids == item],
+      unlist(result[result$pathway == paste0("/", uuids$paths[uuids$uuids == item]), c("NES", "padj")])
+    )
+
+    print(item_data)
+    assert_that(length(item_data) == 4)
+
+    vertice_data[[i]] <- item_data
+
+  }
+  vertice_frame <- as.data.frame(do.call(rbind, vertice_data))
+
+  colnames(vertice_frame) <- c("uuid", "human_label", "NES", "padj")
+  # Convert to numbers
+  vertice_frame |> mutate(NES = as.numeric(NES), padj = as.numeric(padj)) -> vertice_frame
+  print(head(vertice_frame))
 
   vertice_frame$NES[is.na(vertice_frame$NES)] <- 0
 
-  return(igraph::graph_from_data_frame(edge_frame, vertices = vertice_frame))
+
+
+  return(igraph::graph_from_data_frame(edges, vertices = vertice_frame))
 }
+
+result_to_graph(results$`jankyr_Limma - DEG Table tumor-normal.csv`)
 
 # ----
 
@@ -101,16 +162,9 @@ make_colours <- function(palette, values) {
 }
 
 parse_name_to_label <- function(x) {
-  sapply(x, \(x){
-    splits <- str_split_1(x, "~")
-    value <- if (length(splits) == 1) {
-      splits[1]
-    } else {
-      paste0(splits[2], ": ", str_remove(splits[3], ".txt"))
-    }
-
-    if (startsWith(value, "carried_solute")) {
-      value <- str_remove(value, "carried_solute: ")
+  sapply(x, \(value){
+    if (startsWith(value, "carried_solute::")) {
+      value <- str_remove(value, "carried_solute::")
     }
 
     replacements <- c(
@@ -118,9 +172,9 @@ parse_name_to_label <- function(x) {
       "voltage independent", "voltage gated", "not LG", "LG", ""
     )
     names(replacements) <- c(
-      "direction: out", "direction: in", "is_voltage_gated: 0", "is_voltage_gated: 1",
-      "is_ligand_gated: 0", "is_ligand_gated: 1", "is_voltage_gated: 0.0", "is_voltage_gated: 1.0",
-      "is_ligand_gated: 0.0", "is_ligand_gated: 1.0", "whole_transportome"
+      "direction::out", "direction::in", "is_voltage_gated::0", "is_voltage_gated::1",
+      "is_ligand_gated::0", "is_ligand_gated::1", "is_voltage_gated::0.0", "is_voltage_gated::1.0",
+      "is_ligand_gated::0.0", "is_ligand_gated::1.0", "whole_transportome"
     )
 
     if (value %in% names(replacements)) {
@@ -180,9 +234,9 @@ calculate_angle_from_pos <- function(pos_dataframe, specials = NULL) {
   pos_dataframe
 }
 
-plot_result <- function(result, base_edges, title = "") {
+plot_result <- function(result, title = "") {
 
-  data_graph <- result_to_graph(result, base_edges)
+  data_graph <- result_to_graph(result)
   colours <- make_colours(c("blue", "gray", "red"), as.numeric(igraph::vertex_attr(data_graph, "NES")))
 
   # "Plot" a graph with just the labels
@@ -190,7 +244,7 @@ plot_result <- function(result, base_edges, title = "") {
     coord_fixed() +
     geom_node_text(
       aes(
-        label = parse_name_to_label(igraph::vertex_attr(data_graph, "name"))
+        label = parse_name_to_label(igraph::vertex_attr(data_graph, "human_label"))
       )
     )
 
@@ -228,9 +282,9 @@ plot_result <- function(result, base_edges, title = "") {
   return(pp)
 }
 
-plot_result(results$`wangh_Limma - DEG Table tumor-normal.csv`, base_edges = BASE_EDGE_LIST)
+plot_result(results$`wangh_Limma - DEG Table tumor-normal.csv`)
 
-plot_all_results <- function(results, base_edges, out_dir, width=10, height=8, png = TRUE) {
+plot_all_results <- function(results, out_dir, width=10, height=8, png = TRUE) {
   for (i in seq_along(results)) {
     cat(paste0("Saving ", names(results)[i], "...\n"))
     if (png) {
@@ -249,7 +303,7 @@ plot_all_results <- function(results, base_edges, out_dir, width=10, height=8, p
       )
     }
     print(
-      plot_result(results[[i]], base_edges = base_edges, title = names(results)[i])
+      plot_result(results[[i]], title = names(results)[i])
     )
     graphics.off()
   }
@@ -257,4 +311,4 @@ plot_all_results <- function(results, base_edges, out_dir, width=10, height=8, p
 
 results <- read_results("/home/hedmad/Files/data/mtpdb/gsea_output/")
 
-plot_all_results(results, BASE_EDGE_LIST, "~/Files/data/mtpdb/graphs/")
+plot_all_results(results, "~/Files/data/mtpdb/graphs/")
