@@ -11,7 +11,7 @@ from enum import Enum
 from logging import StreamHandler
 from pathlib import Path
 from sqlite3 import Connection, connect
-from typing import Any, Optional
+from bonsai import Tree, Node
 from uuid import uuid4 as id
 
 import pandas as pd
@@ -21,240 +21,6 @@ from colorama import Back, Fore, Style
 class PruneDirection(Enum):
     TOPDOWN = "topdown"
     BOTTOMUP = "bottomup"
-
-
-class IntegrityError(Exception):
-    pass
-
-
-class Node:
-    def __init__(
-        self, parent: str, name: Optional[str] = None, data: Any = None
-    ) -> None:
-        assert isinstance(parent, str), "Parent node must be a string!"
-        self.id = str(id())
-        self.name = name or self.id
-        self.data = data
-        self.parent = parent
-
-    def __str__(self) -> str:
-        base = f"Node '{self.name}' <{self.id}>"
-        if self.data:
-            base += f" + data"
-        if self.parent:
-            base += f" parent: <{self.parent}>"
-
-        return base
-
-
-class Tree:
-    def __init__(self) -> None:
-        root = Node("", "root")
-        root.parent = None
-        root.id = "0"
-        self.nodes = {root.id: root}
-
-    def all_nodes(self):
-        """Get an iterator to all node_id: node pairs"""
-        return copy(self.nodes).items()
-
-    def create_node(self, name, parent="0", data=None):
-        if parent not in self.nodes:
-            raise ValueError(f"Cannot find parent node {parent} in current tree")
-
-        node = Node(parent=parent, name=name, data=data)
-        self.nodes[node.id] = node
-
-        return node.id
-
-    def subset(self, node_id, preserve_data=True) -> Tree:
-        """Get just a branch from this tree as a new tree"""
-        if node_id not in self.nodes:
-            raise ValueError(f"Node {node_id} not found.")
-
-        new_nodes = {}
-        for node in copy(self.nodes).values():
-            if node.id == node_id:
-                # This is the new root node
-                node.id == "0"
-                if not preserve_data:
-                    node.data = None
-                new_nodes[node.id] = node
-
-            if self.has_ancestor(node.id, node_id):
-                if node.parent == node_id:
-                    node.parent = "0"
-                new_nodes[node.id] = node
-
-        new_tree = Tree()
-        new_tree.nodes = new_nodes
-        new_tree.check_integrity()
-
-        return new_tree
-
-    def has_ancestor(self, node_id, ancestor_node_id) -> bool:
-        """Test if ancestor_node is a parent of node_id"""
-        if node_id not in self.nodes:
-            raise ValueError(f"Node {node_id} not found.")
-
-        if ancestor_node_id == "0":
-            return True
-        if node_id == "0":
-            return False
-
-        parent = self.get_parent(node_id)
-        while parent.parent is not None:
-            if parent.id == ancestor_node_id:
-                return True
-        return False
-
-    def paste(
-        self,
-        other_tree: Tree,
-        node_id: str,
-        other_node_id: str = "0",
-        update_data: bool = False,
-    ):
-        """Paste a node of another tree to a node in this tree"""
-        if node_id not in self.nodes:
-            raise ValueError(f"Node {node_id} in original tree not found.")
-
-        other_tree = other_tree.subset(other_node_id)
-
-        # if we need to update this node with the other tree's root node,
-        # we can do it here
-        paste_node = self.nodes[node_id]
-        if update_data:
-            paste_node.data = other_tree.nodes["0"].data
-
-        # Update the parent IDs of children in the other tree to the new root
-        # id
-        new_nodes = {paste_node.id: paste_node}
-        for node in other_tree.nodes.values():
-            if node.parent == "0":
-                node.parent = node_id
-            new_nodes[node.id] = node
-
-        # Add the new tree to the current tree
-        self.nodes.update(new_nodes)
-
-        self.check_integrity()
-
-    def check_integrity(self):
-        """Check if the tree is still valid"""
-        possible_values = list(self.nodes.keys())
-        found_root = False
-        for node in self.nodes.values():
-            if node.parent is None and not found_root:
-                found_root = True
-                continue
-            elif node.parent is None and found_root:
-                raise IntegrityError("Found two roots in the tree.")
-
-            if node.parent not in possible_values:
-                raise IntegrityError(f"Node {node} failed to validate.")
-
-        return True
-
-    def get_node_from_name(self, name: str) -> Node:
-        """Get a node from a name.
-
-        Raises ValueError if more than one node shares the same name
-        """
-        candidates = [x for x in self.nodes.values() if x.name == name]
-
-        if len(candidates) > 1:
-            candidates = [str(x) for x in candidates]
-            raise ValueError(
-                f"More than one node shares the same name '{name}': {candidates}"
-            )
-
-        if len(candidates) == 0:
-            candidates = [str(x) for x in candidates]
-            raise ValueError(f"No node found for query '{name}': {candidates}")
-
-        return candidates[0]
-
-    def is_leaf(self, node_id) -> bool:
-        """Return if a given node is a leaf"""
-        if node_id not in self.nodes:
-            ValueError(f"Node {node_id} not found.")
-
-        for node in self.nodes.values():
-            if node.parent == node_id:
-                return False
-        return True
-
-    def leaves(self) -> list[Node]:
-        """Get a list of all the leaves in the tree"""
-        leaves = [node for node in self.nodes.values() if self.is_leaf(node.id)]
-
-        return leaves
-
-    def update_data(self, node_id, new_data):
-        """Update the data of a given node"""
-        if node_id not in self.nodes:
-            ValueError(f"Node {node_id} not found.")
-
-        self.nodes[node_id].data = new_data
-
-    def update_name(self, node_id, new_name):
-        """Update the name of a given node"""
-        if node_id not in self.nodes:
-            ValueError(f"Node {node_id} not found.")
-
-        self.nodes[node_id].name = new_name
-
-    def prune(self, node_id):
-        """Remove the node and all sub-nodes that are children of the pruned node"""
-        if node_id not in self.nodes:
-            ValueError(f"Node {node_id} not found.")
-
-        self.nodes.pop(node_id)
-        for id, node in self.all_nodes():
-            if node.parent == node_id:
-                self.prune(id)
-
-    def get_parent(self, node_id) -> Node:
-        """Get the parent of a node"""
-        assert node_id in self.nodes, f"Cannot find {node_id} in the tree"
-        if node_id == "0":
-            return None
-        return self.nodes[self.nodes[node_id].parent]
-
-    def get_paths(self) -> list[tuple[str]]:
-        """Get a list of paths from the root node to all other nodes"""
-        paths = []
-
-        # For every node, get the full path to the parent.
-        for node in self.nodes.values():
-            path = []
-            current_id = node.id
-            while True:
-                path.append(current_id)
-                if current_id == "0":
-                    # This is the root node, we are at the root
-                    break
-                # This node should have a parent
-                current_id = self.get_parent(current_id).id
-            path.reverse()
-            paths.append(path)
-
-        return paths
-
-    def depth_of(self, node_id) -> Node:
-        assert node_id in self.nodes, f"Cannot find {node_id} in the tree"
-        if node_id == "0":
-            return 0
-        i = 1
-        parent = self.get_parent(node_id)
-        while parent is not None:
-            parent = self.get_parent(parent.id)
-            i += 1
-        return i
-
-    def __str__(self) -> str:
-        return f"Tree with {len(self.nodes)} nodes"
 
 
 def prune(tree: Tree, similarity: float, direction: PruneDirection) -> Tree:
@@ -304,28 +70,6 @@ def prune(tree: Tree, similarity: float, direction: PruneDirection) -> Tree:
     )
 
     return tree
-
-
-def to_files(trees: Tree, out_dir: Path):
-    i = 0
-    for tree in trees:
-        with (out_dir / f"all{i}.txt").open("w+") as stream:
-            stream.writelines([f"{x}\n" for _, x in tree.all_nodes()])
-
-        paths = tree.get_paths()
-
-        for path in paths:
-            names = [tree.nodes[x].name for x in path]
-            names.insert(0, out_dir)
-            real_path = Path(*names)
-            if not real_path.exists():
-                log.info(f"Making {real_path}...")
-                os.makedirs(real_path, exist_ok=True)
-            with (real_path / "data.txt").open("w+") as stream:
-                data = tree.nodes[path[-1]].data
-                if data:
-                    stream.writelines([f"{x}\n" for x in data])
-        i += 1
 
 
 ## >>>> Logging setup
@@ -401,13 +145,19 @@ def main(args: dict) -> None:
     log.info("Pasting trees together...")
     large_tree = Tree()
     for source, sink in sets["structure"]:
+        if source == "root":
+            large_tree.create_node(sink, None)
+        else:
+            large_tree.create_node(sink, large_tree.get_one_node_named(source).id)
         large_tree.paste(
             trees[sink],
-            large_tree.get_node_from_name(source).id,
-            other_node_id=trees[sink].get_node_from_name(sink).id,
+            large_tree.get_one_node_named(sink).id,
             update_data=True,
         )
         print(large_tree)
+    
+    for source, sink in sets["structure"]:
+        print(large_tree.get_one_node_named(sink))
 
     if not args.no_prune:
         log.info("Pruning tree...")
@@ -417,7 +167,7 @@ def main(args: dict) -> None:
             direction=PruneDirection(args.prune_direction),
         )
 
-    to_files(large_tree, args.out_dir)
+    large_tree.to_files(args.out_dir)
 
     log.info("Finished!")
 
@@ -506,10 +256,9 @@ def generate_gene_list_trees(
         Tree: A Tree structure of nodes, where each node contains the geneset
     """
 
-    def generate_list(frame: pd.DataFrame, layer: int):
+    def generate_list(tree: Tree, father_node_id: str, frame: pd.DataFrame, layer: int):
         log.info(f"Enumerating layer {layer}: {list(frame.columns)}")
         # This is the recursive wrapper
-        tree = Tree()
 
         valid_cols = []
         for current_col in list(frame.columns):
@@ -547,7 +296,7 @@ def generate_gene_list_trees(
                     continue
 
                 node_name = f"{current_col}::{value}"
-                node_id = tree.create_node(node_name, data=putative_list)
+                node_id = tree.create_node(node_name, father_node_id, data=putative_list)
 
                 if not recurse:
                     log.debug(
@@ -570,9 +319,7 @@ def generate_gene_list_trees(
                 recurse_cols.remove(current_col)
                 new_data = dataframe.loc[dataframe[current_col] == value, recurse_cols]
 
-                subtree = generate_list(new_data, layer=layer + 1)
-
-                tree.paste(subtree, node_id)
+                tree = generate_list(tree, node_id, new_data, layer=layer + 1)
 
         return tree
 
@@ -582,10 +329,10 @@ def generate_gene_list_trees(
 
     tree = Tree()
     tree_root = tree.create_node(
-        name, data=dataframe[id_col].drop_duplicates().to_list()
+        name, parent = None, data=dataframe[id_col].drop_duplicates().to_list()
     )
 
-    subtree = generate_list(dataframe, 0)
+    subtree = generate_list(tree, tree_root, dataframe, 0)
 
     tree.paste(subtree, tree_root)
 
