@@ -23,6 +23,10 @@ if (sys.nframe() == 0L) {
       type = "character"
     ) |>
     argparser::add_argument(
+      "--low-memory", help = "If specified, saves only output tables, skipping plots, and using less memory.",
+      flag = TRUE, type = "logical"
+    ) |>
+    argparser::add_argument(
       "--save-plots", help = "If specified, also save GSEA plots alongside tables.",
       flag = TRUE, type = "logical"
     ) -> parser
@@ -162,6 +166,8 @@ plot_gsea <- function(genesets, ranks) {
 #'
 #' @param input_data_folder (Full) path to the input data folder with the DEG
 #'   tables to be loaded with `extract_ranks`.
+#' @param output_dir The output directory to save output files to. If NA, does
+#'   not save files, and instead returns a list of results.
 #' @param genesets_folder_patdh (Full) path to the folder with genesets, as .txt
 #'   files with one gene id per row.
 #' @param biomart_data A data.frame with at least the "ensembl_gene_id",
@@ -169,7 +175,7 @@ plot_gsea <- function(genesets, ranks) {
 #'   Such a table can be retrieved from Biomart with biomaRt.
 #'
 #' @returns A list of values with file names as names and GSEA results as values.
-run_all_gsea <- function(input_data_folder, genesets_folder_path, biomart_data) {
+run_all_gsea <- function(input_data_folder, genesets_folder_path, biomart_data, output_dir = NA) {
   file_names <- list.files(input_data_folder)
   file_paths <- file.path(input_data_folder, file_names)
 
@@ -181,11 +187,21 @@ run_all_gsea <- function(input_data_folder, genesets_folder_path, biomart_data) 
     cat(paste0("Running GSEA on ", file_names[i], "\n"))
     ranks <- extract_ranks(file_paths[i], biomart_data)
 
-    results[[file_names[i]]] <- run_gsea(genesets, ranks)
-    results[[paste0("plot_", file_names[[i]])]] <- plot_gsea(genesets, ranks)
+    if (! is.na(output_dir)) {
+      result <- run_gsea(genesets, ranks)
+
+      cat(paste0("Saving data to ", paste0(file.path(output_dir, file_names[i]), ".csv"), "\n"))
+      save_result(result, output_dir, file_names[i])
+    } else {
+      results[[file_names[i]]] <- run_gsea(genesets, ranks)
+      results[[paste0("plot_", file_names[[i]])]] <- plot_gsea(genesets, ranks)
+    }
   }
 
-  return(results)
+  if (length(results) > 0) {
+    return(results)
+  }
+  return(NULL)
 }
 
 
@@ -262,28 +278,10 @@ save_results(results, out_dir = "/home/hedmad/Files/data/mtpdb/gsea_output/", sk
 
 # If you are running this from RStudio, you can skip this >>>>>>>>>>>>>>>>>>
 if (sys.nframe() == 0L) {
-  requireNamespace("argparser")
 
-  parser <- argparser::arg_parser("Run GSEA on DEG tables")
-
-  parser |>
-    argparser::add_argument(
-      "input_deg_folder", help="Folder with DEG tables to run GSEA on.", type="character"
-    ) |>
-    argparser::add_argument(
-      "input_genesets_folder", help = "Folder with input genesets as .txt files",
-      type = "character"
-    ) |>
-    argparser::add_argument(
-      "output_dir", help = "Output directory",
-      type = "character"
-    ) |>
-    argparser::add_argument(
-      "--save-plots", help = "If specified, also save GSEA plots alongside tables.",
-      flag = TRUE, type = "logical"
-    ) -> parser
-
-  args <- argparser::parse_args(parser)
+  if (args$low_memory && args$save_plots) {
+    cat("WARNING: Low memory mode. Cannot save plots!")
+  }
 
   embl <- biomaRt::useEnsembl(biomart = "genes")
   hs.embl <- biomaRt::useDataset(dataset = "hsapiens_gene_ensembl", mart = embl)
@@ -292,12 +290,21 @@ if (sys.nframe() == 0L) {
     mart = hs.embl
   )
 
-  results <- run_all_gsea(
-    args$input_deg_folder,
-    args$input_genesets_folder,
-    ensg_data
-  )
+  if (args$low_memory) {
+    run_all_gsea(
+      args$input_deg_folder,
+      args$input_genesets_folder,
+      ensg_data,
+      output_dir = args$output_dir
+    )
+  } else {
+    results <- run_all_gsea(
+      args$input_deg_folder,
+      args$input_genesets_folder,
+      ensg_data
+    )
 
-  save_results(results, out_dir = args$output_dir, skip_plots = !args$save_plots)
+    save_results(results, out_dir = args$output_dir, skip_plots = !args$save_plots)
+  }
 }
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
