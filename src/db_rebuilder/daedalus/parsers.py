@@ -674,32 +674,9 @@ def get_ion_channels_transaction(iuphar_data, hugo):
     conductances = conductances.merge(hugo_channels, how="outer", on="ensg")
 
     sanity_check(conductances["ensg"].is_unique, "All conductance ENSGs are unique.")
-
-    log.info("Setting channel types...")
-    voltage_gated = recast(
-        hugo["voltage_gated_ion_channels"], {"Ensembl gene ID": "ensg"}
-    ).drop_duplicates()
-    ligand_gated = recast(
-        hugo["ligand_gated_ion_channels"], {"Ensembl gene ID": "ensg"}
-    ).drop_duplicates()
-
-    conductances["is_voltage_gated"] = 0
-    conductances["is_ligand_gated"] = 0
-
-    conductances.loc[
-        conductances["ensg"].isin(voltage_gated["ensg"]), "is_voltage_gated"
-    ] = 1
-    conductances.loc[
-        conductances["ensg"].isin(ligand_gated["ensg"]), "is_ligand_gated"
-    ] = 1
-
     sanity_check(
-        any(~conductances["is_voltage_gated"].isnull()),
-        "At least one voltage gated ion channel exists",
-    )
-    sanity_check(
-        any(~conductances["is_ligand_gated"].isnull()),
-        "At least one ligand gated ion channel exists",
+        all(hugo_channels["ensg"].isin(conductances["ensg"])),
+        "All Ensgs from HUGO were added.",
     )
 
     log.info("Using conductances to populate table...")
@@ -753,9 +730,6 @@ def get_ion_channels_transaction(iuphar_data, hugo):
                 continue
             entry = {
                 "ensg": gene,
-                "is_voltage_gated": conductances.loc[index, "is_voltage_gated"].iloc[0],
-                "is_ligand_gated": conductances.loc[index, "is_ligand_gated"].iloc[0],
-                "is_stretch_activated": None,
                 "carried_solute": ion,
                 "relative_conductance": conductances.loc[
                     index, f"relative_{type}_conductance"
@@ -766,10 +740,52 @@ def get_ion_channels_transaction(iuphar_data, hugo):
             }
             table.append(entry)
 
+    table = pd.DataFrame(table)
+    # Add the ensgs with no conductance info back in
+    table = table.merge(conductances["ensg"], how="outer", on="ensg")
+
+    sanity_check(
+        all(hugo_channels["ensg"].isin(table["ensg"])),
+        "All Ensgs from HUGO were added.",
+    )
+
+    sanity_check(
+        all(conductances["ensg"].isin(table["ensg"])),
+        "All genes were ported to the new table",
+    )
+
+    log.info("Setting channel types...")
+    gating_groups = {
+        "voltage": recast(
+            hugo["voltage_gated_ion_channels"], {"Ensembl gene ID": "ensg"}
+        ).drop_duplicates(),
+        "ligand": recast(
+            hugo["ligand_gated_ion_channels"], {"Ensembl gene ID": "ensg"}
+        ).drop_duplicates(),
+        "pH": recast(
+            hugo["ph_sensing_ion_channels"], {"Ensembl gene ID": "ensg"}
+        ).drop_duplicates(),
+        "stretch": recast(
+            hugo["volume_regulated_ion_channels"], {"Ensembl gene ID": "ensg"}
+        ),
+    }
+
+    # Fill the column with empty lists
+    table["gating_mechanism"] = np.empty((len(table), 0)).tolist()
+
+    # This raises warnings, but (I think that) they are false positives
+    pd.set_option("mode.chained_assignment", None)
+    for group, data in gating_groups.items():
+        log.info(f"Populating '{group}' channels...")
+        for ensg in data["ensg"]:
+            table.loc[table["ensg"] == ensg, "gating_mechanism"].apply(
+                lambda x: x.append(group)
+            )
+    pd.set_option("mode.chained_assignment", "warn")
+
+    table = table.explode("gating_mechanism")
     log.warn("Impossible to annotate stretch-activated channels")
     log.warn("Impossible to know leakage channels")
-
-    table = pd.DataFrame(table)
 
     table = apply_thesaurus(table)
 

@@ -574,13 +574,13 @@ def apply_thesaurus(frame: pd.DataFrame, col="carried_solute") -> pd.DataFrame:
 
     log.info("Applying thesaurus equivalences...")
     for _, line in change_to.iterrows():
-        frame[col][frame[col] == line["original"]] = line["change_to"]
+        frame.loc[frame[col] == line["original"], col] = line["change_to"]
 
     log.info("Adding thesaurus synonyms...")
     synonyms = thesaurus.dropna(axis=0, subset="synonyms")
     for _, line in synonyms.iterrows():
-        frame[col][
-            frame[col] == line["original"]
+        frame.loc[
+            frame[col] == line["original"], col
         ] = f"{line['original']},{line['synonyms']}"
 
     return explode_on(frame, ",", [col])

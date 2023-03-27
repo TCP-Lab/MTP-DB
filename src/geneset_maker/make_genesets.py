@@ -4,17 +4,15 @@ from __future__ import annotations
 """This script makes gene lists apt for GSEA from the db"""
 import json
 import logging
-import os
 from collections import Counter
 from copy import copy
 from enum import Enum
 from logging import StreamHandler
 from pathlib import Path
 from sqlite3 import Connection, connect
-from bonsai import Tree, Node
-from uuid import uuid4 as id
 
 import pandas as pd
+from bonsai import Node, Tree
 from colorama import Back, Fore, Style
 
 
@@ -155,7 +153,7 @@ def main(args: dict) -> None:
             update_data=True,
         )
         print(large_tree)
-    
+
     for source, sink in sets["structure"]:
         print(large_tree.get_one_node_named(sink))
 
@@ -296,7 +294,9 @@ def generate_gene_list_trees(
                     continue
 
                 node_name = f"{current_col}::{value}"
-                node_id = tree.create_node(node_name, father_node_id, data=putative_list)
+                node_id = tree.create_node(
+                    node_name, father_node_id, data=putative_list
+                )
 
                 if not recurse:
                     log.debug(
@@ -329,7 +329,7 @@ def generate_gene_list_trees(
 
     tree = Tree()
     tree_root = tree.create_node(
-        name, parent = None, data=dataframe[id_col].drop_duplicates().to_list()
+        name, parent=None, data=dataframe[id_col].drop_duplicates().to_list()
     )
 
     subtree = generate_list(tree, tree_root, dataframe, 0)

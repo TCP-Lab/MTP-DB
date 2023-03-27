@@ -112,9 +112,7 @@ CREATE TABLE channels (
     ensg TEXT,
     -- gating
     is_voltage_gated INT,
-    is_ligand_gated INT,
-    is_leakage INT,
-    is_stretch_activated INT, -- Lasciata vuota
+    gating_mechanism TEXT,
     --
     carried_solute TEXT,
     relative_conductance REAL,

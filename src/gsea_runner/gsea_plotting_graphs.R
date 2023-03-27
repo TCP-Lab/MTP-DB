@@ -6,21 +6,6 @@ library(ggraph) # This needs to be a library() call
 library(grid)
 library(assertthat)
 
-{
-  BASE_EDGE_LIST <- as.data.frame(rbind(
-    c("whole_transportome", "pores"),
-    c("whole_transportome", "transporters"),
-    c("pores", "channels"),
-    c("pores", "aquaporins"),
-    c("transporters", "solute_carriers"),
-    c("transporters", "atp_driven"),
-    c("atp_driven", "ABC"),
-    c("atp_driven", "pumps")
-  ))
-  colnames(BASE_EDGE_LIST) <- c("source", "sink")
-}
-
-
 #' Read a series of .csv files from a directory
 #'
 #' This is for the output files from fgsea::fgsea in the `run_gsea.R` file
@@ -116,7 +101,6 @@ result_to_graph <- function(result) {
   vertices <- unique(unlist(edges))
   for (i in seq_along(vertices)) {
     item <- vertices[i]
-    print(paste0("/", uuids$paths[uuids$uuids == item]))
 
     item_data <- c(
       item,
@@ -124,7 +108,6 @@ result_to_graph <- function(result) {
       unlist(result[result$pathway == paste0("/", uuids$paths[uuids$uuids == item]), c("NES", "padj")])
     )
 
-    print(item_data)
     assert_that(length(item_data) == 4)
 
     vertice_data[[i]] <- item_data
@@ -139,12 +122,8 @@ result_to_graph <- function(result) {
 
   vertice_frame$NES[is.na(vertice_frame$NES)] <- 0
 
-
-
   return(igraph::graph_from_data_frame(edges, vertices = vertice_frame))
 }
-
-result_to_graph(results$`jankyr_Limma - DEG Table tumor-normal.csv`)
 
 # ----
 
@@ -281,8 +260,6 @@ plot_result <- function(result, title = "") {
 
   return(pp)
 }
-
-plot_result(results$`wangh_Limma - DEG Table tumor-normal.csv`)
 
 plot_all_results <- function(results, out_dir, width=10, height=8, png = TRUE) {
   for (i in seq_along(results)) {
