@@ -572,6 +572,8 @@ def apply_thesaurus(frame: pd.DataFrame, col="carried_solute") -> pd.DataFrame:
     # First, replace every entry with its "change_to" equivalent
     change_to = thesaurus.dropna(axis=0, subset="change_to")
 
+    rows, _ = frame.shape
+
     log.info("Applying thesaurus equivalences...")
     for _, line in change_to.iterrows():
         frame.loc[frame[col] == line["original"], col] = line["change_to"]
@@ -583,4 +585,8 @@ def apply_thesaurus(frame: pd.DataFrame, col="carried_solute") -> pd.DataFrame:
             frame[col] == line["original"], col
         ] = f"{line['original']},{line['synonyms']}"
 
-    return explode_on(frame, ",", [col])
+    new_frame = explode_on(frame, ",", [col])
+
+    log.info(f"New thesaurus rows: {new_frame.shape[0] - rows}")
+
+    return new_frame

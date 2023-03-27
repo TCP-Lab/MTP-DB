@@ -862,8 +862,8 @@ def tokenize_slc(string: str):
     return set([x.strip() for x in string])
 
 
-def warn_long_solutes(string):
-    if isinstance(string, str) and len(string) >= 20:
+def warn_long_solutes(string, possibilities):
+    if isinstance(string, str) and string not in possibilities:
         log.warn(f"Found an unusually long solute: '{string}'")
 
 
@@ -892,8 +892,36 @@ def explode_slc(data: pd.DataFrame) -> pd.DataFrame:
     data = data.drop(columns=["solutes", "driving"])
     data = data.explode("exploded_solute")
 
+    log.info("Removing NA-like terms...")
+    to_remove = [
+        "possibly proton-linked",
+        "Uncertain",
+        "+",  # This is just plain wrong
+        "?Ch",
+        "H+ ?",
+        "polyamines?",  # Are you sure about that?
+        "probably organic anions",
+        "E?",
+        "not specific",
+        "inconclusive",
+        "glycine ?",
+        "C ?",
+        "nan",
+        "?",  # Just ?
+        "",
+    ]
+    data.loc[
+        [x in to_remove for x in data["exploded_solute"].tolist()], "exploded_solute"
+    ] = pd.NA
+
     log.info("Checking possible anomalies...")
-    data["exploded_solute"].apply(warn_long_solutes)
+    # I use the thesaurus + a manual list for approved symbols
+    thesaurus = get_local_data("thesaurus.csv")["original"].tolist()
+    data["exploded_solute"].apply(warn_long_solutes, possibilities=thesaurus)
+
+    solutes = data["exploded_solute"].dropna().tolist()
+    solutes = [x for x in solutes if x not in thesaurus]
+    print("\n".join(set(solutes)))
 
     return data
 

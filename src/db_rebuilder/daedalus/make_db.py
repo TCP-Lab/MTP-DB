@@ -268,7 +268,7 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     else:
         log.debug("Skipped populating TCDB definitions")
 
-    if (not SUPPRESS_ALL) or True:
+    if (not SUPPRESS_ALL) or False:
         ## -- ion channels --
         log.info("Populating ion channel metadata")
         with cache("iuphar") as iuphar, cache("hugo") as hugo:
@@ -300,7 +300,7 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     else:
         log.debug("Skipped populating aquaporins")
 
-    if (not SUPPRESS_ALL) or False:
+    if (not SUPPRESS_ALL) or True:
         ## -- solute carriers --
         log.info("Populating solute carriers...")
         with cache("hugo") as hugo, cache("iuphar") as iuphar, cache("slc") as slc:
