@@ -111,7 +111,6 @@ CREATE TABLE cosmic_genes (
 CREATE TABLE channels (
     ensg TEXT,
     -- gating
-    is_voltage_gated INT,
     gating_mechanism TEXT,
     --
     carried_solute TEXT,
