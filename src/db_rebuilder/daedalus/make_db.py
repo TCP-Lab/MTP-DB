@@ -131,6 +131,10 @@ def apply_manual_tweaks(connection: Connection, sql_folder_path: Path):
         log.info("Found no transactions to apply.")
         return
 
+    to_apply.reverse()
+    # The files are appended in the opposite order, but I want to execute them
+    # in order.
+
     log.info(f"Found {len(to_apply)} transactions to apply.")
     for item in to_apply:
         with item.open("r") as stream:
