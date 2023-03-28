@@ -1,6 +1,6 @@
 -- This file adds the leakage ID to leakage channels
 
-UPDATE channels SET gating_mechanism = "" WHERE ensg IN (
+UPDATE channels SET gating_mechanism = "leakage" WHERE ensg IN (
     -- Potassium
     ------ KCNK (two pore)
     "ENSG00000135750",
