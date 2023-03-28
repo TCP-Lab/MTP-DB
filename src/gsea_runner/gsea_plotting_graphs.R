@@ -1,3 +1,40 @@
+#!/usr/bin/env Rscript
+
+if (sys.nframe() == 0L) {
+  # Parsing arguments
+  requireNamespace("argparser")
+
+  parser <- argparser::arg_parser("Run GSEA on DEG tables")
+
+  parser |>
+    argparser::add_argument(
+      "input_gsea_results", help="Folder with GSEA output .csv files to read.", type="character"
+    ) |>
+    argparser::add_argument(
+      "output_dir", help = "Output directory to save files in",
+      type = "character"
+    ) |>
+    argparser::add_argument(
+      "--png", help = "If specified, saves plots as PNG. Use `--res` to set the resolution",
+      flag = TRUE, type = "logical"
+    ) |>
+    argparser::add_argument(
+      "--res", help = "Resolution of PNG plots, in pixels per inch.",
+      default= 400, type = "logical"
+    ) |>
+    argparser::add_argument(
+      "--width", help = "Plot width, in inches.",
+      default = 10, type = "numerical"
+    ) |>
+    argparser::add_argument(
+      "--height", help = "Plot height, in inches.",
+      default = 10, type = "numerical"
+    ) -> parser
+
+  args <- argparser::parse_args(parser)
+}
+
+
 library(tidyverse)
 requireNamespace("RColorBrewer")
 requireNamespace("igraph")
@@ -118,7 +155,6 @@ result_to_graph <- function(result) {
   colnames(vertice_frame) <- c("uuid", "human_label", "NES", "padj")
   # Convert to numbers
   vertice_frame |> mutate(NES = as.numeric(NES), padj = as.numeric(padj)) -> vertice_frame
-  print(head(vertice_frame))
 
   vertice_frame$NES[is.na(vertice_frame$NES)] <- 0
 
@@ -208,7 +244,6 @@ calculate_angle_from_pos <- function(pos_dataframe, specials = NULL) {
   # Detect which labels do not lay on the outer circle, so that we can
   # label them differently
   hypothenuses <- sqrt(pos_dataframe$x ** 2 + pos_dataframe$y ** 2)
-  pos_dataframe[hypothenuses - max(hypothenuses) > max(hypothenuses) * 0.001,] |> print()
 
   pos_dataframe
 }
@@ -261,7 +296,7 @@ plot_result <- function(result, title = "") {
   return(pp)
 }
 
-plot_all_results <- function(results, out_dir, width=10, height=8, png = TRUE) {
+plot_all_results <- function(results, out_dir, width=10, height=8, png = TRUE, res = 400) {
   for (i in seq_along(results)) {
     cat(paste0("Saving ", names(results)[i], "...\n"))
     if (png) {
@@ -269,15 +304,14 @@ plot_all_results <- function(results, out_dir, width=10, height=8, png = TRUE) {
         file.path(out_dir, paste0(names(results)[i], ".png")),
         width = width, height = height,
         units = "in",
-        res = 400
+        res = res
       )
     } else {
       pdf(
           file.path(
-          out_dir, paste0(names(results[i], ".png")),
+          out_dir, paste0(names(results)[i], ".pdf")),
           width = width, height = height
         )
-      )
     }
     print(
       plot_result(results[[i]], title = names(results)[i])
@@ -286,6 +320,17 @@ plot_all_results <- function(results, out_dir, width=10, height=8, png = TRUE) {
   }
 }
 
-results <- read_results("/home/hedmad/Files/data/mtpdb/gsea_output/")
+# DEBUGGING ONLY
+if (FALSE) {
+  results <- read_results("/home/hedmad/Files/data/mtpdb/gsea_output/")
 
-plot_all_results(results, "~/Files/data/mtpdb/graphs/")
+  plot_all_results(results, "~/Files/data/mtpdb/graphs/")
+}
+
+if (sys.nframe() == 0L) {
+  results <- read_results(args$input_gsea_results)
+
+  plot_all_results(
+    results, args$output_dir, args$width, args$height, args$png, args$res
+  )
+}
