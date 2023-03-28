@@ -131,16 +131,20 @@ def apply_manual_tweaks(connection: Connection, sql_folder_path: Path):
         log.info("Found no transactions to apply.")
         return
 
-    to_apply.reverse()
+    to_apply.sort()
     # The files are appended in the opposite order, but I want to execute them
     # in order.
 
-    log.info(f"Found {len(to_apply)} transactions to apply.")
+    log.info(f"Found {len(to_apply)} hooks to apply.")
     for item in to_apply:
         with item.open("r") as stream:
             sql = stream.read()
-            log.info(f"Executing post-build hook {item.name}...")
-            execute_transaction(connection, sql)
+            # There might be multiple statements in one file
+            # We can split it up here and execute them one at a time
+            sql_parts = [f"{x};" for x in sql.split(";") if x.strip()]
+            for i, transaction in enumerate(sql_parts):
+                log.info(f"Executing post-build hook {item.name} [{i + 1}]...")
+                execute_transaction(connection, transaction)
 
 
 def populate_database(connection: Connection, cache: ResourceCache) -> None:
