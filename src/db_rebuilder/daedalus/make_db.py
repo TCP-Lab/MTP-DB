@@ -279,8 +279,10 @@ def populate_database(connection: Connection, cache: ResourceCache) -> None:
     if (not SUPPRESS_ALL) or True:
         ## -- ion channels --
         log.info("Populating ion channel metadata")
-        with cache("iuphar") as iuphar, cache("hugo") as hugo:
-            transaction = get_ion_channels_transaction(iuphar, hugo)
+        with cache("iuphar") as iuphar, cache("hugo") as hugo, cache(
+            "iuphar_compiled"
+        ) as iuphar_compiled:
+            transaction = get_ion_channels_transaction(iuphar, iuphar_compiled, hugo)
 
             execute_transaction(connection, transaction)
         gc.collect()

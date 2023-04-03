@@ -591,7 +591,7 @@ def calculate_relative_conductances(original: dict) -> dict:
     return original
 
 
-def get_ion_channels_transaction(iuphar_data, hugo):
+def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
     log.info("Finding ion channels in TCDB...")
 
     selectivity: pd.DataFrame = iuphar_data["selectivity"]
@@ -787,8 +787,24 @@ def get_ion_channels_transaction(iuphar_data, hugo):
     log.warn("Impossible to annotate stretch-activated channels")
     log.warn("Impossible to know leakage channels")
 
-    table = apply_thesaurus(table)
+    log.info("Adding IUPHAR ion channels back in...")
+    # Add iuphar "ion_channel family"
+    tf_table = iuphar_compiled["targets+families"]
 
+    # The ion channels fall into either "lgic", "vgic" or "other_ic",
+    # under the "type" column.
+    tf_table = recast(tf_table, {"Type": "type", "Target id": "object_id"})
+
+    # I re-use the "database links" frame to go from the IDs to ENSGs
+    database_links["object_id"] = database_links["object_id"].astype(int)
+    tf_table = tf_table.merge(database_links, how="left", on="object_id")
+
+    tf_table = tf_table[tf_table["type"].isin(("lgic", "vgic", "other_ic"))]
+    tf_table = tf_table.drop(columns=["type", "object_id"])
+
+    table = table.merge(tf_table, how="outer", on="ensg")
+
+    table = apply_thesaurus(table)
     return to_transaction(table, "channels")
 
 
