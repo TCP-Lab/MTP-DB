@@ -1,5 +1,5 @@
 from daedalus.tests.fixtures import secrets
-from daedalus.utils import *
+from daedalus.utils import *  # nopycln: import
 
 
 def test_get_cosmic_auth(secrets):

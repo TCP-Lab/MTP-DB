@@ -1,21 +1,10 @@
 import logging
 from logging import StreamHandler
-from pathlib import Path
 
 from colorama import Back, Fore, Style
 
-OUT_ANCHOR: Path = Path("/app/out")
-
-__all__ = ["OUTANCHOR"]
+__all__ = ["DB_NAME", "SCHEMA"]
 __version__ = "0.1.0"
-
-DB_PATH = OUT_ANCHOR / f"MTPDB_v{__version__}.sqlite"
-
-if DB_PATH.exists():
-    raise Exception(f"Target DB already exists @{DB_PATH}. Aborting")
-
-
-SCHEMA = "BEGIN;\n{}\nEND;".format(Path("/app/schema.sql").read_text())
 
 
 class ColorFormatter(logging.Formatter):

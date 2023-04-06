@@ -1,5 +1,6 @@
 BIOMART = "http://www.ensembl.org/biomart/martservice"
 """The Url used by Biomart to accept requests"""
+
 BIOMART_XML_REQUESTS = {
     "IDs+desc": {
         "query": """<?xml version="1.0" encoding="UTF-8"?>
@@ -104,6 +105,7 @@ COSMIC = {
 
 IUPHAR_DB = "https://www.guidetopharmacology.org/DATA/public_iuphardb_v2022.2.zip"
 """URL to the download of the full IUPHAR database"""
+
 IUPHAR_COMPILED = {
     "targets+families": "https://www.guidetopharmacology.org/DATA/targets_and_families.csv",
     "ligands": "https://www.guidetopharmacology.org/DATA/ligands.csv",
@@ -138,3 +140,4 @@ HUGO = {
 """Hugo downloads as found on their download pages"""
 
 SLC_TABLES = "http://slc.bioparadigms.org/"
+"""URL to the SLC tables that have data regarding solute carriers"""

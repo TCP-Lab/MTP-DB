@@ -5,6 +5,6 @@ class CacheKeyError(Exception):
 
 
 class Abort(Exception):
-    """The program cannot continue, but the error was logged."""
+    """The program cannot continue, but the error was caught, logged, and we can exit gracefully."""
 
     pass

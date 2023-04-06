@@ -9,8 +9,7 @@ from typing import TypeAlias
 
 import pandas as pd
 from bs4 import BeautifulSoup
-from daedalus.errors import CacheKeyError
-from daedalus.url_hardpoints import (
+from daedalus.constants import (
     BIOMART,
     BIOMART_XML_REQUESTS,
     COSMIC,
@@ -20,6 +19,7 @@ from daedalus.url_hardpoints import (
     SLC_TABLES,
     TCDB,
 )
+from daedalus.errors import CacheKeyError
 from daedalus.utils import pbar_get, pqdm, request_cosmic_download_url, run
 from typing_extensions import Self
 
