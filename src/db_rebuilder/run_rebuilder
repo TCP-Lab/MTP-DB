@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-if [ $# != 3 ]; then
-    echo "Insufficient args. Usage: run_rebuilder OUT_FOLDER, COSMIC_USERNAME, COSMIC_PASSWORD"
+if [ $# -lt 1 ]; then
+    echo "Insufficient args. Usage: run_rebuilder OUT_FOLDER [...]"
 fi
 
 if [ -z ${1+x} ]; then
@@ -16,5 +16,6 @@ if [ ! -d ${1} ]; then
 fi
 
 real=$(realpath $1)
+shift 1
 
-docker run -it --rm -v $real:/app/out dbrebuilder:latest "$2" "$3"
+docker run -it --rm -v $real:/app/out dbrebuilder:latest "/app/out" $@
