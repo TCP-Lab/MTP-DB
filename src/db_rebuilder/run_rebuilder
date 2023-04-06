@@ -5,16 +5,6 @@ if [ $# -lt 1 ]; then
     echo "Insufficient args. Usage: run_rebuilder OUT_FOLDER [...]"
 fi
 
-if [ -z ${1+x} ]; then
-    echo "Missing output directory. Aborting.";
-    exit 1
-fi
-
-if [ ! -d ${1} ]; then
-    echo "Target is not a directory. Aborting";
-    exit 1
-fi
-
 real=$(realpath $1)
 shift 1
 
