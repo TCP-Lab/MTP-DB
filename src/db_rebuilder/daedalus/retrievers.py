@@ -1,16 +1,17 @@
 import gzip
 import multiprocessing
+import os
+import pickle
 import re
 import zipfile
-from concurrent.futures import ProcessPoolExecutor
 from copy import deepcopy
 from logging import getLogger
+from pathlib import Path
 from typing import TypeAlias
 
 import pandas as pd
 from bs4 import BeautifulSoup
-from daedalus.errors import CacheKeyError
-from daedalus.url_hardpoints import (
+from daedalus.constants import (
     BIOMART,
     BIOMART_XML_REQUESTS,
     COSMIC,
@@ -20,7 +21,8 @@ from daedalus.url_hardpoints import (
     SLC_TABLES,
     TCDB,
 )
-from daedalus.utils import pbar_get, pqdm, request_cosmic_download_url, run
+from daedalus.errors import Abort, CacheKeyError
+from daedalus.utils import lmap, pbar_get, pqdm, request_cosmic_download_url
 from typing_extensions import Self
 
 log = getLogger(__name__)
@@ -49,14 +51,23 @@ def retrieve_biomart() -> DataDict:
     result = {}
     for key, value in BIOMART_XML_REQUESTS.items():
         log.info(f"Attempting to retrieve {key}...")
-        data = pbar_get(url=BIOMART, params={"query": value["query"]})
+
+        data = pbar_get(url=BIOMART, params={"query": value})
+
         log.info("Casting response...")
         # The downloaded frames are sometimes big, so typing of the cols can
         # be hard. See the docs for why low_memory is needed here.
         # Not like it makes a real difference, memory-wise.
-        df = pd.read_csv(data, names=value["colnames"], low_memory=False)
+        df = pd.read_table(data, sep="\t", header=0, low_memory=False)
 
         result[key] = df
+
+        # I don't want to deal with THe rANdom CaPItaLizATIon ThAt biOMarT uSEs
+        # so I just standardize all colnames here
+        def standardize_col(x: str):
+            return x.lower().strip().replace(" ", "_")
+
+        df.columns = lmap(standardize_col, df.columns)
 
     log.info("Got all necessary data from BioMart.")
 
@@ -263,9 +274,10 @@ class ResourceCache:
     __data = {}
     __populated = False
 
-    def __init__(self, hooks) -> None:
+    def __init__(self, cache_path: Path, hooks) -> None:
         self.target_key = None
         self.__hooks = hooks
+        self.__cache_path = cache_path
 
     def __call__(self, key: str) -> Self:
         self.target_key = key
@@ -273,17 +285,47 @@ class ResourceCache:
 
     def populate(self):
         log.info("Populating resource cache...")
-        with ProcessPoolExecutor(CPUS) as pool:
-            # Just to be sure the orders are ok
-            keys = deepcopy(list(self.__hooks.keys()))
-            workers = [self.__hooks[key] for key in keys]
+        if self.__cache_path.exists():
+            # We can load the pickled data
+            with self.__cache_path.open("rb") as stream:
+                data = pickle.load(stream)
 
-            items = pool.map(run, workers)
+            if not isinstance(data, dict):
+                log.critical("Loaded pickle is not a dictionary!! What have I done!?")
+                raise Abort
 
-        for key, value in zip(self.__hooks.keys(), items):
-            self.__data[key] = value
+            # Check that the hooks are valid
+            if not all(
+                [loaded_key in self.__hooks.keys() for loaded_key in data.keys()]
+            ):
+                log.error(
+                    (
+                        "Pickled data does not conform to the needed data signature. "
+                        "Cannot continue. "
+                        "Use `--regen-cache` to force a redownload."
+                    )
+                )
+                raise Abort
+
+            self.__data = data
+            self.__populated = True
+            log.debug("Loaded from pickled data.")
+            return
+
+        # If we get here, we need to download the data
+        tot = len(self.__hooks)
+        for i, (key, retriever) in enumerate(self.__hooks.items()):
+            log.info(f"[ {i + 1} / {tot} ] Retrieving hook: {key}...")
+            self.__data[key] = retriever()
 
         self.__populated = True
+
+        log.info(f"Dumping downloaded data to pickle @ {self.__cache_path}")
+        if not self.__cache_path.parent.exists:
+            log.debug("Making datacache parent dirs...")
+            os.makedirs(self.__cache_path.parent, exist_ok=True)
+        with self.__cache_path.open("w+b") as stream:
+            pickle.dump(self.__data, stream)
 
     def __enter__(self):
         if self.target_key not in self.__hooks.keys():

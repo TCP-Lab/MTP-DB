@@ -5,27 +5,21 @@ import math
 import re
 import shutil
 from dataclasses import dataclass
-from io import BytesIO
+from importlib import resources
+from io import BytesIO, StringIO
 from logging import getLogger
 from numbers import Number
-from pathlib import Path
 from typing import Any, Optional
 
 import numpy as np
 import pandas as pd
 import requests
+from daedalus import local_data, post_build_hooks
+from daedalus.constants import THESAURUS_FILE
 from daedalus.errors import Abort
 from tqdm.auto import tqdm
 
 log = getLogger(__name__)
-
-
-def run(callable):
-    """A simple wrapper to use in ProcessPoolExecutors
-
-    They don't accept lambdas, as they are not pickle-able.
-    """
-    return callable()
 
 
 # For testing purposes
@@ -470,7 +464,7 @@ def flatten(l):
     return out
 
 
-def get_local_data(file_name: str) -> pd.DataFrame:
+def get_local_csv(file_name: str) -> pd.DataFrame:
     """Get a local data file based on its file name.
 
     The local data has to live in the ./manual_data folder and be a .csv file.
@@ -481,12 +475,33 @@ def get_local_data(file_name: str) -> pd.DataFrame:
     Returns:
         A `pd.DataFrame` with the loaded data.
     """
-
-    # TODO: refactor this
-    PATH = Path("./daedalus/manual_data/")
-
-    with (PATH / file_name).open("r") as file:
+    with resources.open_text(local_data, file_name) as file:
         return pd.read_csv(file)
+
+
+def get_local_bytes(file_name: str) -> BytesIO:
+    with resources.files(local_data).joinpath(file_name).open("rb") as file:
+        return BytesIO(file.read())
+
+
+def get_local_text(file_name: str) -> StringIO:
+    with resources.files(local_data).joinpath(file_name).open(
+        "r", encoding="UTF-8"
+    ) as file:
+        return StringIO(file.read())
+
+
+def get_local_post_build_hooks() -> dict[str:StringIO]:
+    local_hooks = {}
+    for file in resources.files(post_build_hooks).iterdir():
+        if file.is_file() and file.name.lower().endswith(".sql"):
+            with file.open("r", encoding="UTF-8") as stream:
+                local_hooks[file.name] = StringIO(stream.read())
+
+    # Sort the hooks by file name and return them as a sorted list
+    # This seems like black magic, but it works!
+    local_hooks = dict(sorted(local_hooks.items()))
+    return local_hooks
 
 
 def explode_on(
@@ -553,9 +568,6 @@ def explode_on(
     return data.drop_duplicates()
 
 
-THESAURUS_FILE = "thesaurus.csv"
-
-
 def apply_thesaurus(frame: pd.DataFrame, col="carried_solute") -> pd.DataFrame:
     """Apply the thesaurus on a dataframe,
 
@@ -568,7 +580,7 @@ def apply_thesaurus(frame: pd.DataFrame, col="carried_solute") -> pd.DataFrame:
     Returns:
         pd.DataFrame: The (exploded) frame with the synonyms
     """
-    thesaurus = get_local_data(THESAURUS_FILE)
+    thesaurus = get_local_csv(THESAURUS_FILE)
     # First, replace every entry with its "change_to" equivalent
     change_to = thesaurus.dropna(axis=0, subset="change_to")
 
