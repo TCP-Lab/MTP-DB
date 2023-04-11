@@ -1,7 +1,7 @@
 import logging
 
 import pandas as pd
-from daedalus.utils import lmap, split_ensembl_ids, to_transaction
+from daedalus.utils import lmap, recast, sanity_check, split_ensembl_ids, to_transaction
 
 log = logging.getLogger(__name__)
 
@@ -12,11 +12,13 @@ log = logging.getLogger(__name__)
 
 def get_gene_ids_transaction(mart_data):
     log.info("Making gene_ids table transaction")
-    ensg = mart_data["IDs+desc"]["ensembl_gene_id_version"]
+    # This frame is just ENSGs but split into their components.
+    # The `split_ensembl_ids` function does the heavy lifting.
+    ensg = mart_data["IDs"]["gene_stable_id_version"]
     ensg = pd.unique(ensg)
 
     log.info("Parsing ensembl gene IDs")
-    ensg = list(map(split_ensembl_ids, ensg))
+    ensg = lmap(split_ensembl_ids, ensg)
 
     gene_ids = pd.DataFrame(
         {
@@ -26,39 +28,29 @@ def get_gene_ids_transaction(mart_data):
         }
     )
 
-    log.info("Making transaction...")
+    sanity_check(
+        gene_ids.notna().all(axis=None), "There are no NAs in the gene_ids frame"
+    )
     return to_transaction(gene_ids, "gene_ids")
 
 
 def get_gene_names_transaction(mart_data):
-    desc_data: pd.DataFrame = mart_data["IDs+desc"][
-        ["ensembl_gene_id_version", "description"]
-    ]
-    hugo_data: pd.DataFrame = mart_data["hugo_symbols"]
-
-    desc_data = desc_data.drop_duplicates()
-
-    # Merge the ensg and the data
-    log.info("Merging ensembl gene IDs with HUGO symbols...")
-    data = hugo_data.merge(desc_data, on="ensembl_gene_id_version")
-
-    # Get rid of the descriptions
-    data = pd.DataFrame(
+    # As above, this is pretty easy to do, we just need a recast:
+    data = recast(
+        mart_data["gene_names"],
         {
-            "ensg": lmap(
-                lambda x: split_ensembl_ids(x).full_id_no_version,
-                data["ensembl_gene_id_version"],
-            ),
-            "hugo_gene_id": data["hgnc_id"],
-            "hugo_gene_symbol": data["hgnc_symbol"],
-            "gene_symbol_synonyms": pd.NA,
-            "hugo_gene_name": data["description"],
-        }
+            "gene_stable_id_version": "ensg",
+            "hgnc_symbol": "hugo_gene_symbol",
+            "hgnc_id": "hugo_gene_id",
+            "gene_description": "hugo_gene_name",
+        },
     )
 
-    log.warning("IMPOSSIBLE TO FIND GENE SYNONYMS.")
-    # TODO:: sanity checks?
+    # Drop the version
+    data["ensg"] = lmap(lambda x: split_ensembl_ids(x).full_id_no_version, data["ensg"])
 
-    data = data.drop_duplicates()
+    # We currently cannot populate this col:
+    # data["gene_symbol_synonyms"]
+    log.warning("IMPOSSIBLE TO FIND GENE SYNONYMS.")
 
     return to_transaction(data, "gene_names")

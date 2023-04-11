@@ -11,14 +11,14 @@ log = logging.getLogger(__name__)
 
 
 def get_refseq_transaction(mart_data):
-    refseq = mart_data["IDs+desc"][["ensembl_transcript_id_version", "refseq_mrna"]]
+    refseq = mart_data["proteins"][["transcript_stable_id_version", "refseq_mrna_id"]]
 
     refseq = pd.DataFrame(
         {
-            "refseq_transcript_id": refseq["refseq_mrna"],
+            "refseq_transcript_id": refseq["refseq_mrna_id"],
             "enst": lmap(
                 lambda x: split_ensembl_ids(x).full_id_no_version,
-                refseq["ensembl_transcript_id_version"],
+                refseq["transcript_stable_id_version"],
             ),
         }
     )

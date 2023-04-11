@@ -1,7 +1,7 @@
 import gc
 import logging
-import pickle
 import sqlite3
+import traceback
 from functools import partial
 from pathlib import Path
 from sqlite3 import Connection
@@ -103,27 +103,11 @@ def generate_database(
             "Skipped adding COSMIC data, but the 'cosmic' parser is missing. This might lead to errors."
         )
 
-    cache = ResourceCache(hooks=cache_hooks)
+    cache = ResourceCache(cache_path=(path / CACHE_NAME), hooks=cache_hooks)
 
-    # Cache the data to a pickle so that we don't download it every time
-    # TODO: this should be moved to the implementation of the ResourceCache
-    # itself. It is dumb to keep it here.
-    pickle_path = path / CACHE_NAME
-    if not pickle_path.exists():
-        cache.populate()
-        data = cache._ResourceCache__data
-        with pickle_path.open("w+b") as stream:
-            pickle.dump(data, stream)
-        log.info("Dumped pickled data.")
-    else:
-        with pickle_path.open("rb") as stream:
-            data = pickle.load(stream)
-        # Refresh the hooks
-        new_hooks = {key: None for key in data.keys()}
-        cache._ResourceCache__hooks = new_hooks
-        cache._ResourceCache__populated = True
-        cache._ResourceCache__data = data
-        log.debug("Loaded from pickled data.")
+    # I force here the cache to repopulate - just for clarity
+    # It would be populated automatically later, as soon as it was used.
+    cache.populate()
 
     log.info("Connecting to empty database...")
     connection = sqlite3.connect(database_path, isolation_level=None)
@@ -282,11 +266,19 @@ class Daedalus:
         """Run all the getters on the connection"""
         apply = partial(execute_transaction, connection=self.connection)
 
+        failed = []
         for i, (key, runner) in enumerate(self.runners.items()):
             i += 1  # To count from 1, not 0
             if key not in to_skip:
                 log.info(f"[ {i} / {len(self.runners)} ] Running {key}")
-                transaction = runner()
+                try:
+                    transaction = runner()
+                except Exception as e:
+                    log.error(
+                        f"Runner '{key}' failed with error >> {type(e)} <<. Trying to continue before dumping error info."
+                    )
+                    failed.append((key, e, traceback.format_exc()))
+                    continue
                 # Some 'get' (namely the TCDB stuff) gives a list of transactions,
                 # so this is why we have to do this
                 if isinstance(transaction, list):
@@ -299,6 +291,19 @@ class Daedalus:
                 gc.collect()
             else:
                 log.info(f"[ {i} / {len(self.runners)}] Skipped {key}")
+
+        if failed:
+            log.info("Dumping failure tracebacks...")
+            for fail in failed:
+                key, e, msg = fail
+                log.error(
+                    (
+                        f"Runner {key} failed with error >> {type(e)} <<. Dumped traceback:\n"
+                        "-----------------------------\n"
+                        f"{msg}"
+                    )
+                )
+            raise Abort
 
 
 def populate_database(

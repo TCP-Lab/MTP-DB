@@ -2,80 +2,55 @@ BIOMART = "http://www.ensembl.org/biomart/martservice"
 """The Url used by Biomart to accept requests"""
 
 BIOMART_XML_REQUESTS = {
-    "IDs+desc": {
-        "query": """<?xml version="1.0" encoding="UTF-8"?>
+    "entrez": """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
-<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
+<Query  virtualSchemaName = "default" formatter = "TSV" header = "1" uniqueRows = "1" datasetConfigVersion = "0.6" >
+
+	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
+		<Filter name = "biotype" value = "protein_coding"/>
+		<Attribute name = "ensembl_gene_id_version" />
+        <Attribute name = "entrezgene_id" />
+	</Dataset>
+</Query>""",
+    "IDs": """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Query>
+<Query  virtualSchemaName = "default" formatter = "TSV" header = "1" uniqueRows = "1" datasetConfigVersion = "0.6" >
 
 	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
 		<Filter name = "biotype" value = "protein_coding"/>
 		<Attribute name = "ensembl_gene_id_version" />
 		<Attribute name = "ensembl_transcript_id_version" />
-		<Attribute name = "description" />
-		<Attribute name = "external_gene_name" />
-		<Attribute name = "ensembl_peptide_id_version" />
-		<Attribute name = "entrezgene_id" />
-		<Attribute name = "pdb" />
-		<Attribute name = "refseq_mrna" />
 	</Dataset>
 </Query>""",
-        "colnames": [
-            "ensembl_gene_id_version",
-            "ensembl_transcript_id_version",
-            "description",
-            "external_gene_name",
-            "ensembl_peptide_id_version",
-            "entrezgene_id",
-            "pdb",
-            "refseq_mrna",
-        ],
-    },
-    "hugo_symbols": {
-        "query": """<?xml version="1.0" encoding="UTF-8"?>
+    "proteins": """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
-<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
+<Query  virtualSchemaName = "default" formatter = "TSV" header = "1" uniqueRows = "1" datasetConfigVersion = "0.6" >
+
+	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
+		<Filter name = "biotype" value = "protein_coding"/>
+		<Attribute name = "ensembl_transcript_id_version" />
+        <Attribute name = "ensembl_peptide_id_version" />
+		<Attribute name = "pdb" />
+		<Attribute name = "refseq_mrna" />
+        <Attribute name = "refseq_peptide" />
+	</Dataset>
+</Query>""",
+    "gene_names": """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Query>
+<Query  virtualSchemaName = "default" formatter = "TSV" header = "1" uniqueRows = "1" datasetConfigVersion = "0.6" >
 
 	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
 		<Filter name = "biotype" value = "protein_coding"/>
 		<Attribute name = "hgnc_id" />
 		<Attribute name = "hgnc_symbol" />
+        <Attribute name = "description" />
 		<Attribute name = "ensembl_gene_id_version" />
 	</Dataset>
 </Query>""",
-        "colnames": ["hgnc_id", "hgnc_symbol", "ensembl_gene_id_version"],
-    },
-    "IDs": {
-        "query": """<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Query>
-<Query  virtualSchemaName = "default" formatter = "CSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
-
-	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
-		<Filter name = "biotype" value = "protein_coding"/>
-		<Attribute name = "ensembl_gene_id" />
-		<Attribute name = "ensembl_transcript_id" />
-		<Attribute name = "ensembl_peptide_id" />
-		<Attribute name = "version" />
-		<Attribute name = "transcript_version" />
-		<Attribute name = "peptide_version" />
-		<Attribute name = "refseq_mrna" />
-		<Attribute name = "refseq_peptide" />
-	</Dataset>
-</Query>""",
-        "colnames": [
-            "ensembl_gene_id",
-            "ensembl_transcript_id",
-            "ensembl_peptide_id",
-            "version",
-            "transcript_version",
-            "peptide_version",
-            "refseq_mrna",
-            "refseq_peptide",
-        ],
-    },
 }
 """Hardpoints with Biomart data.
 
-In the form of 'table_name': {'query': xlm_query, 'colnames': [list of colnames]}
+In the form of 'table_name': 'xml_query'
 """
 
 TCDB = {
@@ -114,7 +89,7 @@ IUPHAR_COMPILED = {
 """URLs to the compiled IUPHAR data from their downloads page"""
 
 HUGO = {
-    "nomenclature": "http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2021-03-01.txt",
+    "nomenclature": "https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2023-04-01.txt",
     "groups": {
         # I could download json files, but most of the data is flat anyway, so...
         "endpoint": "https://www.genenames.org/cgi-bin/genegroup/download?id={id}&type=branch",

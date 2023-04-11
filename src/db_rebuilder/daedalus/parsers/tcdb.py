@@ -4,6 +4,7 @@ import pandas as pd
 from daedalus.utils import (
     lmap,
     recast,
+    split_ensembl_ids,
     split_refseq_ids,
     split_tcdb_ids,
     to_transaction,
@@ -37,9 +38,14 @@ def get_tcdb_ids_transaction(tcdb_data, mart_data):
     )
 
     ensp_to_refseq = recast(
-        mart_data["IDs"],
-        {"ensembl_peptide_id": "ensp", "refseq_peptide": "refseq_protein_id"},
+        mart_data["proteins"],
+        {"protein_stable_id_version": "ensp", "refseq_peptide_id": "refseq_protein_id"},
     ).drop_duplicates()
+
+    # Drop the version
+    ensp_to_refseq["ensp"] = lmap(
+        lambda x: split_ensembl_ids(x).full_id_no_version, ensp_to_refseq["ensp"]
+    )
 
     # Add in the enst, mapping it to the refseq IDs
     ## TODO:: check if this merge is OK!!!

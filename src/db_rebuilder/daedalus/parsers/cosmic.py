@@ -2,7 +2,7 @@ import logging
 from copy import deepcopy
 
 import pandas as pd
-from daedalus.utils import lmap, recast, split_ensembl_ids, to_transaction
+from daedalus.utils import lmap, recast, sanity_check, split_ensembl_ids, to_transaction
 
 log = logging.getLogger(__name__)
 
@@ -12,6 +12,8 @@ log = logging.getLogger(__name__)
 
 
 def get_cosmic_transaction(cosmic, mart_data):
+    # The data is essentially all there, we just need to change its form to
+    # be added in the DB as I want it to.
     relevant_data = recast(
         cosmic["census"],
         {
@@ -22,6 +24,7 @@ def get_cosmic_transaction(cosmic, mart_data):
         },
     )
 
+    # I make the new frame line-by-line, by filling in a template row
     new_db_data = []
     template = {
         "hugo_gene_symbol": None,
@@ -60,8 +63,8 @@ def get_cosmic_transaction(cosmic, mart_data):
 
     # Move from hugo symbols to ensg
     symbols = recast(
-        mart_data["hugo_symbols"],
-        {"hgnc_symbol": "hugo_gene_symbol", "ensembl_gene_id_version": "ensg"},
+        mart_data["gene_names"],
+        {"hgnc_symbol": "hugo_gene_symbol", "gene_stable_id_version": "ensg"},
     )
     # purge the version
     symbols = pd.DataFrame(
@@ -73,15 +76,17 @@ def get_cosmic_transaction(cosmic, mart_data):
         }
     )
 
-    # merge
     parsed_db = parsed_db.merge(symbols, how="inner", on="hugo_gene_symbol")
     # the inner merge should be good enough - it seems that most symbols are OK
 
-    assert all(parsed_db["ensg"].notnull()), "There are some missing ENSG values!"
-    assert all(
-        parsed_db["hugo_gene_symbol"].notnull()
-    ), "There are some missing symbols!"
+    sanity_check(
+        all(parsed_db["ensg"].notnull()), "There are some missing ENSG values!"
+    )
+    sanity_check(
+        all(parsed_db["hugo_gene_symbol"].notnull()), "There are some missing symbols!"
+    )
 
+    # We don't need the gene symbols anymore
     parsed_db = parsed_db.drop(columns=["hugo_gene_symbol"])
 
     return to_transaction(parsed_db.drop_duplicates(), "cosmic_genes")

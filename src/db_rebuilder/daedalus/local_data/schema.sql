@@ -1,12 +1,12 @@
 CREATE TABLE gene_ids (
-    ensg_version TEXT UNIQUE NOT NULL, -- from biomart > IDs+desc > ensembl_gene_id_version
-    ensg TEXT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_gene_id_version
-    ensg_version_leaf INT NOT NULL -- from biomart > IDs+desc > ensembl_gene_id_version
+    ensg_version TEXT UNIQUE NOT NULL, -- from biomart > IDs+desc > gene_stable_id_version
+    ensg TEXT PRIMARY KEY, -- from biomart > IDs+desc > gene_stable_id_version
+    ensg_version_leaf INT NOT NULL -- from biomart > IDs+desc > gene_stable_id_version
 );
 
 CREATE TABLE transcript_ids (
-    ensg TEXT NOT NULL, -- from biomart > IDs+desc > ensembl_gene_id_version
-    enst TEXT PRIMARY KEY, -- from biomart > IDs+desc > ensembl_transcript_id_version
+    ensg TEXT NOT NULL, -- from biomart > IDs+desc > gene_stable_id_version
+    enst TEXT PRIMARY KEY, -- from biomart > IDs+desc > transcript_stable_id_version
     enst_version TEXT UNIQUE NOT NULL, -- same as enst
     enst_version_leaf INT NOT NULL, -- same as enst
     is_canonical_isoform INT NOT NULL -- bool
@@ -14,7 +14,7 @@ CREATE TABLE transcript_ids (
 
 CREATE TABLE mrna_refseq (
     -- These cannot be unique, as some refseq IDs are missing
-    enst TEXT NOT NULL, -- from biomart > IDs+desc > ensembl_transcript_id_version
+    enst TEXT NOT NULL, -- from biomart > IDs+desc > transcript_stable_id_version
     refseq_transcript_id TEXT -- from biomart > IDs+desc > refseq_mrna
     -- refseq_transcript_id_version INT -- MISSING?? No version for refseq?
     -- refseq_transcrpit_id_version_leaf INT -- See aboveref
@@ -29,7 +29,7 @@ CREATE TABLE protein_ids (
 );
 
 CREATE TABLE gene_names (
-    ensg TEXT, -- from biomart > IDs+desc > ensembl_gene_id_version
+    ensg TEXT, -- from biomart > IDs+desc > gene_stable_id_version
     hugo_gene_id TEXT, -- from biomart > hugo_symbols > hgnc_id
     hugo_gene_symbol TEXT, -- from biomart > hugo_symbols > hugo_gene symbol
     -- (double check with the description field below)

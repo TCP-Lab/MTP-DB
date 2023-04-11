@@ -1,6 +1,5 @@
 import logging
 
-import pandas as pd
 from daedalus.utils import lmap, recast, split_ensembl_ids, to_transaction
 
 log = logging.getLogger(__name__)
@@ -11,28 +10,20 @@ log = logging.getLogger(__name__)
 
 
 def get_protein_structures_transaction(mart_data):
-    proteins = pd.DataFrame(
-        {
-            "enst": lmap(
-                lambda x: split_ensembl_ids(x).full_id_no_version,
-                mart_data["IDs+desc"]["ensembl_transcript_id_version"],
-            ),
-            "pdb_id": mart_data["IDs+desc"]["pdb"],
-        }
-    )
-
     ids = recast(
-        mart_data["IDs"],
+        mart_data["proteins"],
         {
-            "ensembl_transcript_id": "enst",
-            "ensembl_peptide_id": "ensp",
-            "refseq_peptide": "refseq_protein_id",
+            "transcript_stable_id_version": "enst",
+            "protein_stable_id_version": "ensp",
+            "pdb_id": "pdb_id",
+            "refseq_peptide_id": "refseq_protein_id",
         },
     )
 
-    log.info("Adding refseq and ensp data...")
-    proteins = proteins.merge(ids, on=["enst"])
+    log.info("Purging ensembl versions...")
+    ids["enst"] = lmap(lambda x: split_ensembl_ids(x).full_id_no_version, ids["enst"])
+    ids["ensp"] = lmap(lambda x: split_ensembl_ids(x).full_id_no_version, ids["ensp"])
 
-    proteins = proteins.drop_duplicates()
+    ids = ids.drop_duplicates()
 
-    return to_transaction(proteins, "protein_ids")
+    return to_transaction(ids, "protein_ids")

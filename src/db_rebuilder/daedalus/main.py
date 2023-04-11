@@ -99,11 +99,13 @@ def main():
 
     if (out_dir / DB_NAME).exists() and args.overwrite:
         # The "and args.overwrite" is redundant, but just to be safe...
-        log.info("Removing existing database...")
+        log.warn("Removing existing database in 2 seconds...")
+        sleep(2)
         os.remove(out_dir / DB_NAME)
 
     if out_dir.exists() and (out_dir / CACHE_NAME).exists() and args.regen_cache:
-        log.info("Removing existing data cache...")
+        log.warn("Removing existing data cache in 5 seconds...")
+        sleep(5)
         os.remove(out_dir / CACHE_NAME)
 
     log.info("Generating database...")

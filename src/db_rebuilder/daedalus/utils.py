@@ -22,14 +22,6 @@ from tqdm.auto import tqdm
 log = getLogger(__name__)
 
 
-def run(callable):
-    """A simple wrapper to use in ProcessPoolExecutors
-
-    They don't accept lambdas, as they are not pickle-able.
-    """
-    return callable()
-
-
 # For testing purposes
 def get_mock_data():
     return "banana"
