@@ -54,5 +54,5 @@ I highlight the latest changes:
     - The parsers that fail are now skipped gracefully, before dumping all failures at once and aborting. This should make large-scale failures easier to debug, since all parsers do not depend on each other to run (they only write to the database, they cannot read from it).
     - Written comments here and there.
     - Added delays after the warnings when using `--overwrite` and `--regen-cache`, so that one can `CTRL-C` when mistakes are made.
-- [] **Added a project changelog**
+- [960da8f] **Added a project changelog**
     - We will follow CalVer `MAJOR.YY.0W[_MINOR][-Modifier]` from now on.
