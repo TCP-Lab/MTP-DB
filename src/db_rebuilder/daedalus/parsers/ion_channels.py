@@ -2,7 +2,6 @@ import logging
 from copy import deepcopy
 from math import inf
 from statistics import mean
-from typing import Iterable
 
 import numpy as np
 import pandas as pd
@@ -15,11 +14,27 @@ log = logging.getLogger(__name__)
 # for the database".
 
 
-def calc_pseudo_mean(row: Iterable):
+def calc_pseudo_mean(row: pd.Series):
+    """Calculate an ion's 'pseudo-mean' conductance if the median is not available.
+
+    This takes the iuphar row with conductance information and then calculates
+    this 'pseudo median' value, handling failure edge cases. See "returns".
+
+    Args:
+        row [pd.Series]: A series with at least the "conductance_high",
+            "conductance_low" and "conductance_median" values.
+    Returns:
+        - If there is a median already, returns that;
+        - If there is no info, logs a warning and returns None;
+        - If there is only a high or a low conductance value, returns the
+            value that is present;
+        - If there are both, returns the mean value of the two.
+    """
     high, low, median = row[
         ["conductance_high", "conductance_low", "conductance_median"]
     ]
     if median:
+        row["conductance_median"] = float(row["conductance_median"])
         return row
 
     if not high and not low:
@@ -27,10 +42,10 @@ def calc_pseudo_mean(row: Iterable):
         return
 
     if not high:
-        row["conductance_median"] = high
+        row["conductance_median"] = float(high)
         return row
     if not low:
-        row["conductance_median"] = low
+        row["conductance_median"] = float(low)
         return row
 
     row["conductance_median"] = mean([float(high), float(low)])
@@ -53,40 +68,6 @@ ION_SHORT_TO_LONG = {
     "Mg2+": "magnesium",
     "Cl-": "chlorine",
     "NH4+": "ammonia",
-}
-
-ION_ROW_TEMPLATE = {
-    "ensg": None,
-    "relative_cesium_conductance": None,
-    "absolute_cesium_conductance": None,
-    "relative_potassium_conductance": None,
-    "absolute_potassium_conductance": None,
-    "relative_sodium_conductance": None,
-    "absolute_sodium_conductance": None,
-    "relative_calcium_conductance": None,
-    "absolute_calcium_conductance": None,
-    "relative_lithium_conductance": None,
-    "absolute_lithium_conductance": None,
-    "relative_rubidium_conductance": None,
-    "absolute_rubidium_conductance": None,
-    "relative_magnesium_conductance": None,
-    "absolute_magnesium_conductance": None,
-    "relative_ammonia_conductance": None,
-    "absolute_ammonia_conductance": None,
-    "relative_barium_conductance": None,
-    "absolute_barium_conductance": None,
-    "relative_zinc_conductance": None,
-    "absolute_zinc_conductance": None,
-    "relative_manganese_conductance": None,
-    "absolute_manganese_conductance": None,
-    "relative_strontium_conductance": None,
-    "absolute_strontium_conductance": None,
-    "relative_cadmium_conductance": None,
-    "absolute_cadmium_conductance": None,
-    "relative_nickel_conductance": None,
-    "absolute_nickel_conductance": None,
-    "relative_chlorine_conductance": None,
-    "absolute_chlorine_conductance": None,
 }
 
 
@@ -148,24 +129,46 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
 
     selectivity: pd.DataFrame = iuphar_data["selectivity"]
 
+    # 'selectivity' looks like this:
+    #   selectivity_id object_id   ion conductance_high conductance_low conductance_median hide_conductance species_id
+    # 0              1       378   Cs+             None            None                  1                t          1
+    # 1              2       378    K+             None            None                  1                t          1
+    # 2              3       378   Na+             None            None                  1                t          1
+    # 3              4       378  Ca2+             None            None        0.620000005                t          1
+    # 4              5       379   Li+             None            None                  4                t          1
+    # 5              6       379   Cs+             None            None                  4                t          1
+    # 6              7       379   Rb+             None            None                  4                t          1
+    # 7              8       379   Na+             None            None                  3                t          1
+    # 8              9       379  Ca2+             None            None                  2                t          1
+    # 9             10       379  Mg2+             None            None                  1                t          1
+    # It has a few problems:
+    #   1. There is non-human data mixed with human data;
+    #   2. We want to collapse the three 'high' / 'low' / 'median' values
+    #      to just one, slightly more useful albeit imprecise, value;
+    #   3. It only has object IDs instead of the ENSGs that we need in the final
+    #      table.
+
+    # >>> Address point 1
+    # NOTE: this might be useless due to point 2
     log.info("Purging human-incompatible conductance data...")
     # 1 > human, 2 > mouse, 3 > rat, 20 > monkey, 18 > gorilla
     selectivity = selectivity.loc[
         selectivity["species_id"].isin(["1", "2", "3", "20", "18"])
     ]
 
+    # >>> Address point 2
     log.info("Calculating pseudo-median conductance values...")
-
     selectivity = selectivity.apply(calc_pseudo_mean, axis=1).dropna(how="all")
-
     sanity_check(
         not any(selectivity["conductance_median"].isna()),
         "Median conductance is not null",
     )
-
     # Drop the useless cols...
-    selectivity = selectivity.drop(columns=["conductance_high", "conductance_low"])
+    selectivity = selectivity.drop(
+        columns=["conductance_high", "conductance_low", "species_id"]
+    )
 
+    # >>> Address point 3
     log.info("Returning to ensembl gene IDs...")
     database_links = iuphar_data["database_link"]
     # This drops everything not from ensembl
@@ -175,18 +178,35 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
     # Recast the frame...
     database_links = recast(
         database_links, {"placeholder": "ensg", "object_id": "object_id"}
+    ).dropna()
+    selectivity = selectivity.merge(database_links, how="inner", on="object_id")
+    # Inner merge, since we have no need for lines with no ENSGs.
+    # Remove the cols that are now useless after the merge.
+    selectivity = selectivity.drop(columns=["object_id", "selectivity_id"])
+
+    # 'selectivity' now looks like this:
+    #      ion conductance_median hide_conductance             ensg
+    # 10    K+              210.0                f  ENSG00000156113
+    # 11    K+                272                f  ENSG00000156113
+    # 12    K+         9.19999981                f  ENSG00000105642
+    # 13    K+         9.89999962                f  ENSG00000080709
+    # 14    K+                9.5                f  ENSG00000080709
+    # 15   Rb+        0.980000019                t  ENSG00000080709
+    # 16   Cs+        0.319999993                t  ENSG00000080709
+    # 17  NH4+        0.610000014                t  ENSG00000080709
+    # 18   Cs+        0.170000002                t  ENSG00000143603
+    # 19   Rb+        0.800000012                t  ENSG00000143603
+    #
+    # We now need to average the "conductance_median" if there are more than
+    # one value per ion for the same gene.
+    # (e.g. above, lines 10 and 11 would need to be averaged to 241)
+
+    # This does exactly what specified above.
+    conductances = selectivity.groupby(["ensg", "ion", "hide_conductance"]).aggregate(
+        {"conductance_median": mean}
     )
 
-    # Merge, keeping all selectivity rows, dropping the others...
-    selectivity = selectivity.merge(database_links, how="left", on="object_id")
-
-    log.info("Dropping entries for which ENSG annotations are not available...")
-    selectivity = selectivity.dropna(subset=("ensg"))
-
-    log.info("Dropping useless columns...")
-    selectivity = selectivity.drop(
-        columns=["object_id", "selectivity_id", "species_id"]
-    )
+    print(conductances.reset_index().head(10))
 
     conductances = []
     log.info("Populating absolute conductance values...")
@@ -197,7 +217,7 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
             # A row has: id, ion, conductance_median, hide_conductance, ensg
             conductance = insert_or_average(
                 conductance,
-                ion=elongate_ion(row["ion"]),
+                ion=row["ion"],
                 hidden=elongate_bool(row["hide_conductance"]),
                 conductance=float(row["conductance_median"]),
             )

@@ -296,7 +296,7 @@ class ResourceCache:
 
             # Check that the hooks are valid
             if not all(
-                [loaded_key in self.__hooks.keys() for loaded_key in data.keys()]
+                [loaded_key in data.keys() for loaded_key in self.__hooks.keys()]
             ):
                 log.error(
                     (
