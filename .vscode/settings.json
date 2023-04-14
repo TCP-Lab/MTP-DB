@@ -50,6 +50,7 @@
         "tcdb",
         "tidyverse",
         "Transmembrane",
+        "transportome",
         "treelib",
         "usefixtures",
         "wrapattr"

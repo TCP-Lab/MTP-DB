@@ -1,10 +1,25 @@
-This is the thing that downloads and parses data from a variety of servers to get the first "base" version of the database.
+# Daedalus
 
-It was not written with elegance in mind, so the code is terrible.
+This is the module that downloads and parses data from a variety of servers to get the raw database.
+
+It was mainly written for speed in mind, so many edges are very rough right now.
+
+## Making the database
+To make the database, follow these steps:
+```bash
+git clone git@github.com:CMA-Lab/MTP-DB.git
+cd MTP-DB/src/db_rebuilder
+
+# I highly reccoment making a venv
+python -m venv env
+source env/bin/activate
+
+pip install -r requirements.txt
+
+# This will print out usage information
+python -m daedalus -h
+```
+More documentation is coming soon (tm), as soon as the code stabilizes.
 
 ## Running tests
-To correctly run tests, we need a cosmic hash to log into the cosmic DB. Make a `secrets.json` file in `daedalus/tests/` and insert:
-
-- A `cosmic_hash` key with your cosmic hash. An example on how to do this [is detailed here](https://cancer.sanger.ac.uk/cosmic/file_download_info?data=GRCh38%2Fcosmic%2Fv96%2FCosmicHGNC.tsv.gz).
-- A `cosmic_username` key with your cosmic username;
-- A `cosmic_password` key with your cosmic password (to test out the hashing functions);
+There are currently a handful of test, but broken. Will update soon(tm).
