@@ -1,5 +1,5 @@
 import logging
-from copy import deepcopy
+from copy import copy, deepcopy
 from math import inf
 from statistics import mean
 
@@ -52,56 +52,6 @@ def calc_pseudo_mean(row: pd.Series):
     return row
 
 
-ION_SHORT_TO_LONG = {
-    "K+": "potassium",
-    "Ca2+": "calcium",
-    "Na+": "sodium",
-    "Ni2+": "nickel",
-    "Cd2+": "cadmium",
-    "Ba2+": "barium",
-    "Sr2+": "strontium",
-    "Li+": "lithium",
-    "Zn2+": "zinc",
-    "Rb+": "rubidium",
-    "Cs+": "cesium",
-    "Mn2+": "manganese",
-    "Mg2+": "magnesium",
-    "Cl-": "chlorine",
-    "NH4+": "ammonia",
-}
-
-
-def elongate_bool(code: str) -> bool:
-    return True if code == "t" else False
-
-
-def elongate_ion(short_ion: str) -> str:
-    return ION_SHORT_TO_LONG[short_ion]
-
-
-def insert_or_average(original, ion, hidden, conductance):
-    assert ion in ION_SHORT_TO_LONG.values(), f"Invalid ion: {ion}."
-
-    level = "relative" if hidden else "absolute"
-
-    if original[f"{level}_{ion}_conductance"]:
-        # There is a value in the original data
-        log.warn(f"Had to average ion {ion} for gene {original['ensg']}")
-        original[f"{level}_{ion}_conductance"] = mean(
-            (original[f"{level}_{ion}_conductance"], conductance)
-        )
-    else:
-        original[f"{level}_{ion}_conductance"] = conductance
-
-    if level == "absolute":
-        # We need to run this also for the relative slot
-        original = insert_or_average(
-            original, ion=ion, hidden=True, conductance=conductance
-        )
-
-    return original
-
-
 def calculate_relative_conductances(original: dict) -> dict:
     denominator = -inf
     for key, item in original.items():
@@ -152,9 +102,10 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
     # NOTE: this might be useless due to point 2
     log.info("Purging human-incompatible conductance data...")
     # 1 > human, 2 > mouse, 3 > rat, 20 > monkey, 18 > gorilla
-    selectivity = selectivity.loc[
-        selectivity["species_id"].isin(["1", "2", "3", "20", "18"])
-    ]
+    # NOTE: This once considered all the above species, but now only uses
+    # human data. The idea behind the last decision was that more values would
+    # be filled that way.
+    selectivity = selectivity.loc[selectivity["species_id"].isin(["1"])]
 
     # >>> Address point 2
     log.info("Calculating pseudo-median conductance values...")
@@ -184,6 +135,9 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
     # Remove the cols that are now useless after the merge.
     selectivity = selectivity.drop(columns=["object_id", "selectivity_id"])
 
+    # Drop missing datapoints
+    selectivity = selectivity.dropna()
+
     # 'selectivity' now looks like this:
     #      ion conductance_median hide_conductance             ensg
     # 10    K+              210.0                f  ENSG00000156113
@@ -200,32 +154,70 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
     # We now need to average the "conductance_median" if there are more than
     # one value per ion for the same gene.
     # (e.g. above, lines 10 and 11 would need to be averaged to 241)
+    #
+    # We also have the issue of the 'f'/'t' "hide_conductance". If true, the
+    # values are not shown on the website. If false, they are.
+    # I assume that this means a few things:
+    # - If the value is visible, it is more likely that it is a confirmed datapoint;
+    # - If the value is visible, people that browse the website will treat
+    #   it at face value (i.e. that is the conductance of that ion)
+    # - If the value is not visible, only a comparative representation is
+    #   done by the website (i.e. Na+ > Cl-).
+    #
+    # For this reason, I do the following:
+    # - Ions that are 'f' will have an 'absolute' and 'relative' conductance;
+    # - Ions that are 't' will have a 'relative' conductance only;
+    # - Ions that have both 't' and 'f' will use the 'f' value only.
 
     # This does exactly what specified above.
-    conductances = selectivity.groupby(["ensg", "ion", "hide_conductance"]).aggregate(
-        {"conductance_median": mean}
+    def calculate_relative_conductances(frame: pd.DataFrame) -> pd.DataFrame:
+        # First, get rid of ions with both t and f values
+        for ion in set(frame["ion"]):
+            if sum((frame["ion"] == ion).tolist()) == 1:
+                continue
+            log.debug(f"Dropping conflicting conductance for '{ion}'")
+            # Delete the 't' row
+            key = (frame["ion"] == ion) & (frame["hide_conductance"] == "t")
+            frame = frame[~key]
+
+        # We now have just one ion per row, it is just a matter of calculating
+        # both abs and rel or just rel
+        # I use the usual "grow a list with templates" approach
+        max_conductance = max(frame["conductance_median"])
+        new_df = []
+        template = {
+            "ion": None,
+            "absolute_conductance": None,
+            "relative_conductance": None,
+        }
+        for _, row in frame.iterrows():
+            t = copy(template)
+            t["ion"] = row["ion"]
+            if row["hide_conductance"] == "f":
+                t["absolute_conductance"] = row["conductance_median"]
+                t["relative_conductance"] = row["conductance_median"] / max_conductance
+            else:
+                t["relative_conductance"] = row["conductance_median"] / max_conductance
+
+            new_df.append(t)
+
+        return pd.DataFrame(new_df)
+
+    conductances = (
+        selectivity
+        # First, get rid of any duplicates that are easily removed
+        .groupby(["ensg", "ion", "hide_conductance"])
+        .aggregate({"conductance_median": mean})
+        .reset_index()
+        # We can now calculate the relative conductances
+        .groupby(["ensg"])
+        .apply(calculate_relative_conductances)
+        .reset_index()
+        .drop(columns=["level_1"])  # no idea where this col comes from.
+        # Probably from the index of the df returned by `calc_rel_cond`?
     )
 
-    print(conductances.reset_index().head(10))
-
-    conductances = []
-    log.info("Populating absolute conductance values...")
-    for gene in set(selectivity["ensg"]):
-        conductance = deepcopy(ION_ROW_TEMPLATE)
-        conductance["ensg"] = gene
-        for _, row in selectivity.loc[selectivity["ensg"] == gene].iterrows():
-            # A row has: id, ion, conductance_median, hide_conductance, ensg
-            conductance = insert_or_average(
-                conductance,
-                ion=row["ion"],
-                hidden=elongate_bool(row["hide_conductance"]),
-                conductance=float(row["conductance_median"]),
-            )
-
-        conductances.append(calculate_relative_conductances(conductance))
-
-    conductances = pd.DataFrame(conductances)
-
+    # >> The IUPHAR has less genes than the HGNC. We heed to add them back in
     log.info("Extending list with HGNC ion_channels...")
     hugo_channels = recast(
         hugo["ion_channels"], {"Ensembl gene ID": "ensg"}
@@ -244,89 +236,53 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
     )
 
     conductances = conductances.merge(hugo_channels, how="outer", on="ensg")
-
-    sanity_check(conductances["ensg"].is_unique, "All conductance ENSGs are unique.")
     sanity_check(
         all(hugo_channels["ensg"].isin(conductances["ensg"])),
         "All Ensgs from HUGO were added.",
     )
 
-    log.info("Using conductances to populate table...")
-    ions = {
-        "cesium": "Cs+",
-        "potassium": "K+",
-        "sodium": "Na+",
-        "calcium": "Ca2+",
-        "lithium": "Li+",
-        "rubidium": "Rb+",
-        "magnesium": "Mg2+",
-        "ammonia": "NH4+",
-        "barium": "Ba2+",
-        "zinc": "Zn2+",
-        "manganese": "Mg2+",
-        "strontium": "Sr2+",
-        "cadmium": "Cd2+",
-        "nickel": "Ni2+",
-        "chlorine": "Cl-",
-    }
+    # This is now less of a frame about conductances than about ion channels
+    ion_channels: pd.DataFrame = conductances
+    assert isinstance(ion_channels, pd.DataFrame), "Satisfy the type checker"
+    del conductances
+
+    # >> Currently, we know only the permeabilities of genes with a conductance.
+    # This is severely limiting, so we need to add the info from the HGNC
+    # regarding the main channel classes as permeability info.
+    # Each gene falls into:
+    # - It has no info (just the ensg);
+    # - It has info on some ions, but not of one the HGNC knows about;
+    # - It has info on the same ion as the HGNC
+    #
+    # If we just slap on the new ENSG: Ion combos, we can then drop the new rows
+    # as needed (keeping the originals - topmost - rows as they might have the
+    # info about the conductance)
+
+    log.info("Adding in HGNC permeability data...")
     hgnc_groups = {
-        "sodium": "sodium_ion_channels",
-        "calcium": "calcium_ion_channels",
-        "potassium": "potassium_ion_channels",
-        "chlorine": "chloride_ion_channels",
+        "sodium_ion_channels": "Na+",
+        "calcium_ion_channels": "Ca2+",
+        "potassium_ion_channels": "K+",
+        "chloride_ion_channels": "Cl-",
     }
 
-    # For safety, i reset the index here
-    conductances = conductances.reset_index()
-    table = []
-    for type, ion in ions.items():
-        log.debug(f"Populating for {type}")
-        # We just need to subset for the relative cond., as if the absolute is
-        # available we have the relative  cond. for sure
-        permeable = conductances["ensg"][
-            conductances[f"relative_{type}_conductance"].notna()
-        ]
-        if type in hgnc_groups:
-            hugo_permeable = recast(
-                hugo[hgnc_groups[type]], {"Ensembl gene ID": "ensg"}
-            )["ensg"]
-            permeable = pd.concat(
-                [permeable, hugo_permeable], axis=0, ignore_index=True
-            )
+    for group, ion in hgnc_groups.items():
+        data = hugo[group]
+        data["carried_solute"] = ion
 
-        # In permeable we now have all the genes permeable for the type
-        for gene in permeable:
-            index = conductances.index[conductances["ensg"] == gene]
-            if index.empty:
-                log.warn(f"Failed to get index for gene {gene}")
-                continue
-            entry = {
-                "ensg": gene,
-                "carried_solute": ion,
-                "relative_conductance": conductances.loc[
-                    index, f"relative_{type}_conductance"
-                ].iloc[0],
-                "absolute_conductance": conductances.loc[
-                    index, f"absolute_{type}_conductance"
-                ].iloc[0],
-            }
-            table.append(entry)
+        data = recast(
+            data, {"Ensembl gene ID": "ensg", "carried_solute": "carried_solute"}
+        ).drop_duplicates()
 
-    table = pd.DataFrame(table)
-    # Add the ensgs with no conductance info back in
-    table = table.merge(conductances["ensg"], how="outer", on="ensg")
+        # It is important that this is ion_channels first and data last
+        ion_channels = pd.concat([ion_channels, data])
 
-    sanity_check(
-        all(hugo_channels["ensg"].isin(table["ensg"])),
-        "All Ensgs from HUGO were added.",
+    ion_channels.drop_duplicates(
+        subset=["ensg", "carried_solute"], keep="first", inplace=True, ignore_index=True
     )
 
-    sanity_check(
-        all(conductances["ensg"].isin(table["ensg"])),
-        "All genes were ported to the new table",
-    )
-
-    log.info("Setting channel types...")
+    log.info("Setting channel gating types...")
+    # Get a list of ensgs to fill in
     gating_groups = {
         "voltage": recast(
             hugo["voltage_gated_ion_channels"], {"Ensembl gene ID": "ensg"}
@@ -342,20 +298,30 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
         ),
     }
 
-    # Fill the column with empty lists
-    table["gating_mechanism"] = np.empty((len(table), 0)).tolist()
+    ion_channels = recast(
+        ion_channels,
+        {
+            "ensg": "ensg",
+            "ion": "carried_solute",
+            "absolute_conductance": "absolute_conductance",
+            "relative_conductance": "relative_conductance",
+        },
+    )
+
+    # Fill the column with empty lists, that we then grow and explode later
+    ion_channels["gating_mechanism"] = np.empty((len(ion_channels), 0)).tolist()
 
     # This raises warnings, but (I think that) they are false positives
     pd.set_option("mode.chained_assignment", None)
     for group, data in gating_groups.items():
         log.info(f"Populating '{group}' channels...")
         for ensg in data["ensg"]:
-            table.loc[table["ensg"] == ensg, "gating_mechanism"].apply(
+            ion_channels.loc[ion_channels["ensg"] == ensg, "gating_mechanism"].apply(
                 lambda x: x.append(group)
             )
     pd.set_option("mode.chained_assignment", "warn")
 
-    table = table.explode("gating_mechanism")
+    ion_channels = ion_channels.explode("gating_mechanism")
     log.warn("Impossible to annotate stretch-activated channels")
     log.warn("Impossible to know leakage channels")
 
@@ -374,7 +340,7 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
     tf_table = tf_table[tf_table["type"].isin(("lgic", "vgic", "other_ic"))]
     tf_table = tf_table.drop(columns=["type", "object_id"])
 
-    table = table.merge(tf_table, how="outer", on="ensg")
+    ion_channels = ion_channels.merge(tf_table, how="outer", on="ensg")
 
-    table = apply_thesaurus(table)
-    return to_transaction(table, "channels")
+    ion_channels = apply_thesaurus(ion_channels)
+    return to_transaction(ion_channels, "channels")
