@@ -1,4 +1,5 @@
 import pytest
+
 from daedalus.retrievers import (
     ResourceCache,
     retrieve_biomart,

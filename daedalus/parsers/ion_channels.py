@@ -6,6 +6,7 @@ from typing import Iterable
 
 import numpy as np
 import pandas as pd
+
 from daedalus.utils import apply_thesaurus, recast, sanity_check, to_transaction
 
 log = logging.getLogger(__name__)
