@@ -212,9 +212,7 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
         # We can now calculate the relative conductances
         .groupby(["ensg"])
         .apply(calculate_relative_conductances)
-        .reset_index()
-        .drop(columns=["level_1"])  # no idea where this col comes from.
-        # Probably from the index of the df returned by `calc_rel_cond`?
+        .reset_index(level="ensg")
     )
 
     # >> The IUPHAR has less genes than the HGNC. We heed to add them back in
@@ -242,7 +240,15 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
     )
 
     # This is now less of a frame about conductances than about ion channels
-    ion_channels: pd.DataFrame = conductances
+    ion_channels: pd.DataFrame = recast(
+        conductances,
+        {
+            "ensg": None,
+            "ion": "carried_solute",
+            "absolute_conductance": None,
+            "relative_conductance": None,
+        },
+    )
     assert isinstance(ion_channels, pd.DataFrame), "Satisfy the type checker"
     del conductances
 
@@ -254,9 +260,7 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
     # - It has info on some ions, but not of one the HGNC knows about;
     # - It has info on the same ion as the HGNC
     #
-    # If we just slap on the new ENSG: Ion combos, we can then drop the new rows
-    # as needed (keeping the originals - topmost - rows as they might have the
-    # info about the conductance)
+    # The idea is to make a new frame with the permeabilities, then merge it in.
 
     log.info("Adding in HGNC permeability data...")
     hgnc_groups = {
@@ -274,11 +278,35 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
             data, {"Ensembl gene ID": "ensg", "carried_solute": "carried_solute"}
         ).drop_duplicates()
 
-        # It is important that this is ion_channels first and data last
-        ion_channels = pd.concat([ion_channels, data])
+        ion_channels = ion_channels.merge(
+            data, on=["ensg", "carried_solute"], how="outer"
+        )
 
-    ion_channels.drop_duplicates(
-        subset=["ensg", "carried_solute"], keep="first", inplace=True, ignore_index=True
+    # We now have a frame like this:
+    #     gene solute
+    # 0  gene1     Na
+    # 1  gene1     Cl
+    # 2  gene2   <NA>
+    # 3  gene2     Na
+    #
+    # We need to drop lines like line 2 above, since line 3 exists.
+    # I do this again by grouping and applying a function.
+
+    def drop_useless_duplicates(frame: pd.DataFrame) -> pd.DataFrame:
+        if frame.shape[0] > 1:
+            # If there is just one row, we have nothing to do.
+            # If there is more than one row, this must be because there is some
+            # solute info. This means that any rows with NA as a solute must be
+            # dropped (as there is at least one other col with non-NA values)
+            frame = frame.dropna(subset="carried_solute")
+
+        return frame.drop(columns="ensg")
+
+    log.info("Dropping useless duplicates...")
+    ion_channels = (
+        ion_channels.groupby(["ensg"])
+        .apply(drop_useless_duplicates)
+        .reset_index(level="ensg")
     )
 
     log.info("Setting channel gating types...")
@@ -297,16 +325,6 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
             hugo["volume_regulated_ion_channels"], {"Ensembl gene ID": "ensg"}
         ),
     }
-
-    ion_channels = recast(
-        ion_channels,
-        {
-            "ensg": "ensg",
-            "ion": "carried_solute",
-            "absolute_conductance": "absolute_conductance",
-            "relative_conductance": "relative_conductance",
-        },
-    )
 
     # Fill the column with empty lists, that we then grow and explode later
     ion_channels["gating_mechanism"] = np.empty((len(ion_channels), 0)).tolist()
