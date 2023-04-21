@@ -20,5 +20,5 @@ repos:
   rev: 23.1.0
   hooks:
   - id: black
-    args: ["./src/db_rebuilder/daedalus"]
+    args: ["./daedalus"]
     language_version: python3.10
