@@ -70,7 +70,7 @@ def pbar_get(url: str, params: dict = {}, disable: bool = False) -> BytesIO:
     # The download bars are there just to check on very long download tasks,
     # like from biomart.
     with tqdm.wrapattr(
-        resp.raw, "read", total=size, desc=desc, disable=disable, delay=30
+        resp.raw, "read", total=size, desc=desc, disable=disable, delay=5
     ) as read_raw:
         shutil.copyfileobj(read_raw, bytes)
 

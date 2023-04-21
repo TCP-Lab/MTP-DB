@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
 set -e
 
-here=$(realpath $(dirname $0))
-
-docker build $here --tag dbrebuilder:latest --target production
+docker build . --tag dbrebuilder:latest --target production
