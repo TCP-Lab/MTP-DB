@@ -1,4 +1,7 @@
 # MTP-DB - The Membrane Transport Protein Database
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Welcome to the repository for the MTP-DB, a database that aims to collect information regarding the transportome, and the proteins that make it up.
 
@@ -46,3 +49,25 @@ Other repositories contain code closely related to the MTP-DB. In particular:
 
 # Contributing
 We are very fond of contributors. Please take a look at the [contributing guide](CONTRIBUTING.md) if you wish to contribute.
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Feat-FeAR"><img src="https://avatars.githubusercontent.com/u/88393554?v=4?s=100" width="100px;" alt="Federico Alessandro Ruffinatti"/><br /><sub><b>Federico Alessandro Ruffinatti</b></sub></a><br /><a href="https://github.com/CMA-Lab/MTP-DB/issues?q=author%3AFeat-FeAR" title="Bug reports">🐛</a> <a href="https://github.com/CMA-Lab/MTP-DB/commits?author=Feat-FeAR" title="Code">💻</a> <a href="#maintenance-Feat-FeAR" title="Maintenance">🚧</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
