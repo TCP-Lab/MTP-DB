@@ -342,10 +342,19 @@ def recast(data: pd.DataFrame, mold: dict) -> pd.DataFrame:
     Args:
         data (pd.DataFrame): The dataframe to recast.
         mold (dict): A dict of {'old_col': 'new_col'} key-value pairs.
+          If 'new_col' is None, will keep 'old_col' unchanged.
 
     Returns:
         pd.DataFrame: The recast dataframe
     """
+    # Change all Nones to 'old_col'
+    new_dict = {}
+    for key, value in mold.items():
+        if value is None:
+            new_dict[key] = key
+        else:
+            new_dict[key] = value
+    mold = new_dict
     relevant: pd.DataFrame = data[list(mold.keys())]
     return relevant.rename(columns=mold)
 
@@ -600,6 +609,6 @@ def apply_thesaurus(frame: pd.DataFrame, col="carried_solute") -> pd.DataFrame:
 
     new_frame = explode_on(frame, ",", [col])
 
-    log.info(f"New thesaurus rows: {new_frame.shape[0] - rows}")
+    log.info(f"Thesaurus rows changed: {new_frame.shape[0] - rows}")
 
     return new_frame
