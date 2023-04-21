@@ -13,6 +13,7 @@ To browse the database locally, we suggest SQLite browsers such as [this FOSS pr
 
 If you use the MTP-DB in your research, please cite:
 > Coming soon
+
 More information is present in the [CITATION.cff](CITATION.cff) file.
 
 ## Generating the MTP-DB locally
