@@ -14,10 +14,11 @@ from typing import Any, Optional
 import numpy as np
 import pandas as pd
 import requests
+from tqdm.auto import tqdm
+
 from daedalus import local_data, post_build_hooks
 from daedalus.constants import THESAURUS_FILE
 from daedalus.errors import Abort
-from tqdm.auto import tqdm
 
 log = getLogger(__name__)
 

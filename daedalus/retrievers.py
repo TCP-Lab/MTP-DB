@@ -11,6 +11,8 @@ from typing import TypeAlias
 
 import pandas as pd
 from bs4 import BeautifulSoup
+from typing_extensions import Self
+
 from daedalus.constants import (
     BIOMART,
     BIOMART_XML_REQUESTS,
@@ -23,7 +25,6 @@ from daedalus.constants import (
 )
 from daedalus.errors import Abort, CacheKeyError
 from daedalus.utils import lmap, pbar_get, pqdm, request_cosmic_download_url
-from typing_extensions import Self
 
 log = getLogger(__name__)
 """The logger for this file."""
