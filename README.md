@@ -19,7 +19,7 @@ To browse the database locally, we suggest SQLite browsers such as [this FOSS pr
 ## Citing the MTP-DB
 
 If you use the MTP-DB in your research, please cite:
-> Coming soon
+> Luca Visentin, Federico Alessandro Ruffinatti, The MTP-DB, DOI: [10.5281/zenodo.7868055](https://doi.org/10.5281/zenodo.7868055)
 
 More information is present in the [CITATION.cff](CITATION.cff) file.
 
