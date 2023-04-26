@@ -1,4 +1,7 @@
 # MTP-DB - The Membrane Transport Protein Database
+[![DOI](https://zenodo.org/badge/539987341.svg)](https://zenodo.org/badge/latestdoi/539987341)
+[![Python](https://img.shields.io/badge/Python-v3.10-blue)](https://www.python.org/downloads/release/python-31011/)
+[![Docker](https://img.shields.io/docker/pulls/cmalabscience/mtpdb)](https://hub.docker.com/r/cmalabscience/mtpdb)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
