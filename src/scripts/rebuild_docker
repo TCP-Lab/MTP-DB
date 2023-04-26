@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -e
 
-docker build . --tag dbrebuilder:latest --target production
+docker build . --tag mtpdb:bleeding --target production

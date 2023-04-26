@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -e
+
+here=$(realpath $(dirname $0))
+
+$here/rebuild_docker .
+$here/run_rebuilder $@

@@ -3,6 +3,6 @@ set -e
 
 temporary=$(mktemp -d)
 
-docker build . --tag dbrebuilder:bleeding --target test
+docker build . --tag mtpdb_test:bleeding --target test
 
 docker run -v $temporary:/app/out dbrebuilder:bleeding "$@"

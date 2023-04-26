@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+if [ $# -lt 1 ]; then
+    echo "Insufficient args. Usage: make_release_docker VERSION"
+fi
+
+set -e
+
+docker build . --tag cmalabscience/mtpdb:$1 --target production
+
+echo "Made mtpdb:$1. Pushing to Docker Hub..."
+
+docker push cmalabscience/mtpdb:$1
+
+echo "Done!"

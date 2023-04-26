@@ -8,4 +8,4 @@ fi
 real=$(realpath $1)
 shift 1
 
-docker run -it --rm -v $real:/app/out dbrebuilder:latest "/app/out" $@
+docker run -it --rm -v $real:/app/out mtpdb:bleeding "/app/out" $@

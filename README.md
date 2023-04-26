@@ -25,8 +25,9 @@ You have two options if you wish to regenerate the MTP-DB locally.
 
 You can download the pre-built Docker container from our DockerHub repository and execute that. You will need to install [Docker](https://www.docker.com/) to do this:
 ```bash
-docker run <ADD ME!> --help
+docker run -it --rm -v "OUT_DIR:/app/out" "cmalabscience/mtpdb:VERSION" "/app/out" --help
 ```
+Just replace `OUT_DIR` with the full path to the output directory of your choice and `VERSION` with a valid version (see our [releases](https://github.com/CMA-Lab/MTP-DB/releases) and our [Docker Hub repository](https://hub.docker.com/r/cmalabscience/mtpdb)). Any arguments to Daedalus (e.g. `--help`) can be passed at the end of the command. You can find a script ([`./src/scripts/run_remote_docker`](https://github.com/CMA-Lab/MTP-DB/blob/main/src/scripts/run_remote_docker)) that does this in a more user-friendly way in the scripts folder.
 
 If you do not wish to use Docker, you wish to use the latest code, or you want to modify the code locally, clone the repository to your local machine. You will need to have Python `3.10.10` and `git` installed:
 ```bash
@@ -37,20 +38,21 @@ cd MTP-DB/src
 python -m venv env
 source env/bin/activate
 
+pip install -r requirements.txt
+```
+
+You can then run Daedalus with:
+```bash
 python -m daedalus --help
 ```
 
-As an alternative, you can take a look in the `src/scripts` folder for helper scripts that regenerate and run a locally-made Docker container. In this way, you can work on local code but without having to have Python installed (but having Docker installed). For example:
+As an alternative, you can take a look in the `src/scripts` folder for helper scripts that regenerate and run a locally-made Docker container. This way, you can work on local code but without having to have Python installed (but having Docker installed). For example:
 ```bash
 git clone git@github.com:CMA-Lab/MTP-DB.git
 cd MTP-DB/src
 ./scripts/rrun --help
 ```
 Be aware that these scripts are working-directory sensible, and will only work if your current WD is in `MTP-DB/src/`.
-
-### Sister repositories
-Other repositories contain code closely related to the MTP-DB. In particular:
-- [Transportome Profiler](https://github.com/CMA-Lab/transportome_profiler): Code for our analysis on the transportome based on the data included in the Database.
 
 # Contributing
 We are very fond of contributors and collaborators. Please take a look at the [contributing guide](CONTRIBUTING.md) if you wish to contribute.
