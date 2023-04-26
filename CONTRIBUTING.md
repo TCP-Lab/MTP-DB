@@ -17,4 +17,7 @@ We strive to keep a unified code style. For this reason, we use [`pre-commit`](h
 # Recognition
 All contributions will be recognized in the [README.md](README.md) file. If you believe you should be credited but are not, or you are credited for the wrong reasons, please [open an issue](https://github.com/CMA-Lab/MTP-DB/issues/new).
 
-Very significant contributions, or sustained contributions over a long period of time may warrant recognition as a proper Author. All authors will be listed in the [AUTHORS.md](AUTHORS.md) file, and will be given credit of all future scientific publications regarding the MTP-DB. Inclusion of new authors is given based on unanimous decision of all existing authors in a public setting and with prior permission of the new author-to-be.
+Very significant contributions, or sustained contributions over a long period of time may warrant recognition as a proper Author. All authors will be listed in the [AUTHORS.md](AUTHORS.md) file, and will be given credit of all future scientific publications regarding the MTP-DB. Inclusion of new authors is given based on the decision of all existing authors in a public setting and with prior permission of the new author-to-be.
+
+# Further information
+If you wish, you can contact any of the authors (see the [AUTHORS.md](AUTHORS.md) file) for further information regarding particular research collaboration opportunities.

@@ -1,11 +1,15 @@
 # MTP-DB - The Membrane Transport Protein Database
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Welcome to the repository for the MTP-DB, a database that aims to collect information regarding the transportome, and the proteins that make it up.
 
 The repository contains Daedalus, a Python package to download, parse and rebuild the MTP-DB on the fly. You can also find database releases in the [releases page](https://github.com/CMA-Lab/MTP-DB/releases) with pre-generated database files.
+
+Daedalus takes care of connecting to, downloading from, parsing and patching data retrieved from remote databases, compiling them into the MTP-DB. Daedalus is written in Python.
+
+You can take a look at the [CHANGELOG.md](CHANGELOG.md) file for a changelog of each release of the database.
 
 To browse the database locally, we suggest SQLite browsers such as [this FOSS program](https://sqlitebrowser.org/).
 
@@ -49,7 +53,7 @@ Other repositories contain code closely related to the MTP-DB. In particular:
 - [Transportome Profiler](https://github.com/CMA-Lab/transportome_profiler): Code for our analysis on the transportome based on the data included in the Database.
 
 # Contributing
-We are very fond of contributors. Please take a look at the [contributing guide](CONTRIBUTING.md) if you wish to contribute.
+We are very fond of contributors and collaborators. Please take a look at the [contributing guide](CONTRIBUTING.md) if you wish to contribute.
 
 ## Contributors ✨
 
