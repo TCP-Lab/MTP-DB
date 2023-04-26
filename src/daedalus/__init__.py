@@ -4,7 +4,7 @@ from logging import StreamHandler
 from colorama import Back, Fore, Style
 
 __all__ = ["DB_NAME", "SCHEMA"]
-__version__ = "0.23.15-beta"
+__version__ = "0.23.17-beta"
 
 
 class ColorFormatter(logging.Formatter):
