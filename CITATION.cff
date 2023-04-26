@@ -1,0 +1,13 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Visentin
+    given-names: Luca
+    orcid: https://orcid.org/0000-0003-2568-5694
+  - family-names: Ruffinatti
+    given-names: Federico Alessandro
+    orcid: https://orcid.org/0000-0002-3084-0380
+title: CMA-Lab/MTP-DB
+version: 0.23.17-beta
+doi: 10.5281/zenodo.7868055
+date-released: 2023-04-26
