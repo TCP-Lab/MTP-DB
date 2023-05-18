@@ -8,6 +8,7 @@ from copy import deepcopy
 from logging import getLogger
 from pathlib import Path
 from typing import TypeAlias
+import json
 
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -22,6 +23,7 @@ from daedalus.constants import (
     IUPHAR_DB,
     SLC_TABLES,
     TCDB,
+    GO,
 )
 from daedalus.errors import Abort, CacheKeyError
 from daedalus.utils import lmap, pbar_get, pqdm, request_cosmic_download_url
@@ -390,3 +392,16 @@ def retrieve_slc() -> pd.DataFrame:
     frame = pd.concat(frames)
 
     return frame
+
+def retrieve_go() -> DataDict:
+    answer = {}
+
+    log.info("Retrieving GO data...")
+    endpt = GO["endpoints"]["genes_in_term"]
+    for key, id in GO["terms"].items():
+        bytes = pbar_get(endpt.format(id = id), params= { "rows": 10000, "unselect_evidence": True, "exclude_automatic_assertions": True, "use_compact_associations": True, "taxon": ["taxonomy:9606"]})
+
+        response = json.loads(bytes.read().decode("UTF-8"))
+
+        terms = response["compact_associations"]
+        # see http://api.geneontology.org/api

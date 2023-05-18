@@ -116,3 +116,24 @@ HUGO = {
 
 SLC_TABLES = "http://slc.bioparadigms.org/"
 """URL to the SLC tables that have data regarding solute carriers"""
+
+GO = {
+    "endpoints": {
+        "genes_in_term" : "/bioentity/function/{id}/genes",
+        # For the future
+        "edges_from_term": "/graph/edges/from/{id}"
+    },
+    "terms": {
+        "transmembrane_transporter_activity": "GO:0005478",
+        "monoatomic_anion_transporter": "GO:0008509",
+        "monoatomic_cation_transporter": "GO:0008324",
+        "monoatomic_ion_channel": "GO:0005216",
+        "monoatomic_anion_channel": "GO:0005253",
+        "monoatomic_cation_channel": "GO:0005261",
+        "chloride_ion_channels": "GO:0005254",
+        "calcium_ion_channels": "GO:0005262",
+        "potassium_ion_channels": "GO:0005267",
+        "proton_ion_channels": "GO:0015252",
+        "sodium_ion_channels": "GO:0005272"
+    }
+}
