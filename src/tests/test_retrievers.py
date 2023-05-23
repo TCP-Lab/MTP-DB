@@ -4,11 +4,12 @@ from daedalus.retrievers import (
     ResourceCache,
     retrieve_biomart,
     retrieve_cosmic_genes,
+    retrieve_go,
     retrieve_iuphar,
     retrieve_tcdb,
 )
-from daedalus.tests.fixtures import secrets
 from daedalus.utils import make_cosmic_hash
+from tests.fixtures import secrets
 
 
 @pytest.mark.slow
@@ -29,13 +30,14 @@ def test_tcdb_retriever():
 
 
 @pytest.mark.download
+@pytest.mark.secrets
 def test_cosmic_retrievers(secrets):
     data = retrieve_cosmic_genes(secrets["cosmic_hash"])
 
     assert True
 
 
-@pytest.mark.download
+@pytest.mark.secrets
 def test_cosmic_hash(secrets):
     new_hash = make_cosmic_hash(secrets["cosmic_username"], secrets["cosmic_password"])
     assert secrets["cosmic_hash"] == new_hash
@@ -44,6 +46,13 @@ def test_cosmic_hash(secrets):
 @pytest.mark.download
 def test_iuphar_retriever():
     data = retrieve_iuphar()
+
+    assert True
+
+
+@pytest.mark.download
+def test_go_retriever():
+    data = retrieve_go()
 
     assert True
 

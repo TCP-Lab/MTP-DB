@@ -31,6 +31,7 @@ from daedalus.retrievers import (
     ResourceCache,
     retrieve_biomart,
     retrieve_cosmic_genes,
+    retrieve_go,
     retrieve_hugo,
     retrieve_iuphar,
     retrieve_iuphar_compiled,
@@ -93,6 +94,7 @@ def generate_database(
         "tcdb": retrieve_tcdb,
         "hugo": retrieve_hugo,
         "slc": retrieve_slc,
+        "GO": retrieve_go,
     }
 
     if auth_hash:
@@ -231,6 +233,7 @@ class Daedalus:
                     "iuphar_data": "iuphar",
                     "hugo": "hugo",
                     "iuphar_compiled": "iuphar_compiled",
+                    "gene_ontology": "GO",
                 },
             ),
             "cosmic": partial(

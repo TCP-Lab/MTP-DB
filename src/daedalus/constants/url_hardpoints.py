@@ -118,11 +118,22 @@ SLC_TABLES = "http://slc.bioparadigms.org/"
 """URL to the SLC tables that have data regarding solute carriers"""
 
 GO = {
-    "endpoints": {
-        "genes_in_term" : "/bioentity/function/{id}/genes",
-        # For the future
-        "edges_from_term": "/graph/edges/from/{id}"
-    },
+    # The GO API is very hard and confusing to access. Everyone just tells you
+    # to use BioMart, so i'll do that.
+    # The {go_id} term is a comma-delimited list of values, which should be
+    # less than 500.
+    "query": """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Query>
+<Query  virtualSchemaName = "default" formatter = "TSV" header = "1" uniqueRows = "1" count = "" datasetConfigVersion = "0.6" >
+
+	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
+		<Filter name = "biotype" value = "protein_coding"/>
+		<Filter name = "go_parent_term" value = "{go_ids}"/>
+		<Attribute name = "ensembl_gene_id" />
+        <Attribute name = "go_id" />
+	</Dataset>
+</Query>
+""",
     "terms": {
         "transmembrane_transporter_activity": "GO:0005478",
         "monoatomic_anion_transporter": "GO:0008509",
@@ -134,6 +145,6 @@ GO = {
         "calcium_ion_channels": "GO:0005262",
         "potassium_ion_channels": "GO:0005267",
         "proton_ion_channels": "GO:0015252",
-        "sodium_ion_channels": "GO:0005272"
-    }
+        "sodium_ion_channels": "GO:0005272",
+    },
 }

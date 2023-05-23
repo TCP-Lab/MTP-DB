@@ -3,7 +3,7 @@ from sqlite3 import Cursor
 import pytest
 
 from daedalus.make_db import make_empty
-from daedalus.tests.fixtures import *
+from tests.fixtures import *
 
 
 @pytest.mark.usefixtures("setup_db")

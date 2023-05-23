@@ -4,7 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from daedalus import SCHEMA
+from daedalus.utils import get_local_bytes
+from tests.mock_data import MOCK_DATA
 
 
 @pytest.fixture
@@ -16,8 +17,9 @@ def session():
 
 @pytest.fixture
 def setup_db(session):
-    session.executescript(SCHEMA)
-    session.executescript(Path("/app/daedalus/tests/mock_data.sql").read_text())
+    setup = get_local_bytes("schema.sql").read().decode("UTF-8")
+    session.executescript(setup)
+    session.executescript(MOCK_DATA)
     session.commit()
 
 

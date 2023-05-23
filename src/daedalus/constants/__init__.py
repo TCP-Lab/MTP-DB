@@ -6,6 +6,7 @@ from daedalus.constants.url_hardpoints import (
     BIOMART,
     BIOMART_XML_REQUESTS,
     COSMIC,
+    GO,
     HUGO,
     IUPHAR_COMPILED,
     IUPHAR_DB,
@@ -28,6 +29,7 @@ __all__ = [
     "DB_NAME",
     "CACHE_NAME",
     "THESAURUS_FILE",
+    "GO",
 ]
 
 ## TODO: It could be beneficial to bundle all of these constants into

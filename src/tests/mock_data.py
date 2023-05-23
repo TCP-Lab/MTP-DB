@@ -1,3 +1,4 @@
+MOCK_DATA = """
 BEGIN;
 
 INSERT INTO gene_ids (ensg, ensg_version_leaf, refseq_gene_id, refseq_gene_id_version, go_terms)
@@ -106,3 +107,4 @@ INSERT INTO carriers (
     (20000000008, 'manyport', 1, 'Everything', 'Everything Else', '1000', '3000');
 
 END;
+"""
