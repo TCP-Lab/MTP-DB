@@ -65,6 +65,7 @@ def generate_database(
     auth_hash: Optional[str],
     to_run: list[str] = [],
     to_skip: list[str] = [],
+    skip_post: bool = False,
 ) -> None:
     """Generate the database - downloading and parsing all the data.
 
@@ -78,6 +79,7 @@ def generate_database(
             COSMIC cache. This might lead to errors if "cosmic" is not skipped.
         to_run (Optional[list[str]]): Passed to `populate_database`.
         to_skip (Optional[list[str]]): Passed to `populate_database`.
+        skip_post (Optional[bool]): If specified, does not apply post-build hooks.
     """
     log.info("Making new database.")
 
@@ -117,8 +119,11 @@ def generate_database(
     log.info("Populating database with data...")
     populate_database(connection, cache, to_skip=to_skip, to_run=to_run)
 
-    log.info("Running manual tweaks...")
-    apply_manual_tweaks(connection)
+    if not skip_post:
+        log.info("Running manual tweaks...")
+        apply_manual_tweaks(connection)
+    else:
+        log.info("Post-build hooks not applied following user flag.")
 
     connection.close()
     log.info(f"Finished populating database. Saved in {database_path}")

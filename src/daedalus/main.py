@@ -63,6 +63,11 @@ def main():
         "--run",
         help="Comma-delimited string of runners to run. Will fail if passed with --skip.",
     )
+    parser.add_argument(
+        "--skip-post",
+        action="store_true",
+        help="If passed, skips applying static post-build hooks that tweak downloaded data.",
+    )
 
     args = parser.parse_args()
 
@@ -115,7 +120,11 @@ def main():
 
     try:
         generate_database(
-            path=out_dir, auth_hash=cosmic_hash, to_run=to_run, to_skip=to_skip
+            path=out_dir,
+            auth_hash=cosmic_hash,
+            to_run=to_run,
+            to_skip=to_skip,
+            skip_post=args.skip_post,
         )
     except Abort:
         log.error("Abort!")
