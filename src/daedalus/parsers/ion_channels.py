@@ -402,7 +402,7 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo, gene_ontolo
             "sodium_ion_channels": "Na+",
         }
         for key, value in checks.items():
-            if (_id in gene_ontology[key].to_list()) & (
+            if (_id in gene_ontology[key]) & (
                 value not in frame["carried_solute"].to_list()
             ):
                 log.debug(f"Added {value} for gene {_id} from GO.")

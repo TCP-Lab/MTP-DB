@@ -394,25 +394,19 @@ def retrieve_slc() -> pd.DataFrame:
 
 
 def retrieve_go() -> DataDict:
-    log.info("Retrieving GO data from BioMart...")
+    log.info("Retrieving GO term data from BioMart...")
     xml_query = GO["query"]
-
-    # Assemble the GO IDs
-    # All the children will be downloaded too, with inevitable duplicates,
-    # but alas
-
-    go_ids = ",".join(GO["terms"].values())
-
-    response = pbar_get(url=BIOMART, params={"query": xml_query.format(go_ids=go_ids)})
-    data = pd.read_table(response, header=0, sep="\t", low_memory=False)
-    log.debug(f"Got headers: {data.columns}")
-
     # Read and unpack the response into a datadict
-    log.info("Unpacking result...")
+
+    # I need to dowload every term on its own because the backpropagation in GO
+    # sucks balls, so terms in children do not appear in parent nodes.
+
     result = {}
     for key, id in GO["terms"].items():
-        result[key] = data.loc[
-            data["GO term accession"] == id, "Gene stable ID"
-        ].to_list()
+        log.info(f"Downloading term '{id}' for key '{key}'")
+
+        response = pbar_get(url=BIOMART, params={"query": xml_query.format(go_ids=id)})
+        data = pd.read_table(response, header=0, sep="\t", low_memory=False)
+        result[key] = list(set(data["Gene stable ID"].to_list()))
 
     return result
