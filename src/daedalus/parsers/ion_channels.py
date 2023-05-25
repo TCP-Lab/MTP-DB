@@ -112,7 +112,9 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo, gene_ontolo
     # NOTE: This once considered all the above species, but now only uses
     # human data. The idea behind the last decision was that more values would
     # be filled that way.
-    selectivity = selectivity.loc[selectivity["species_id"].isin(["1"])]
+    selectivity = selectivity.loc[
+        selectivity["species_id"].isin(["1", "2", "3", "20", "18"])
+    ]
 
     # >>> Address point 2
     log.info("Calculating pseudo-median conductance values...")

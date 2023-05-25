@@ -1,4 +1,4 @@
-BIOMART = "http://www.ensembl.org/biomart/martservice"
+BIOMART = "https://asia.ensembl.org/biomart/martservice"
 """The Url used by Biomart to accept requests"""
 
 BIOMART_XML_REQUESTS = {
