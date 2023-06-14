@@ -17,6 +17,7 @@ from daedalus.constants import (
     BIOMART,
     BIOMART_XML_REQUESTS,
     COSMIC,
+    GO,
     HUGO,
     IUPHAR_COMPILED,
     IUPHAR_DB,
@@ -390,3 +391,22 @@ def retrieve_slc() -> pd.DataFrame:
     frame = pd.concat(frames)
 
     return frame
+
+
+def retrieve_go() -> DataDict:
+    log.info("Retrieving GO term data from BioMart...")
+    xml_query = GO["query"]
+    # Read and unpack the response into a datadict
+
+    # I need to dowload every term on its own because the backpropagation in GO
+    # sucks balls, so terms in children do not appear in parent nodes.
+
+    result = {}
+    for key, id in GO["terms"].items():
+        log.info(f"Downloading term '{id}' for key '{key}'")
+
+        response = pbar_get(url=BIOMART, params={"query": xml_query.format(go_ids=id)})
+        data = pd.read_table(response, header=0, sep="\t", low_memory=False)
+        result[key] = list(set(data["Gene stable ID"].to_list()))
+
+    return result

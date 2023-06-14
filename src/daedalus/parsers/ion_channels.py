@@ -6,7 +6,13 @@ from statistics import mean
 import numpy as np
 import pandas as pd
 
-from daedalus.utils import apply_thesaurus, recast, sanity_check, to_transaction
+from daedalus.utils import (
+    apply_thesaurus,
+    is_identical,
+    recast,
+    sanity_check,
+    to_transaction,
+)
 
 log = logging.getLogger(__name__)
 
@@ -75,7 +81,7 @@ def calculate_relative_conductances(original: dict) -> dict:
     return original
 
 
-def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
+def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo, gene_ontology):
     log.info("Finding ion channels in TCDB...")
 
     selectivity: pd.DataFrame = iuphar_data["selectivity"]
@@ -106,7 +112,9 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
     # NOTE: This once considered all the above species, but now only uses
     # human data. The idea behind the last decision was that more values would
     # be filled that way.
-    selectivity = selectivity.loc[selectivity["species_id"].isin(["1"])]
+    selectivity = selectivity.loc[
+        selectivity["species_id"].isin(["1", "2", "3", "20", "18"])
+    ]
 
     # >>> Address point 2
     log.info("Calculating pseudo-median conductance values...")
@@ -285,10 +293,10 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
 
     # We now have a frame like this:
     #     gene solute
-    # 0  gene1     Na
-    # 1  gene1     Cl
+    # 0  gene1    Na+
+    # 1  gene1    Cl-
     # 2  gene2   <NA>
-    # 3  gene2     Na
+    # 3  gene2    Na+
     #
     # We need to drop lines like line 2 above, since line 3 exists.
     # I do this again by grouping and applying a function.
@@ -360,6 +368,69 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo):
     tf_table = tf_table.drop(columns=["type", "object_id"])
 
     ion_channels = ion_channels.merge(tf_table, how="outer", on="ensg")
+
+    ## >> We have to patch the leaky data from the HGNC and IUPHAR with GO
+    ## data. See https://github.com/CMA-Lab/MTP-DB/issues/34
+    # I first apply the thesaurus to convert from simple ions to the more
+    # generic 'cation' and 'anion' + to standardize the IDs for the GO
+    # pass
+    ion_channels = apply_thesaurus(ion_channels)
+
+    # The GO frames have ENSG (with no versions). This is a pretty brutal
+    # approach to do this, but there is no time to think of something better
+    log.info("Adding GO annotations to ion channel list")
+
+    def add_go_annotations(frame: pd.DataFrame) -> pd.DataFrame:
+        # This should be applied on a frame with grouped ENSGs
+        # This means that all rows should have the same col values
+        # with the exception of the "carried_solute" col and the conductances
+        _id = frame.name
+
+        if not is_identical(frame["gating_mechanism"]):
+            log.warn(
+                f"Column gating_mechanism of slice is not completely identical: {frame['gating_mechanism']}"
+            )
+
+        template_row = dict.fromkeys(frame.columns)
+        template_row["ensg"] = _id
+        template_row["gating_mechanism"] = frame["gating_mechanism"].to_list()[0]
+        checks = {
+            "monoatomic_anion_channel": "anion",
+            "monoatomic_cation_channel": "cation",
+            "chloride_ion_channels": "Cl-",
+            "calcium_ion_channels": "Ca2+",
+            "potassium_ion_channels": "K+",
+            "proton_ion_channels": "H+",
+            "sodium_ion_channels": "Na+",
+        }
+        for key, value in checks.items():
+            if (_id in gene_ontology[key]) & (
+                value not in frame["carried_solute"].to_list()
+            ):
+                log.debug(f"Added {value} for gene {_id} from GO.")
+                x = copy(template_row)
+                x["carried_solute"] = value
+                x = pd.DataFrame(x, index=[0])
+                frame = pd.concat([frame.loc[:], x], axis=0).reset_index(drop=True)
+
+        # I have no idea why pd.concat drops the ensg col, but it does.
+        # so I have to do this badness (since the ensg col should not be here)
+        if "ensg" in frame.columns:
+            frame = frame.drop(columns="ensg")
+        return frame
+
+    ion_channels = (
+        ion_channels.groupby(["ensg"], group_keys=True)
+        .apply(add_go_annotations)
+        .reset_index(level="ensg")
+    )
+
+    log.info("Dropping useless duplicates - again...")
+    ion_channels = (
+        ion_channels.groupby(["ensg"])
+        .apply(drop_useless_duplicates)
+        .reset_index(level="ensg")
+    )
 
     ion_channels = apply_thesaurus(ion_channels)
     return to_transaction(ion_channels, "channels")

@@ -612,3 +612,21 @@ def apply_thesaurus(frame: pd.DataFrame, col="carried_solute") -> pd.DataFrame:
     log.info(f"Thesaurus rows changed: {new_frame.shape[0] - rows}")
 
     return new_frame
+
+
+def is_identical(df_col: pd.DataFrame) -> bool:
+    """Check if a slice of a dataframe is all identical
+
+    Most commonly used on a DF column.
+
+    Args:
+        df_col (pd.DataFrame): The dataframe slice to test
+
+    Returns:
+        bool: If the slice's values are all indentical
+    """
+    if all(df_col.isna()) or all(df_col.isnull()):
+        return True
+
+    col = df_col.to_numpy()
+    return all(col[0] == col)
