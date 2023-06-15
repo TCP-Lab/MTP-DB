@@ -590,6 +590,7 @@ def apply_thesaurus(frame: pd.DataFrame, col="carried_solute") -> pd.DataFrame:
     Returns:
         pd.DataFrame: The (exploded) frame with the synonyms
     """
+    original_data = frame.copy()
     thesaurus = get_local_csv(THESAURUS_FILE)
     # First, replace every entry with its "change_to" equivalent
     change_to = thesaurus.dropna(axis=0, subset="change_to")
@@ -609,9 +610,14 @@ def apply_thesaurus(frame: pd.DataFrame, col="carried_solute") -> pd.DataFrame:
 
     new_frame = explode_on(frame, ",", [col])
 
-    log.info(f"Thesaurus rows changed: {new_frame.shape[0] - rows}")
+    log.info(f"Thesaurus # rows change: {new_frame.shape[0] - rows}")
 
-    return new_frame
+    if original_data.equals(new_frame):
+        log.info("Completed application of the Thesaurus")
+        return new_frame
+    else:
+        log.info("Thesaurus changed some data. Re-applying...")
+        return apply_thesaurus(new_frame, col=col)
 
 
 def is_identical(df_col: pd.DataFrame) -> bool:
