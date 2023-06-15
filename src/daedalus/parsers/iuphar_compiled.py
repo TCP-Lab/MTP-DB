@@ -10,6 +10,8 @@ log = logging.getLogger(__name__)
 
 
 def get_iuphar_targets_transaction(iuphar_casted):
+    # This is literally a copy-paste of the info from the iuphar, so we just
+    # need to recast.
     data = recast(
         iuphar_casted["targets+families"],
         {
@@ -25,6 +27,8 @@ def get_iuphar_targets_transaction(iuphar_casted):
 
 
 def get_iuphar_ligands_transaction(iuphar_casted):
+    # Same as above, we just need a recast, but the data is already as we want
+    # it to be.
     relevant_data = recast(
         iuphar_casted["ligands"],
         {
@@ -43,6 +47,8 @@ def get_iuphar_ligands_transaction(iuphar_casted):
 
 
 def get_iuphar_interaction_transaction(iuphar_casted):
+    # This is almost as we want it, but there is non-human data in it, so
+    # we have to drop that.
     relevant_data = recast(
         iuphar_casted["interactions"],
         {
