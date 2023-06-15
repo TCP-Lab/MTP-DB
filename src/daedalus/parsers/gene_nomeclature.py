@@ -50,8 +50,4 @@ def get_gene_names_transaction(mart_data):
     # Drop the version
     data["ensg"] = lmap(lambda x: split_ensembl_ids(x).full_id_no_version, data["ensg"])
 
-    # We currently cannot populate this col:
-    # data["gene_symbol_synonyms"]
-    log.warning("IMPOSSIBLE TO FIND GENE SYNONYMS.")
-
     return to_transaction(data, "gene_names")

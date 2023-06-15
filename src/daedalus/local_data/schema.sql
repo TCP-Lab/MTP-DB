@@ -33,8 +33,7 @@ CREATE TABLE gene_names (
     hugo_gene_id TEXT, -- from biomart > hugo_symbols > hgnc_id
     hugo_gene_symbol TEXT, -- from biomart > hugo_symbols > hugo_gene symbol
     -- (double check with the description field below)
-    hugo_gene_name TEXT, -- from biomart > IDs+desc > description
-    gene_symbol_synonyms TEXT -- ???
+    hugo_gene_name TEXT -- from biomart > IDs+desc > description
 );
 
 CREATE TABLE iuphar_targets (
