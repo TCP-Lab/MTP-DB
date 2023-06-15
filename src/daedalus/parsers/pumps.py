@@ -25,16 +25,16 @@ def get_atp_driven_carriers_transaction(hugo):
     log.info(f"Dropped {p - len(data['ensg'])} entries.")
 
     log.info("Adding local annotations")
-    local = get_local_csv("atp_driven_ABC_data.csv")
+    local = get_local_csv("atp_driven_data.csv")
 
     local = recast(
         local,
         {
-            "ensg": "ensg",
+            "ensg": None,
             "transported_solute": "carried_solute",
-            "rate": "rate",
-            "direction": "direction",
-            "stoichiometry": "stoichiometry",
+            "rate": None,
+            "direction": None,
+            "stoichiometry": None,
         },
     )
 
@@ -53,16 +53,16 @@ def get_abc_transporters_transaction(hugo):
     ).drop_duplicates()
 
     log.info("Adding local annotations")
-    local = get_local_csv("atp_driven_ABC_data.csv")
+    local = get_local_csv("atp_driven_data.csv")
 
     local = recast(
         local,
         {
-            "ensg": "ensg",
+            "ensg": None,
             "transported_solute": "carried_solute",
-            "rate": "rate",
-            "direction": "direction",
-            "stoichiometry": "stoichiometry",
+            "rate": None,
+            "direction": None,
+            "stoichiometry": None,
         },
     )
 
