@@ -4,11 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) with the format `MAJOR.YY.0W[_MINOR][-Modifier]`. The major version increases when the database schema changes. Minor tags are added for multiple releases in the same week, starting from `2` (the `1` is implicit). Modifiers are added for pre-releases (e.g. `beta` or `alpha`).
 
-## Unrealeased
+## Unreleased
 
 ### Changes
-- [c971e4a] Update run_rebuilder to be compatible with the new CLI;
-- [1e17dd6, fb7a4b5] Write better READMEs.
+- **BREAKING**: Changed table name from `atp_driven_transporters` to `pumps`.
+- Update run_rebuilder to be compatible with the new CLI;
+- Write better READMEs.
 
 ## [0.23.15-beta] - First release
 

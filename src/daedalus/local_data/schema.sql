@@ -136,7 +136,7 @@ CREATE TABLE solute_carriers (
     mode INT -- TODO: Why do we need this?
 );
 
-CREATE TABLE atp_driven_transporters (
+CREATE TABLE pumps (
     ensg TEXT, -- See the note on uniqueness for solute carriers
     net_charge INT,
     carried_solute TEXT,

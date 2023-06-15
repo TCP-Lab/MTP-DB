@@ -22,3 +22,9 @@ repos:
   - id: black
     args: ["./src/daedalus"]
     language_version: python3.11
+
+- repo: https://github.com/jorisroovers/gitlint
+  rev: v0.19.1
+  hooks:
+  - id: gitlint
+    stages: [commit-msg]

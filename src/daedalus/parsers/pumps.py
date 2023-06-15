@@ -44,7 +44,7 @@ def get_atp_driven_carriers_transaction(hugo):
 
     data = apply_thesaurus(data)
 
-    return to_transaction(data, "atp_driven_transporters")
+    return to_transaction(data, "pumps")
 
 
 def get_abc_transporters_transaction(hugo):
