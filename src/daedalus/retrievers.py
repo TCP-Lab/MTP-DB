@@ -5,6 +5,7 @@ import pickle
 import re
 import zipfile
 from copy import deepcopy
+from io import StringIO
 from logging import getLogger
 from pathlib import Path
 from typing import TypeAlias
@@ -21,6 +22,7 @@ from daedalus.constants import (
     HUGO,
     IUPHAR_COMPILED,
     IUPHAR_DB,
+    PROTEIN_ATLAS,
     SLC_TABLES,
     TCDB,
 )
@@ -408,5 +410,21 @@ def retrieve_go() -> DataDict:
         response = pbar_get(url=BIOMART, params={"query": xml_query.format(go_ids=id)})
         data = pd.read_table(response, header=0, sep="\t", low_memory=False)
         result[key] = list(set(data["Gene stable ID"].to_list()))
+
+    return result
+
+
+def retrieve_protein_atlas() -> DataDict:
+    log.info("Retrieving data from the protein atlas...")
+    result = {}
+    for key, url in PROTEIN_ATLAS.items():
+        log.info(f"Retrieving {key}...")
+
+        response = pbar_get(url=url)
+        file = zipfile.ZipFile(response).filelist[0]
+        content = zipfile.ZipFile(response).read(file).decode("UTF-8")
+        data = pd.read_csv(StringIO(content), sep="\t")
+
+        result[key] = data
 
     return result

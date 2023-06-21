@@ -119,7 +119,7 @@ CREATE TABLE channels (
 
 CREATE TABLE aquaporins (
     ensg TEXT,
-    expression_tissue TEXT -- manual insertion
+    expression_tissue TEXT
 );
 
 CREATE TABLE solute_carriers (
@@ -153,4 +153,13 @@ CREATE TABLE ABC_transporters (
     rate REAL,
     direction TEXT,
     mode INT
+);
+
+CREATE TABLE origin (
+    ensg TEXT,
+    tissue TEXT,
+    cell_type TEXT,
+    expression_level TEXT,
+    subcellular_location TEXT,
+    extracellular_location TEXT
 );

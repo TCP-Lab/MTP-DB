@@ -148,3 +148,10 @@ GO = {
         "sodium_ion_channels": "GO:0005272",
     },
 }
+
+PROTEIN_ATLAS = {
+    # At the time of writing the site is v23, and we can pinpoint the version by going to
+    # http://v23.proteinatlas.org/ if we want to use just this version.
+    "normal_tissue_expression": "https://www.proteinatlas.org/download/normal_tissue.tsv.zip",
+    "subcellular_location": "https://www.proteinatlas.org/download/subcellular_location.tsv.zip",
+}

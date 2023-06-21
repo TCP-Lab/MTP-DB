@@ -20,6 +20,7 @@ from daedalus.parsers import (
     get_iuphar_interaction_transaction,
     get_iuphar_ligands_transaction,
     get_iuphar_targets_transaction,
+    get_origin_transaction,
     get_protein_structures_transaction,
     get_refseq_transaction,
     get_solute_carriers_transaction,
@@ -35,6 +36,7 @@ from daedalus.retrievers import (
     retrieve_hugo,
     retrieve_iuphar,
     retrieve_iuphar_compiled,
+    retrieve_protein_atlas,
     retrieve_slc,
     retrieve_tcdb,
 )
@@ -97,6 +99,7 @@ def generate_database(
         "hugo": retrieve_hugo,
         "slc": retrieve_slc,
         "GO": retrieve_go,
+        "patlas": retrieve_protein_atlas,
     }
 
     if auth_hash:
@@ -247,7 +250,9 @@ class Daedalus:
                 cache_args={"cosmic": "cosmic", "mart_data": "biomart"},
             ),
             "aquaporins": partial(
-                get, get_aquaporins_transaction, cache_args={"hugo": "hugo"}
+                get,
+                get_aquaporins_transaction,
+                cache_args={"hugo": "hugo", "patlas": "patlas"},
             ),
             "solute_carriers": partial(
                 get,
@@ -263,6 +268,9 @@ class Daedalus:
                 get,
                 get_atp_driven_carriers_transaction,
                 cache_args={"hugo": "hugo"},
+            ),
+            "tissue_of_origin": partial(
+                get, get_origin_transaction, cache_args={"patlas": "patlas"}
             ),
         }
         """A dict with keys arbitrary names for the runners, and for values partial calls to 'get_wrapper'
