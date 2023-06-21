@@ -4,7 +4,8 @@ from logging import StreamHandler
 from colorama import Back, Fore, Style
 
 __all__ = ["DB_NAME", "SCHEMA"]
-__version__ = "0.23.17-beta"
+# This follows CalVer MAJOR.YEAR.WEEK[.minor][-tag]
+__version__ = "1.23.25-beta"
 
 
 class ColorFormatter(logging.Formatter):
