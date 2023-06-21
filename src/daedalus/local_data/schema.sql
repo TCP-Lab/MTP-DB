@@ -163,3 +163,9 @@ CREATE TABLE origin (
     subcellular_location TEXT,
     extracellular_location TEXT
 );
+
+
+CREATE TABLE function (
+    ensg TEXT,
+    physiological_function TEXT
+);

@@ -1,5 +1,7 @@
 import logging
 
+import pandas as pd
+
 from daedalus.utils import recast, to_transaction
 
 log = logging.getLogger(__name__)
@@ -101,3 +103,33 @@ def get_origin_transaction(patlas):
     merged = merged.drop_duplicates()
 
     return to_transaction(merged, "origin")
+
+
+def get_function_transaction(iuphar):
+    function = recast(
+        iuphar["physiological_function"],
+        {"object_id": None, "description": "physiological_function"},
+    )
+    # The IUPHAR has this dataframe with the functional annotations
+    # We have to unpack them and merge
+    log.info("Returning to ensembl gene IDs...")
+    database_links = iuphar["database_link"]
+    # This drops everything not from ensembl
+    database_links = database_links.loc[database_links["database_id"] == "15"]
+    # We now select just human data
+    database_links = database_links.loc[database_links["species_id"] == "1"]
+    # Recast the frame...
+    database_links = recast(
+        database_links, {"placeholder": "ensg", "object_id": None}
+    ).dropna()
+
+    function: pd.DataFrame = function.merge(database_links, on="object_id")
+    function.drop(columns=["object_id"], inplace=True)
+
+    # Now we have more or less what we want.
+
+    function.dropna(inplace=True)
+
+    function.drop_duplicates(inplace=True)
+
+    return to_transaction(function, "function")

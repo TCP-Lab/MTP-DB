@@ -14,6 +14,7 @@ from daedalus.parsers import (
     get_aquaporins_transaction,
     get_atp_driven_carriers_transaction,
     get_cosmic_transaction,
+    get_function_transaction,
     get_gene_ids_transaction,
     get_gene_names_transaction,
     get_ion_channels_transaction,
@@ -271,6 +272,9 @@ class Daedalus:
             ),
             "tissue_of_origin": partial(
                 get, get_origin_transaction, cache_args={"patlas": "patlas"}
+            ),
+            "function": partial(
+                get, get_function_transaction, cache_args={"iuphar": "iuphar"}
             ),
         }
         """A dict with keys arbitrary names for the runners, and for values partial calls to 'get_wrapper'

@@ -11,7 +11,11 @@ from daedalus.parsers.iuphar_compiled import (
     get_iuphar_ligands_transaction,
     get_iuphar_targets_transaction,
 )
-from daedalus.parsers.others import get_aquaporins_transaction, get_origin_transaction
+from daedalus.parsers.others import (
+    get_aquaporins_transaction,
+    get_function_transaction,
+    get_origin_transaction,
+)
 from daedalus.parsers.protein_structures import get_protein_structures_transaction
 from daedalus.parsers.pumps import (
     get_abc_transporters_transaction,
@@ -45,4 +49,5 @@ __all__ = [
     "get_tcdb_ids_transaction",
     "get_transcripts_ids_transaction",
     "get_origin_transaction",
+    "get_function_transaction",
 ]
