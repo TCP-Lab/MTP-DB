@@ -12,7 +12,16 @@ If you find a problem, want to point out an error, or have a suggestion or other
 We also use issues to keep track of features that we want in the DB, or things we want to change. Please refer to the [ROADMAP.md](ROADMAP.md) file for the project's roadmap. Feel free to comment on roadmap issues or start working on an item in the roadmap by [creating a fork of the project](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
 
 ## Code style
-We strive to keep a unified code style. For this reason, we use [`pre-commit`](https://pre-commit.com/) to unify the style of our Python code. If you want to contribute code, please make sure you setup the pre-commit hooks with [`pre-commit`](https://pre-commit.com/).
+We strive to keep a unified code style. For this reason, we use [`pre-commit`](https://pre-commit.com/) to unify the style of our Python code. If you want to contribute code, please make sure you setup the pre-commit hooks with [`pre-commit`](https://pre-commit.com/):
+
+```bash
+# For all hooks to be installed, **both** commands must be ran.
+pre-commit install
+pre-commit install -t commit-msg
+```
+
+## Versioning
+We follow follow [CalVer](https://calver.org/) `MAJOR.YY.0W[_MINOR][-Modifier]`. It's a bit weird but the idea is to warn the user immediately if the major version changes.
 
 ## Commit Messages
 We follow the [`conventional commits`](https://www.conventionalcommits.org/en/v1.0.0/) specification.
