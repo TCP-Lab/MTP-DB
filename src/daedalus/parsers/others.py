@@ -148,6 +148,10 @@ def get_structure_transaction(iuphar):
     # Drop non-human data
     structure = structure[structure["species_id"] == "1"]
 
+    protein_type = recast(
+        iuphar["associated_protein"], {"object_id": None, "type": "role"}
+    )
+
     # This bit is copy-pasted. Get the iuphar object-id to ensg frame
     log.info("Returning to ensembl gene IDs...")
     database_links = iuphar["database_link"]
@@ -158,9 +162,12 @@ def get_structure_transaction(iuphar):
     ).dropna()
 
     structure: pd.DataFrame = structure.merge(database_links, on="object_id")
+    structure = structure.merge(protein_type, how="outer", on="object_id")
     structure.drop(columns=["object_id", "species_id"], inplace=True)
 
-    structure.dropna(subset=["membrane_passes", "pore_loops"], how="all", inplace=True)
+    structure.dropna(
+        subset=["membrane_passes", "pore_loops", "role"], how="all", inplace=True
+    )
     structure.drop_duplicates(inplace=True)
 
     return to_transaction(structure, "structure")

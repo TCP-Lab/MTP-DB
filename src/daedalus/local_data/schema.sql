@@ -173,5 +173,6 @@ CREATE TABLE function (
 CREATE TABLE structure (
     ensg TEXT,
     membrane_passes INT,
-    pore_loops INT
+    pore_loops INT,
+    role TEXT
 );
