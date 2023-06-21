@@ -169,3 +169,9 @@ CREATE TABLE function (
     ensg TEXT,
     physiological_function TEXT
 );
+
+CREATE TABLE structure (
+    ensg TEXT,
+    membrane_passes INT,
+    pore_loops INT
+);

@@ -15,6 +15,7 @@ from daedalus.parsers.others import (
     get_aquaporins_transaction,
     get_function_transaction,
     get_origin_transaction,
+    get_structure_transaction,
 )
 from daedalus.parsers.protein_structures import get_protein_structures_transaction
 from daedalus.parsers.pumps import (
@@ -50,4 +51,5 @@ __all__ = [
     "get_transcripts_ids_transaction",
     "get_origin_transaction",
     "get_function_transaction",
+    "get_structure_transaction",
 ]

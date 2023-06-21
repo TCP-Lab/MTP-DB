@@ -25,6 +25,7 @@ from daedalus.parsers import (
     get_protein_structures_transaction,
     get_refseq_transaction,
     get_solute_carriers_transaction,
+    get_structure_transaction,
     get_tcdb_definitions_transactions,
     get_tcdb_ids_transaction,
     get_transcripts_ids_transaction,
@@ -275,6 +276,9 @@ class Daedalus:
             ),
             "function": partial(
                 get, get_function_transaction, cache_args={"iuphar": "iuphar"}
+            ),
+            "structure": partial(
+                get, get_structure_transaction, cache_args={"iuphar": "iuphar"}
             ),
         }
         """A dict with keys arbitrary names for the runners, and for values partial calls to 'get_wrapper'

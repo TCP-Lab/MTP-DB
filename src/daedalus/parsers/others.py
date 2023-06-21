@@ -133,3 +133,34 @@ def get_function_transaction(iuphar):
     function.drop_duplicates(inplace=True)
 
     return to_transaction(function, "function")
+
+
+def get_structure_transaction(iuphar):
+    structure = recast(
+        iuphar["structural_info"],
+        {
+            "object_id": None,
+            "species_id": None,
+            "pore_loops": None,
+            "transmembrane_domains": "membrane_passes",
+        },
+    )
+    # Drop non-human data
+    structure = structure[structure["species_id"] == "1"]
+
+    # This bit is copy-pasted. Get the iuphar object-id to ensg frame
+    log.info("Returning to ensembl gene IDs...")
+    database_links = iuphar["database_link"]
+    database_links = database_links.loc[database_links["database_id"] == "15"]
+    database_links = database_links.loc[database_links["species_id"] == "1"]
+    database_links = recast(
+        database_links, {"placeholder": "ensg", "object_id": None}
+    ).dropna()
+
+    structure: pd.DataFrame = structure.merge(database_links, on="object_id")
+    structure.drop(columns=["object_id", "species_id"], inplace=True)
+
+    structure.dropna(subset=["membrane_passes", "pore_loops"], how="all", inplace=True)
+    structure.drop_duplicates(inplace=True)
+
+    return to_transaction(structure, "structure")
