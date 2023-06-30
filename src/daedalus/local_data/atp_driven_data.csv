@@ -1,0 +1,131 @@
+family,subfamily,source_url,gene_symbol_from_iuphar,ensg,gene_symbol_from_ensg,is_subunit,transported_solute,direction,rate,stoichiometry,Notes
+ABC,ABCA,ABCA subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCA1,ENSG00000165029,ABCA1,FALSE,phospholipid,NA,,,
+ABC,ABCA,ABCA subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCA2,ENSG00000107331,ABCA2,FALSE,lipid;cholesterol,in;in,,,"""in"" the lysosomes"
+ABC,ABCA,ABCA subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCA3,ENSG00000167972,ABCA3,FALSE,phospholipid,out,,,Pulmonary surfactants
+ABC,ABCA,ABCA subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCA4,ENSG00000198691,ABCA4,FALSE,retinal-phosphatidylethanolamine conjugates,NA,,,The solute entry is a collection of molecules. Perhaps expand?
+ABC,ABCA,ABCA subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCA5,ENSG00000154265,ABCA5,FALSE,cholesterol,out,,,
+ABC,ABCA,ABCA subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCA6,ENSG00000154262,ABCA6,FALSE,NA,NA,,,"""Probable lipid"""
+ABC,ABCA,ABCA subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCA7,ENSG00000064687,ABCA7,FALSE,phospholipid;cholesterol,NA;NA,,,
+ABC,ABCA,ABCA subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCA8,ENSG00000141338,ABCA8,FALSE,organic ions;cholesterol,in;out,,,Also cholesterol out
+ABC,ABCA,ABCA subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCA9,ENSG00000154258,ABCA9,FALSE,NA,NA,,,
+ABC,ABCA,ABCA subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCA10,ENSG00000154263,ABCA10,FALSE,NA,NA,,,
+ABC,ABCA,ABCA subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCA12,ENSG00000144452,ABCA12,FALSE,lipid,in,,,
+ABC,ABCA,ABCA subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCA13,ENSG00000179869,ABCA13,FALSE,NA,NA,,,Maybe cholesterol in
+ABC,ABCB,ABCB subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCB1,ENSG00000085563,ABCB1,FALSE,NA,NA,,,"""Drugs"" and phospholipids (out?)"
+ABC,ABCB,ABCB subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCB2,ENSG00000168394,TAP1,TRUE,peptides,in,,,Makes a complex with TAP2. Transports peptides in the ER for loading on MHC1
+ABC,ABCB,ABCB subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCB3,ENSG00000204267,TAP2,TRUE,peptides,in,,,Makes a complex with TAP1. Transports peptides in the ER for loading on MHC1
+ABC,ABCB,ABCB subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCB4,ENSG00000005471,ABCB4,FALSE,phospholipid,out,,,"Also floppase activity of phosphatidilcholine, involved in cholesterol efflux"
+ABC,ABCB,ABCB subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCB5,ENSG00000004846,ABCB5,FALSE,many,out,,,"Many things, like drugs"
+ABC,ABCB,ABCB subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCB6,ENSG00000115657,ABCB6,FALSE,porphyrins,out,,,Also involved in metal homeostasis/drug resistance
+ABC,ABCB,ABCB subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCB7,ENSG00000131269,ABCB7,FALSE,iron;sulphur,out;out,,,glutathione-coordinated iron-sulfur clusters from mithocondra to cytoplasm
+ABC,ABCB,ABCB subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCB8,ENSG00000197150,ABCB8,FALSE,potassium;iron,NA;NA,,,
+ABC,ABCB,ABCB subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCB9,ENSG00000150967,ABCB9,FALSE,peptides,in,,,In the lysosome for degradation
+ABC,ABCB,ABCB subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCB10,ENSG00000135776,ABCB10,FALSE,NA,out,,,"It exports something from the mitochondria, but it's unclear what"
+ABC,ABCB,ABCB subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCB11,ENSG00000073734,ABCB11,FALSE,taurine;cholic acid,out;out,,, and export of other hydrophobic bile salts
+ABC,ABCC,ABCC subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCC1,ENSG00000103222,ABCC1,FALSE,glutathione;leukotriene C4;estradiol-17-beta-o-glucuronide;methotrexate;drugs;organic anions,out;out;out;out;out;out,,,exports out of cytoplams. Gives drug resistance in cancer
+ABC,ABCC,ABCC subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCC2,ENSG00000023839,ABCC2,FALSE,many,out,,,"i.e. drugs, toxins, bile salts, etc"
+ABC,ABCC,ABCC subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCC3,ENSG00000108846,ABCC3,FALSE,many,out,,,"i.e. drugs, toxins, bile salts, etc"
+ABC,ABCC,ABCC subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCC4,ENSG00000125257,ABCC4,FALSE,cAMP;cGMP;bile acids;steroids;urate;prostaglandins;leukotriene C4;leukotriene B4;drugs,out;out;out;out;out;out;out;out;out,,,
+ABC,ABCC,ABCC subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCC5,ENSG00000114770,ABCC5,FALSE,cAMP;cGMP;folic acid;amino acids;drugs,out;out;out;out;out,,,
+ABC,ABCC,ABCC subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCC6,ENSG00000091262,ABCC6,FALSE,leukotriene C4;ATP,out;out,,,
+ABC,ABCC,ABCC subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCC8,ENSG00000006071,ABCC8,TRUE,potassium,NA,,,part of an ATP-sensitive potassium channel (KATP)
+ABC,ABCC,ABCC subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCC9,ENSG00000069431,ABCC9,TRUE,potassium,NA,,,part of an ATP-sensitive potassium channel (KATP)
+ABC,ABCC,ABCC subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCC10,ENSG00000124574,ABCC10,FALSE,leukotriene C4;organic ions;drugs,out;out;out,,,"Does not carry bile acids, cAMP or cGMP"
+ABC,ABCC,ABCC subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCC11,ENSG00000121270,ABCC11,FALSE,drugs;cAMP;cGMP;leukotriene C4;steroid sulphates,out;out;out;in;in,,,
+ABC,ABCC,ABCC subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCC12,ENSG00000140798,ABCC12,FALSE,NA,NA,,,Maybe a transporter
+ABC,ABCD,ABCD subfamily of peroxisomal ABC transporters,ABCD1,ENSG00000101986,ABCD1,FALSE,lipids,in,,,very long chain fatty acid-CoA in the peroxisome
+ABC,ABCD,ABCD subfamily of peroxisomal ABC transporters,ABCD2,ENSG00000173208,ABCD2,FALSE,lipids,in,,,very long chain fatty acid-CoA in the peroxisome
+ABC,ABCD,ABCD subfamily of peroxisomal ABC transporters,ABCD3,ENSG00000117528,ABCD3,FALSE,lipids,in,,,long chain fatty acid-CoA + other lipids in the peroxisome
+ABC,ABCG,ABCG subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCG1,ENSG00000160179,ABCG1,FALSE,phospholipids;cholesterol,out;out,,,
+ABC,ABCG,ABCG subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCG2,ENSG00000118777,ABCG2,FALSE,porphyrins;heme;urate;sphingolipids,out;out;out;out,,,Toxins in general
+ABC,ABCG,ABCG subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCG4,ENSG00000172350,ABCG4,FALSE,sterols,out,,,Probable. To HDLs
+ABC,ABCG,ABCG subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCG5,ENSG00000138075,ABCG5,TRUE,Mg2+;sterols,out;out,,,Must work with ABCG8
+ABC,ABCG,ABCG subfamily | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,ABCG8,ENSG00000143921,ABCG8,TRUE,Mg2+;sterols,out;out,,,Must work with ABCG5
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000152234,ATP5F1A,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000110955,ATP5F1B,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000165629,ATP5F1C,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000099624,ATP5F1D,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000124172,ATP5F1E,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000198899,MT-ATP6,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000116459,ATP5PB,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000135390,ATP5MC2,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000167863,ATP5PD,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000169020,ATP5ME,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000241468,ATP5MF,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000154723,ATP5PF,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000249222,ATP5MGL,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+F-type ATPase,F-type ATPase,F-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000228253,MT-ATP8,TRUE,H+,out,,,ATP-syntesis by using the proton gradient (this is the ATP-synthase complex in the mitochondrion)
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000114573,ATP6V1A,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000116039,ATP6V1B1,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000147416,ATP6V1B2,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000155097,ATP6V1C1,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000143882,ATP6V1C2,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000100554,ATP6V1D,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000131100,ATP6V1E1,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000250565,ATP6V1E2,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000128524,ATP6V1F,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000136888,ATP6V1G1,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000213760,ATP6V1G2,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000151418,ATP6V1G3,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000047249,ATP6V1H,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000033627,ATP6V0A1,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000185344,ATP6V0A2,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000110719,TCIRG1,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000105929,ATP6V0A4,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000117410,ATP6V0B,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000185883,ATP6V0C,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000159720,ATP6V0D1,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000147614,ATP6V0D2,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000113732,ATP6V0E1,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+V-type ATPase,V-type ATPase,V-type ATPase | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000171130,ATP6V0E2,TRUE,H+,in,,,Like the ATP-synthase but it degrades ATP to pump protons in vesicles
+P-type ATPase,P1B,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=161,ATP7A,ENSG00000165240,ATP7A,FALSE,Cu+,out,,,"Uses other proteins as acceptors and donors of the copper ion. In physiological conditions, it is on the golgi apparatus. When Cu increases, it is translocated to the plasma membrane for excretion"
+P-type ATPase,P1B,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=162,ATP7B,ENSG00000123191,ATP7B,FALSE,Cu+,out,,,Seems to be similar to ATP7B
+P-type ATPase,P2A,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=159,SERCA1,ENSG00000196296,ATP2A1,FALSE,Ca2+,in,,,"One of the SERCA proteins, that pump Ca2+ in the sarcoplasmic reticulum"
+P-type ATPase,P2A,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=160,SERCA2,ENSG00000174437,ATP2A2,FALSE,Ca2+,in,,,"One of the SERCA proteins, that pump Ca2+ in the sarcoplasmic reticulum"
+P-type ATPase,P2A,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=161,SERCA3,ENSG00000074370,ATP2A3,FALSE,Ca2+,in,,,"One of the SERCA proteins, that pump Ca2+ in the sarcoplasmic reticulum"
+P-type ATPase,P2B,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=1045,PMCA1,ENSG00000070961,ATP2B1,FALSE,Ca2+,out,,,"One of the PMCA proteins, pumping calcium out of the cells"
+P-type ATPase,P2B,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=1046,PMCA2,ENSG00000157087,ATP2B2,FALSE,Ca2+,out,,,"One of the PMCA proteins, pumping calcium out of the cells"
+P-type ATPase,P2B,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=1047,PMCA3,ENSG00000067842,ATP2B3,FALSE,Ca2+,out,,,"One of the PMCA proteins, pumping calcium out of the cells"
+P-type ATPase,P2B,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=1048,PMCA4,ENSG00000058668,ATP2B4,FALSE,Ca2+,out,,,"One of the PMCA proteins, pumping calcium out of the cells"
+P-type ATPase,P2B,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=1049,SPCA1,ENSG00000017260,ATP2C1,FALSE,Ca2+;Mn2+,in;in,,,In the golgi apparatus
+P-type ATPase,P2B,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=1050,SPCA2,ENSG00000064270,ATP2C2,FALSE,Ca2+;Mn2+,in;in,,,In the golgi apparatus
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000124406,ATP8A1,TRUE,phospolipids,out,,,"It is a flippase, mostly acting on phosphatidilserine"
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000132932,ATP8A2,TRUE,phospolipids,out,,,"It is a flippase, mostly acting on phosphatidilserine"
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000081923,ATP8B1,TRUE,phospolipids,out,,,"It is a flippase, mostly acting on phosphatidilserine"
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000143515,ATP8B2,TRUE,phospolipids,out,,,"It is a flippase, mostly acting on phosphatidilserine"
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000130270,ATP8B3,TRUE,phospolipids,out,,,"It is a flippase, mostly acting on phosphatidilserine"
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000104043,ATP8B4,TRUE,phospolipids,out,,,"It is a flippase, mostly acting on phosphatidilserine"
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000054793,ATP9A,,proteins,NA,,,"Mediates trasport of ""cargo proteins"""
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000166377,ATP9B,,NA,NA,,,??? unclear if it is a subunit of ATP9A
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000206190,ATP10A,TRUE,phosphatidilcholine,out,,,
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000118322,ATP10B,TRUE,glucosylceramide,in,,,in lysosomes
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000145246,ATP10D,TRUE,glucosylceramide,in,,,in the plasma membrane
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000068650,ATP11A,TRUE,aminophospholipids;phosphatidylserines;phosphatidylethanolamines,in;in;in,,,in the plasma membrane
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000058063,ATP11B,TRUE,aminophospholipids;phosphatidylserines;phosphatidylethanolamines,in;in;in,,,in the plasma membrane
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000101974,ATP11C,TRUE,aminophospholipids;phosphatidylserines;phosphatidylethanolamines,in;in;in,,,in the plasma membrane
+P-type ATPase,P4,P4 P-type ATPases: Phospholipid-transporting ATPases | Transporters | IUPHAR/BPS Guide to PHARMACOLOGY,,ENSG00000112697,TMEM30A,TRUE,aminophospholipids,in,,,"Accessory protein, in the plasma membrane"
+P-type ATPase,P5,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=1046,ATPase 13A1,ENSG00000105726,ATP13A1,FALSE,proteins,out,,,"In the mithocondrion, targets mislocalized proteins for re-export to the ER"
+P-type ATPase,P5,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=1047,ATPase cation transporting 13A2,ENSG00000159363,ATP13A2,FALSE,polyamine,out,,,"out of lysosomes, also involved in Mg and zinc homeostasis"
+P-type ATPase,P5,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=1048,ATPase 13A3,ENSG00000133657,ATP13A3,FALSE,polyamine,out,,,from endosomes (from phagocitosis) to cytosol
+P-type ATPase,P5,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=1049,ATPase 13A4,ENSG00000127249,ATP13A4,FALSE,NA,NA,,,Some predictions only
+P-type ATPase,P5,https://www.guidetopharmacology.org/GRAC/FamilyDisplayForward?familyId=1050,ATPase 13A5,ENSG00000187527,ATP13A5,FALSE,NA,NA,,,Some predictions only
+P-type ATPase,,ATPase H+/K+ transporting non-gastric alpha2 subunit [Source:HGNC Symbol;Acc:HGNC:13816],,ENSG00000075673,ATP12A,TRUE,K+;H+,in;out,,,May also pump NA+ out
+,,ATPase H+/K+ transporting subunit alpha [Source:HGNC Symbol;Acc:HGNC:819],,ENSG00000105675,ATP4A,TRUE,K+;H+,in;out,,,
+,,ATPase H+/K+ transporting subunit beta [Source:HGNC Symbol;Acc:HGNC:820],,ENSG00000186009,ATP4B,TRUE,K+;H+,in;out,,,
+,,ATPase Na+/K+ transporting subunit alpha 1 [Source:HGNC Symbol;Acc:HGNC:799],,ENSG00000163399,ATP1A1,TRUE,K+;Na+,in;out,,,This is the textbook Na/K pump
+,,ATPase Na+/K+ transporting subunit alpha 2 [Source:HGNC Symbol;Acc:HGNC:800],,ENSG00000018625,ATP1A2,TRUE,K+;Na+,in;out,,,This is the textbook Na/K pump
+,,ATPase Na+/K+ transporting subunit alpha 3 [Source:HGNC Symbol;Acc:HGNC:801],,ENSG00000105409,ATP1A3,TRUE,K+;Na+,in;out,,,This is the textbook Na/K pump
+,,ATPase Na+/K+ transporting subunit alpha 4 [Source:HGNC Symbol;Acc:HGNC:14073],,ENSG00000132681,ATP1A4,TRUE,K+;Na+,in;out,,,This is the textbook Na/K pump
+,,ATPase Na+/K+ transporting subunit beta 1 [Source:HGNC Symbol;Acc:HGNC:804],,ENSG00000143153,ATP1B1,TRUE,K+;Na+,in;out,,,This is the textbook Na/K pump
+,,ATPase Na+/K+ transporting subunit beta 2 [Source:HGNC Symbol;Acc:HGNC:805],,ENSG00000129244,ATP1B2,TRUE,K+;Na+,in;out,,,This is the textbook Na/K pump
+,,ATPase Na+/K+ transporting subunit beta 3 [Source:HGNC Symbol;Acc:HGNC:806],,ENSG00000069849,ATP1B3,TRUE,K+;Na+,in;out,,,This is the textbook Na/K pump
+,,ATPase 13A4 [Source:HGNC Symbol;Acc:HGNC:25422],,ENSG00000127249,ATP13A4,,cation,NA,,,Predicted to move cations
+,,ATPase 13A5 [Source:HGNC Symbol;Acc:HGNC:31789],,ENSG00000187527,ATP13A5,,cation,NA,,,Predicted to move cations
+,,ATPase phospholipid transporting 9B (putative) [Source:HGNC Symbol;Acc:HGNC:13541],,ENSG00000166377,ATP9B,,phospolipids,NA,,,Predicted function
+,,ATP synthase membrane subunit c locus 1 [Source:HGNC Symbol;Acc:HGNC:841],,ENSG00000159199,ATP5MC1,,H+,out,,,"This is the ATP-Sythase, ‘un-pumping’ H+"
+,,ATP synthase membrane subunit c locus 3 [Source:HGNC Symbol;Acc:HGNC:843],,ENSG00000154518,ATP5MC3,,H+,out,,,"This is the ATP-Sythase, ‘un-pumping’ H+"
+,,ATP synthase membrane subunit g [Source:HGNC Symbol;Acc:HGNC:14247],,ENSG00000167283,ATP5MG,,H+,out,,,"This is the ATP-Sythase, ‘un-pumping’ H+"
+,,ATP synthase membrane subunit j [Source:HGNC Symbol;Acc:HGNC:1188],,ENSG00000156411,ATP5MJ,,H+,out,,,"This is the ATP-Sythase, ‘un-pumping’ H+"
+,,ATP synthase membrane subunit k [Source:HGNC Symbol;Acc:HGNC:30889],,ENSG00000173915,ATP5MK,,H+,out,,,"This is the ATP-Sythase, ‘un-pumping’ H+"
+,,ATP synthase peripheral stalk subunit OSCP [Source:HGNC Symbol;Acc:HGNC:850],,ENSG00000241837,ATP5PO,,H+,out,,,"This is the ATP-Sythase, ‘un-pumping’ H+"
+,,ATP synthase inhibitory factor subunit 1 [Source:HGNC Symbol;Acc:HGNC:871],,ENSG00000130770,ATP5IF1,,H+,out,,,"This is the ATP-Sythase, ‘un-pumping’ H+"

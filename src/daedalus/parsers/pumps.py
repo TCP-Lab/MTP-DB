@@ -1,5 +1,7 @@
 import logging
 
+import pandas as pd
+
 from daedalus.utils import (
     apply_thesaurus,
     explode_on,
@@ -25,22 +27,39 @@ def get_atp_driven_carriers_transaction(hugo):
     log.info(f"Dropped {p - len(data['ensg'])} entries.")
 
     log.info("Adding local annotations")
-    local = get_local_csv("atp_driven_ABC_data.csv")
+    local = get_local_csv("atp_driven_data.csv")
 
     local = recast(
         local,
         {
-            "ensg": "ensg",
+            "ensg": None,
             "transported_solute": "carried_solute",
-            "rate": "rate",
-            "direction": "direction",
-            "stoichiometry": "stoichiometry",
+            "rate": None,
+            "direction": None,
+            "stoichiometry": None,
         },
     )
 
     local = explode_on(local, on=";", columns=["carried_solute", "direction"])
 
     data = data.merge(local, how="left", on="ensg")
+
+    def drop_useless_duplicates(frame: pd.DataFrame) -> pd.DataFrame:
+        if frame.shape[0] > 1:
+            # If there is just one row, we have nothing to do.
+            # If there is more than one row, this must be because there is some
+            # solute info. This means that any rows with NA as a solute must be
+            # dropped (as there is at least one other col with non-NA values)
+            frame = frame.dropna(subset="carried_solute")
+
+        return frame.drop(columns="ensg")
+
+    log.info("Dropping useless duplicates...")
+    data = (
+        data.groupby(["ensg"], group_keys=True)
+        .apply(drop_useless_duplicates)
+        .reset_index(level="ensg")
+    )
 
     data = apply_thesaurus(data)
 
@@ -53,22 +72,39 @@ def get_abc_transporters_transaction(hugo):
     ).drop_duplicates()
 
     log.info("Adding local annotations")
-    local = get_local_csv("atp_driven_ABC_data.csv")
+    local = get_local_csv("atp_driven_data.csv")
 
     local = recast(
         local,
         {
-            "ensg": "ensg",
+            "ensg": None,
             "transported_solute": "carried_solute",
-            "rate": "rate",
-            "direction": "direction",
-            "stoichiometry": "stoichiometry",
+            "rate": None,
+            "direction": None,
+            "stoichiometry": None,
         },
     )
 
     local = explode_on(local, on=";", columns=["carried_solute", "direction"])
 
     data = data.merge(local, how="left", on="ensg")
+
+    def drop_useless_duplicates(frame: pd.DataFrame) -> pd.DataFrame:
+        if frame.shape[0] > 1:
+            # If there is just one row, we have nothing to do.
+            # If there is more than one row, this must be because there is some
+            # solute info. This means that any rows with NA as a solute must be
+            # dropped (as there is at least one other col with non-NA values)
+            frame = frame.dropna(subset="carried_solute")
+
+        return frame.drop(columns="ensg")
+
+    log.info("Dropping useless duplicates...")
+    data = (
+        data.groupby(["ensg"], group_keys=True)
+        .apply(drop_useless_duplicates)
+        .reset_index(level="ensg")
+    )
 
     data = apply_thesaurus(data)
 

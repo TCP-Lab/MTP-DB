@@ -10,6 +10,7 @@ from daedalus.constants.url_hardpoints import (
     HUGO,
     IUPHAR_COMPILED,
     IUPHAR_DB,
+    PROTEIN_ATLAS,
     SLC_TABLES,
     TCDB,
 )
@@ -30,6 +31,7 @@ __all__ = [
     "CACHE_NAME",
     "THESAURUS_FILE",
     "GO",
+    "PROTEIN_ATLAS",
 ]
 
 ## TODO: It could be beneficial to bundle all of these constants into

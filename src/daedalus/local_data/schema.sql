@@ -33,8 +33,7 @@ CREATE TABLE gene_names (
     hugo_gene_id TEXT, -- from biomart > hugo_symbols > hgnc_id
     hugo_gene_symbol TEXT, -- from biomart > hugo_symbols > hugo_gene symbol
     -- (double check with the description field below)
-    hugo_gene_name TEXT, -- from biomart > IDs+desc > description
-    gene_symbol_synonyms TEXT -- ???
+    hugo_gene_name TEXT -- from biomart > IDs+desc > description
 );
 
 CREATE TABLE iuphar_targets (
@@ -120,7 +119,7 @@ CREATE TABLE channels (
 
 CREATE TABLE aquaporins (
     ensg TEXT,
-    expression_tissue TEXT -- manual insertion
+    expression_tissue TEXT
 );
 
 CREATE TABLE solute_carriers (
@@ -154,4 +153,26 @@ CREATE TABLE ABC_transporters (
     rate REAL,
     direction TEXT,
     mode INT
+);
+
+CREATE TABLE origin (
+    ensg TEXT,
+    tissue TEXT,
+    cell_type TEXT,
+    expression_level TEXT,
+    subcellular_location TEXT,
+    extracellular_location TEXT
+);
+
+
+CREATE TABLE function (
+    ensg TEXT,
+    physiological_function TEXT
+);
+
+CREATE TABLE structure (
+    ensg TEXT,
+    membrane_passes INT,
+    pore_loops INT,
+    role TEXT
 );

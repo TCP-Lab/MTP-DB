@@ -6,6 +6,7 @@ from daedalus.retrievers import (
     retrieve_cosmic_genes,
     retrieve_go,
     retrieve_iuphar,
+    retrieve_protein_atlas,
     retrieve_tcdb,
 )
 from daedalus.utils import make_cosmic_hash
@@ -53,6 +54,13 @@ def test_iuphar_retriever():
 @pytest.mark.download
 def test_go_retriever():
     data = retrieve_go()
+
+    assert True
+
+
+@pytest.mark.download
+def test_origin_retriever():
+    data = retrieve_protein_atlas()
 
     assert True
 

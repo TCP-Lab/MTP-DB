@@ -9,6 +9,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) with the 
 ### Changes
 - **BREAKING**: Changed table name from `atp_driven_transporters` to `pumps`.
 - Update run_rebuilder to be compatible with the new CLI;
+- Added tables `structure`, `function` and `origin` with information about the structure, physiological function and tissue of expression of genes.
 - Write better READMEs.
 
 ## [0.23.15-beta] - First release

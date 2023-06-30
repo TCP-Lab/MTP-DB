@@ -79,3 +79,21 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
+
+## Licensing
+
+Daedalus itself and all associated software in this repository is licensed following the [`COPYING`](COPYING) file. We are not sponsored or licensed by any of the data sources that we use.
+
+The data downloaded and parsed by Daedalus is licensed under:
+- The IUPHAR database: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) - Harding SD, Armstrong JF, Faccenda E, Southan C, Alexander SPH, Davenport AP, Pawson AJ, Spedding M, Davies JA; NC-IUPHAR. (2021) The IUPHAR/BPS guide to PHARMACOLOGY in 2022: curating pharmacology for COVID-19, malaria and antibacterials. Nucl. Acids Res. 2022. 50(D1) D1282-D1294. doi: 10.1093/nar/gkab1010. [Full text](https://academic.oup.com/nar/advance-article/doi/10.1093/nar/gkab1010/6414576). PMID: 34718737.
+- The COSMIC database: [Custom License](https://cancer.sanger.ac.uk/license/COSMIC_Non_Commercial_Use_Terms_October2021.pdf). Data is remixed and parsed, so the content of the COSMIC database is not redistributed as-is (which would be forbidden).
+- The Gene Onthology: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Current Zenodo DOI: https://dx.doi.org/10.5281/zenodo.7504797
+- The TCDB: [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) - Latest publication: Saier MH, Reddy VS, Moreno-Hagelsieb G, Hendargo KJ, Zhang Y, Iddamsetty V, Lam KJK, Tian N, Russum S, Wang J, Medrano-Soto A. (2021). The Transporter Classification Database (TCDB): 2021 update. Nucleic Acids Res. 49(D1):D461-7 [33170213](https://pubmed.ncbi.nlm.nih.gov/33170213/)
+- Ensembl places its data in the Public Domain ([more info](https://www.ensembl.org/info/about/legal/disclaimer.html)).
+- The Human Gene Nomenclature Committee places its data in the Public Domain ([CC0](https://creativecommons.org/share-your-work/public-domain/cc0/), [more info](https://www.genenames.org/about/license/))
+- The Human Protein Atlas: [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) - Uhlén M et al., Tissue-based map of the human proteome. Science (2015)
+PubMed: 25613900 DOI: 10.1126/science.1260419 ([more info](https://www.proteinatlas.org/about/licence))
+
+
+(Last updated on the 22nd of June, 2023)

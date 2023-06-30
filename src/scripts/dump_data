@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+# If you want to inspect the raw data tables as downloaded by the retrievers,
+# you can use this script to dump the data from a datacache to loose leafs on
+# a folder.
+
+from pathlib import Path
+from pickle import load
+
+
+def dump(data, path, prefix=""):
+    def _save(stuff):
+        with (Path(path) / f"{new_prefix}.csv").open("w+") as outfile:
+            if isinstance(stuff, list):
+                outfile.writelines([f"{x}\n" for x in stuff])
+                return
+            stuff.to_csv(outfile)
+
+    for key, value in data.items():
+        print(f"Dumping [{prefix}] + {key} to {path}...")
+        new_prefix = prefix + "_" + key if prefix else key
+
+        if isinstance(value, dict):
+            dump(value, path=path, prefix=new_prefix)
+            continue
+
+        if isinstance(value, list):
+            _save(value)
+            continue
+
+        _save(value)
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Read a pickled file and dump the contents"
+    )
+
+    parser.add_argument("dump")
+    parser.add_argument("outdir", type=Path)
+
+    args = parser.parse_args()
+
+    data = load(Path(args.dump).open("rb"))
+    dump(data, args.outdir)
