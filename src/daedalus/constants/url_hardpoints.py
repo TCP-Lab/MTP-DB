@@ -1,4 +1,4 @@
-BIOMART = "https://asia.ensembl.org/biomart/martservice"
+BIOMART = "https://ensembl.org/biomart/martservice"
 """The Url used by Biomart to accept requests"""
 
 BIOMART_XML_REQUESTS = {
@@ -78,7 +78,7 @@ COSMIC = {
 }
 """COSMIC download urls of precompiled data"""
 
-IUPHAR_DB = "https://www.guidetopharmacology.org/DATA/public_iuphardb_v2022.2.zip"
+IUPHAR_DB = "https://www.guidetopharmacology.org/DATA/public_iuphardb_v2023.2.zip"
 """URL to the download of the full IUPHAR database"""
 
 IUPHAR_COMPILED = {

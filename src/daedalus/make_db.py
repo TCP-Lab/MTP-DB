@@ -94,7 +94,6 @@ def generate_database(
         make_empty(connection)
 
     cache_hooks = {
-        "biomart": retrieve_biomart,
         "iuphar": retrieve_iuphar,
         "iuphar_compiled": retrieve_iuphar_compiled,
         "tcdb": retrieve_tcdb,
@@ -102,6 +101,7 @@ def generate_database(
         "slc": retrieve_slc,
         "GO": retrieve_go,
         "patlas": retrieve_protein_atlas,
+        "biomart": retrieve_biomart,
     }
 
     if auth_hash:

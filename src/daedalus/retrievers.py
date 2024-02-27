@@ -251,7 +251,16 @@ def retrieve_iuphar() -> DataDict:
 
     log.info("Done retrieving IUPHAR data")
 
-    return gobbler.tables
+    log.info("Stripping 'public' prefix...")
+
+    def strip_public(x: str) -> str:
+        if x.startswith("public."):
+            return x[7:]
+        return x
+
+    tables = {strip_public(k): x for k, x in gobbler.tables.items()}
+
+    return tables
 
 
 class ResourceCache:
@@ -357,7 +366,7 @@ def retrieve_iuphar_compiled() -> DataDict:
 
         log.info(f"Casting {key}...")
         answer[key] = pd.read_csv(
-            gzip.GzipFile(fileobj=bytes), skiprows=1, low_memory=False
+            StringIO(bytes.read().decode("UTF-8")), skiprows=1, low_memory=False
         )
 
     log.info("Done retrieving IUPHAR casted data.")
