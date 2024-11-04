@@ -14,6 +14,8 @@ You can take a look at the [CHANGELOG.md](CHANGELOG.md) file for a changelog of 
 
 To browse the database locally, we suggest SQLite browsers such as [this FOSS program](https://sqlitebrowser.org/).
 
+The structure of the MTP-DB is detailed [in this excel file](https://docs.google.com/spreadsheets/d/16vb_2FvZdaUSVOc8m9yRPT6eYP8cGl4UsOzauI2Qbek/edit?usp=sharing). 
+
 ## Citing the MTP-DB
 
 If you use the MTP-DB in your research, please cite:
