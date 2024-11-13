@@ -89,7 +89,7 @@ IUPHAR_COMPILED = {
 """URLs to the compiled IUPHAR data from their downloads page"""
 
 HUGO = {
-    "nomenclature": "https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2023-04-01.txt",
+    "nomenclature": "https://ftp.ebi.ac.uk/pub/databases/genenames/out_of_date_hgnc/archive/monthly/tsv/hgnc_complete_set_2024-08-23.txt",
     "groups": {
         # I could download json files, but most of the data is flat anyway, so...
         "endpoint": "https://www.genenames.org/cgi-bin/genegroup/download?id={id}&type=branch",
@@ -152,6 +152,6 @@ GO = {
 PROTEIN_ATLAS = {
     # At the time of writing the site is v23, and we can pinpoint the version by going to
     # http://v23.proteinatlas.org/ if we want to use just this version.
-    "normal_tissue_expression": "https://www.proteinatlas.org/download/normal_tissue.tsv.zip",
-    "subcellular_location": "https://www.proteinatlas.org/download/subcellular_location.tsv.zip",
+    "normal_tissue_expression": "https://v23.proteinatlas.org/download/normal_tissue.tsv.zip",
+    "subcellular_location": "https://v23.proteinatlas.org/download/subcellular_location.tsv.zip",
 }

@@ -77,7 +77,7 @@ def purge_carrier_types(tokens: set[str]):
 
 def tokenize_slc(string: str):
     if not isinstance(string, str):
-        return np.NaN
+        return np.nan
     # The spaces are important around and and or
     tokens = ("/", ",", ";", " and ", " or ")
     string = purge_data_in_parenthesis(string)

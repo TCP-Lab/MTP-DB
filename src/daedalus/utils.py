@@ -221,7 +221,7 @@ def represent_sql_type(data: pd.Series) -> list[str]:
     result = []
 
     for item in data:
-        if pd.isnull(item) or tolerant_is_nan(item) or item == np.NaN:
+        if pd.isnull(item) or tolerant_is_nan(item) or item == np.nan:
             result.append("NULL")
         elif isinstance(item, Number):
             result.append(str(item))
@@ -408,8 +408,13 @@ def split_tcdb_ids(tcdb_id: str) -> TcId:
         TcId: The splitted TCDB ID object
     """
     parts = tcdb_id.split(".")
-
-    assert len(parts) == 5, f"Invalid TCDB id ({tcdb_id}). Is it complete?"
+    
+    if len(parts) != 5:
+        final = ".".join(parts[4:])
+        parts = parts[0:5]
+        parts[4] = final
+        log.warn(f"TCDB id {tcdb_id} did not cleanly split. Merging final bits to {parts}")
+    assert len(parts) == 5, f"Invalid TCDB id ({tcdb_id})."
 
     obj = TcId(
         type=str(parts[0]),
