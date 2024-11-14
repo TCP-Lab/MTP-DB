@@ -378,6 +378,22 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo, gene_ontolo
 
     # The GO frames have ENSG (with no versions). This is a pretty brutal
     # approach to do this, but there is no time to think of something better
+    log.info("Adding missing ion channels based on GO annotations")
+    all_go_channels = gene_ontology["monoatomic_ion_channel"]
+    new_channels = [x for x in all_go_channels if x not in ion_channels["ensg"].tolist()]
+    log.info(f"There are {len(new_channels)} extra channels to add.")
+    # There does not seem to be a good way to "extend" a single column with more
+    # rows. So I need to make a mostly-empty frame here
+    # I explicitly set the colnames just to be safe
+    new_channels = pd.DataFrame(
+        {"ensg": new_channels},
+        columns=["ensg", "carried_solute", "relative_conductance", "gating_mechanism"]
+    )
+    ion_channels = pd.concat(
+        [ion_channels, new_channels],
+        ignore_index = True
+    )
+
     log.info("Adding GO annotations to ion channel list")
 
     def add_go_annotations(frame: pd.DataFrame) -> pd.DataFrame:
