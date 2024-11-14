@@ -130,9 +130,38 @@ def generate_database(
     else:
         log.info("Post-build hooks not applied following user flag.")
 
+    log.info("Creating indexes on ID columns...")
+    # I programmatically create indexes just to be faster
+    id_cols = [
+        "ensg", "ensp", "hugo_gene_id", "target_id", "ligand_id", "family_id",
+        "enst", "refseq_transcript_id", "pdb_id",
+        "tcid_family", "tcid", "tcid_type", "tcid_subtype",
+        "enst_version"
+    ]
+    create_indexes(connection, id_cols)
+
     connection.close()
     log.info(f"Finished populating database. Saved in {database_path}")
 
+def create_indexes(connection: Connection, id_cols: list[str]):
+    template = 'CREATE INDEX "{table_name}_{col}_index" ON "{table_name}" ("{col}");'
+    
+    log.info("Getting all table names...")
+    table_names = connection.execute("SELECT name FROM pragma_table_list();").fetchall()
+    table_names = [x[0] for x in table_names] # These are nested tuples
+    
+    for table in table_names:
+        table_cols = connection.execute(f"SELECT name FROM pragma_table_info('{table}');").fetchall()
+        table_cols = [x[0] for x in table_cols]
+        index_cols = [x for x in table_cols if x in id_cols]
+        if not index_cols:
+            continue
+        for col in index_cols:
+            log.info(f"Creating a new index on table {table} with col {col}")
+            transaction = template.format(table_name = table, col = col)
+            execute_transaction(connection, transaction)
+    
+    log.info("Finished creating table indexes!")
 
 def apply_manual_tweaks(connection: Connection):
     log.info("Looking for post-build transactions...")
