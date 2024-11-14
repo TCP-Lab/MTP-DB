@@ -320,6 +320,12 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo, gene_ontolo
 
     log.info("Setting channel gating types...")
     # Get a list of ensgs to fill in
+    # The stretch ones need to be compiled from both HGNC and GO
+    print(gene_ontology["mechanosensitive_channels"])
+    _stretch = list(set(
+        recast(hugo["volume_regulated_ion_channels"], {"Ensembl gene ID": "ensg"})["ensg"].tolist() +
+        gene_ontology["mechanosensitive_channels"]
+    ))
     gating_groups = {
         "voltage": recast(
             hugo["voltage_gated_ion_channels"], {"Ensembl gene ID": "ensg"}
@@ -330,9 +336,7 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo, gene_ontolo
         "pH": recast(
             hugo["ph_sensing_ion_channels"], {"Ensembl gene ID": "ensg"}
         ).drop_duplicates(),
-        "stretch": recast(
-            hugo["volume_regulated_ion_channels"], {"Ensembl gene ID": "ensg"}
-        ),
+        "stretch": pd.DataFrame({"ensg": _stretch}),
     }
 
     # Fill the column with empty lists, that we then grow and explode later
@@ -402,14 +406,8 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo, gene_ontolo
         # with the exception of the "carried_solute" col and the conductances
         _id = frame.name
 
-        if not is_identical(frame["gating_mechanism"]):
-            log.warn(
-                f"Column gating_mechanism of slice is not completely identical: {frame['gating_mechanism']}"
-            )
-
         template_row = dict.fromkeys(frame.columns)
         template_row["ensg"] = _id
-        template_row["gating_mechanism"] = frame["gating_mechanism"].to_list()[0]
         checks = {
             "monoatomic_anion_channel": "anion",
             "monoatomic_cation_channel": "cation",
@@ -423,7 +421,8 @@ def get_ion_channels_transaction(iuphar_data, iuphar_compiled, hugo, gene_ontolo
             if (_id in gene_ontology[key]) & (
                 value not in frame["carried_solute"].to_list()
             ):
-                log.debug(f"Added {value} for gene {_id} from GO.")
+                # This is way too wordy for its own good.
+                #log.debug(f"Added {value} for gene {_id} from GO.")
                 x = copy(template_row)
                 x["carried_solute"] = value
                 x = pd.DataFrame(x, index=[0])

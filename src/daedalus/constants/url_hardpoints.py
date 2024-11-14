@@ -146,6 +146,7 @@ GO = {
         "potassium_ion_channels": "GO:0005267",
         "proton_ion_channels": "GO:0015252",
         "sodium_ion_channels": "GO:0005272",
+        "mechanosensitive_channels": "GO:0008381"
     },
 }
 
