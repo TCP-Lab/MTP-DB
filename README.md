@@ -13,6 +13,7 @@ Daedalus takes care of connecting to, downloading from, parsing and patching dat
 You can take a look at the [CHANGELOG.md](CHANGELOG.md) file for a changelog of each release of the database.
 
 To browse the database locally, we suggest SQLite browsers such as [this FOSS program](https://sqlitebrowser.org/).
+Common SQL queries to solve some routine problems are detailed in the [How to guide](HOW_TO.md).
 
 The structure of the MTP-DB is detailed [in this excel file](https://docs.google.com/spreadsheets/d/16vb_2FvZdaUSVOc8m9yRPT6eYP8cGl4UsOzauI2Qbek/edit?usp=sharing). 
 
