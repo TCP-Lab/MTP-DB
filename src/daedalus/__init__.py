@@ -5,7 +5,7 @@ from colorama import Back, Fore, Style
 
 __all__ = ["DB_NAME", "SCHEMA"]
 # This follows CalVer MAJOR.YEAR.WEEK[.minor][-tag]
-__version__ = "1.24.09"
+__version__ = "1.24.46"
 
 
 class ColorFormatter(logging.Formatter):
