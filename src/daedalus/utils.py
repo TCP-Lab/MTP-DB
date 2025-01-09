@@ -602,11 +602,14 @@ def apply_thesaurus(frame: pd.DataFrame, col="carried_solute") -> pd.DataFrame:
 
     rows, _ = frame.shape
 
-    log.info("Applying thesaurus equivalences...")
+    log.info("Applying thesaurus...")
     for _, line in change_to.iterrows():
         frame.loc[frame[col] == line["original"], col] = line["change_to"]
 
-    log.info("Adding thesaurus synonyms...")
+    # Drop values that need to be dropped
+    frame = frame[~(frame[col].isin(["$$DROP$$"]))]
+    log.debug(f"Dropped {rows - frame.shape[0]} rows.")
+
     synonyms = thesaurus.dropna(axis=0, subset="synonyms")
     for _, line in synonyms.iterrows():
         frame.loc[

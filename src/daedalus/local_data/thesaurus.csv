@@ -5,7 +5,7 @@ original,change_to,synonyms,Notes,name_len
 2-oxoglutarate,,,,14
 4 Na+,Na+,,,5
 5-HT,serotonin,,,4
-5'-diphosphate,NA,AT,"This is from the ""Adenosine 3'-5' diphosphate"" that was broken incorrectly",14
+5'-diphosphate,$$DROP$$,AT,"This is from the ""Adenosine 3'-5' diphosphate"" that was broken incorrectly",14
 A,ala,,,1
 acetyl-CoA,,,,10
 acetylcholine,,,,13
@@ -27,7 +27,7 @@ antifolates,,,,11
 arg,,amino acid,,3
 arginine,arg,,,8
 aromatic amino acids,amino acid,,,20
-asc with light subunits SLC7A5-8,NA,,,32
+asc with light subunits SLC7A5-8,$$DROP$$,,,32
 ascorbic acid,,vitamin,,13
 ascorbicacid,ascorbic acid,,,12
 asn,,amino acid,,3
@@ -40,7 +40,7 @@ ATP-Mg,ATP-Mg2+,,,6
 ATP-Mg2+,,A*P,,8
 B,asx,,,1
 Ba2+,,cation,,4
-BCH,NA,,No idea of what this might be,3
+BCH,$$DROP$$,,No idea of what this might be,3
 beta-alanine,,alanine,,12
 beta-lactam antibiotics,,,,23
 betaine,,,,7
@@ -51,7 +51,7 @@ bile salts,,bile acid,,10
 bileacid,bile acid,,,8
 biotin,,vitamin,,6
 borate,,,,6
-broad spectrum,NA,,,14
+broad spectrum,$$DROP$$,,,14
 bumetanide,,,,10
 C,cys,,,1
 Ca2+,,cation,,4
@@ -68,10 +68,10 @@ Cd2+,,cation,,4
 cephalexin,,,,10
 cephradine,,,,10
 cGMP,,,,4
-Ch,NA,,,2
-Ch: Cl-,NA,,,7
-Ch?,NA,,,3
-channel,NA,,,7
+Ch,$$DROP$$,,,2
+Ch: Cl-,$$DROP$$,,,7
+Ch?,$$DROP$$,,,3
+channel,$$DROP$$,,,7
 chiro-inositol,,,,14
 chloride,Cl-,,,8
 chloride bicarbonate,,Cl-,,20
@@ -87,16 +87,16 @@ citrate-H+,citrate,,,10
 citrulline,,amino acid,,10
 Cl,Cl-,,,2
 Cl-,,anion,,3
-Cl- dependent,NA,,These two are qualitative?,13
-Cl-indep.,NA,,These two are qualitative?,9
+Cl- dependent,$$DROP$$,,These two are qualitative?,13
+Cl-indep.,$$DROP$$,,These two are qualitative?,9
 ClO4-,,,,5
 CMP,cytidine monophosphate,,,3
 CMP-sialic acid,cytidine monophosphate,,,15
 Co2+,CO2+,,,4
 CO32*,,,,5
 CoA,,,,3
-concentrative 1:1 sodium:nucleoside,NA,,,35
-concentrative 2:1 sodium: nucleoside 1:1 proton: nucleoside probably 1:1:1 sodium:proton:nucleoside,NA,,,99
+concentrative 1:1 sodium:nucleoside,$$DROP$$,,,35
+concentrative 2:1 sodium: nucleoside 1:1 proton: nucleoside probably 1:1:1 sodium:proton:nucleoside,$$DROP$$,,,99
 copper,,,,6
 creatine,,,,8
 Cs+,,cation,,3
@@ -111,22 +111,22 @@ dehydroepiandrosterone,,,,22
 dehydroepiandrosterone sulfate,dehydroepiandrosterone,,,30
 dephosphorilated CoA,,CoA,,20
 DHEAS,dehydroepiandrosterone,,,5
-di-,NA,,This is probably a parsing error,3
+di-,$$DROP$$,,This is probably a parsing error,3
 dicarboxylate,carboxylate,,,13
 dNDP,,nucleoside,,4
 dopamine,,"amine,neurotransmitter",,8
 dPCoA,dephosphorilated-CoA,,"This seems to be correct, but i'm not sure",5
-drugs,NA,,,5
+drugs,$$DROP$$,,,5
 E,glu,,,1
 E-3-S,glu,,,5
-electrogenic,NA,,These are plain wrong,12
-energy in-dependent,NA,,These are plain wrong,19
+electrogenic,$$DROP$$,,These are plain wrong,12
+energy in-dependent,$$DROP$$,,These are plain wrong,19
 epinephrine,,,,11
 ergothioneine,,,,13
 estradiol-17-beta-o-glucuronide,,,,31
 estrone-3-sulfate,,,,17
 F,phe,,,1
-F ?,NA,,,3
+F ?,$$DROP$$,,,3
 FAD,,,,3
 Fe,Fe2+,,,2
 Fe2+,,cation,,4
@@ -146,7 +146,7 @@ gln,,amino acid,,3
 glu,,amino acid,,3
 glucosamine,,,,11
 glucose,,carbohydrate,,7
-glucose activated Na+,NA,,,
+glucose activated Na+,$$DROP$$,,,
 Glucose6-phosphate,,carbohydrate,,18
 glucosylceramide,,lipid,???,16
 Glutamate,glutamate,,,9
@@ -156,7 +156,7 @@ glutarate,,,,9
 glutathione,,peptide,,11
 glx,,amino acid,,3
 gly,,amino acid,,3
-glycine,,amino acid,,7
+glycine,gly,,,7
 glyoxylate,,,,10
 GMP,,G*P,,3
 guanidine,,,,9
@@ -169,7 +169,7 @@ HCO,HCO3-,,,3
 HCO3,HCO3-,,,4
 HCO3-,,anion,,5
 heme,,,,4
-heterodimerizes with light subunit SLC7A9,NA,,,41
+heterodimerizes with light subunit SLC7A9,$$DROP$$,,,41
 his,,amino acid,,3
 histamine,,,,9
 histidine,his,,,9
@@ -178,14 +178,14 @@ HPO42-,,,,6
 hydroxyproline,,,,14
 I,ile,,,1
 I-,,,,2
-ile,,,,3
+ile,,amino acid,,3
 imino acid,,,,10
 inorganic phosphate,phosphate,,,19
 inositol,,carbohydrate,,8
 ion,,,,3
 iron,Fe2+,,???,4
 isocitrate,,,,10
-its derivatives,NA,,,15
+its derivatives,$$DROP$$,,,15
 K,lys,,,1
 K+,,cation,,2
 ketoglutarate,,,,13
@@ -201,13 +201,13 @@ L-carnitine,carnitine,,,11
 L-Cys,cys,,,5
 L-DOPA,,,,6
 L-Gln,gln,,,5
-L-Glu,glx,,,5
+L-Glu,glu,,,5
 L-glutamate,glutamate,,,11
 L-proline,pro,,,9
 L-Ser,ser,,,5
 L-Thr,thr,,,5
 lactate,,,,7
-large,NA,,,5
+large,$$DROP$$,,,5
 large neutral amino acids,amino acid,,,25
 large neutral L-amino acids,amino acid,,,27
 LCFA,lipid,,,4
@@ -235,27 +235,27 @@ Mg2+,,cation,,4
 Mn,Mn2+,,,2
 Mn2+,,cation,,4
 monocarboxylate,,,,15
-MPP,NA,,No idea of what this is,3
+MPP,$$DROP$$,,No idea of what this is,3
 myo-inositol,,inositol,,12
 myoinositol,myo-inositol,,,11
 N,asp,,,1
 Na,Na+,,,2
 Na+,,cation,,3
 NAD+,,,,4
-NALA,NA,,No idea of what this is,4
-nan,NA,,,3
-nateglinide ?,NA,,,13
-NE,NA,,No idea of what this is,2
+NALA,$$DROP$$,,No idea of what this is,4
+nan,$$DROP$$,,,3
+nateglinide ?,$$DROP$$,,,13
+NE,$$DROP$$,,No idea of what this is,2
 neutral,amino acid,,I hope?,7
 neutral amino acids,amino acid,,,19
 neutral L-amino acids,amino acid,,,21
 neutralaminoacid,amino acid,,,16
 NH4+,,,,4
 Ni2+,,,,4
-noncharged compounds,NA,,,20
+noncharged compounds,$$DROP$$,,,20
 noradrenaline,,,,13
 norepinephrine,,,,14
-not determined,NA,,,14
+not determined,$$DROP$$,,,14
 nucleoside,,,,10
 nucleotide,,,,10
 nucleotides,nucleotide,,,11
@@ -281,8 +281,8 @@ Pb2+,,,,4
 PEP,phosphoenolpyruvate,,,3
 peptide,,,,7
 peptides,peptide,,,8
-pH sensitive,NA,,,12
-pH-independent,NA,,,14
+pH sensitive,$$DROP$$,,,12
+pH-independent,$$DROP$$,,,14
 phe,,amino acid,,3
 phenthoate,,,,10
 phosphate,,anion,,9
@@ -300,10 +300,10 @@ PO34-,,,,5
 polyamine,phosphate,,?? Is this phosphate?,9
 porphyrins,,,,10
 potassium,K+,,,9
-potassium-dependent,NA,,,19
+potassium-dependent,$$DROP$$,,,19
 preferentially E,glu,,,16
 pregnenolone sulfate,,,,20
-pro,,"proline,amino acid",,3
+pro,,amino acid,,3
 probenecid,,,,10
 procainamide,,,,12
 proline,pro,,,7
@@ -319,9 +319,9 @@ pyruvate,,,,8
 Q,gln,,,1
 R,arg,,,1
 Rb+,,cation,,3
-Reduced folates,NA,,,15
+Reduced folates,$$DROP$$,,,15
 retinal-phosphatidylethanolamine conjugates,,,,43
-reduced folates,NA,,,
+reduced folates,$$DROP$$,,,
 rT3,,thyroid hormone,,3
 S,ser,,,1
 S-adenosyl-homocysteine,,,,23
@@ -333,7 +333,7 @@ serotonin,,,,9
 short chain fatty acids,lipid,,,23
 sialic acid,,,,11
 sialicacid,sialic acid,,,10
-SLC7A10-11,NA,,??? What is going on here?,10
+SLC7A10-11,$$DROP$$,,??? What is going on here?,10
 small neutral amino acids,amino acid,,,25
 SO4,SO42-,,,3
 SO42-,,anion,,5
@@ -359,7 +359,7 @@ T2,,thyroid hormone,,2
 T3,,thyroid hormone,,2
 T4,,thyroid hormone,,2
 taurine,,amino sulfonic acid,,7
-TEA,NA,,"This just turns out stuff about tea, so i'm not sure",3
+TEA,$$DROP$$,,"This just turns out stuff about tea, so i'm not sure",3
 tetraethylammonium,,,,18
 thiamine,,,,8
 thiamine pyrophosphate,,thiamine,,
@@ -377,8 +377,8 @@ UDP-N-acetylgalactosamine,,carbohydrate,,25
 UDP-N-acetylglucosamine,,carbohydrate,,23
 UDP-xylose,,,,10
 UMP,,U*P,,3
-unclear,NA,,,7
-unknown,NA,,,7
+unclear,$$DROP$$,,,7
+unknown,$$DROP$$,,,7
 urate,,,,5
 urea,,,,4
 UTP,,U*P,,3
@@ -391,8 +391,24 @@ water,H20,,,5
 xc-,,"cysteine,glutamate",,3
 xylose,,,,6
 Y,tyr,,,1
-y+L,NA,,Not sure,3
+y+L,$$DROP$$,,Not sure,3
 Z,glx,,,1
 Zn,Zn2+,,,2
 Zn2+,,cation,,4
 zwitterions,,ion,,11
+glutamic acid,glu,,,
+serine,ser,,,
+threonine,thr,,,
+asparagine,asp,,,
+glutamine,gln,,,
+cysteine,cys,,,
+selenocysteine,sec,,,
+alanine,ala,,,
+valine,val,,,
+isoleucine,ile,,,
+methionine,met,,,
+sec,,amino acid,,
+phenylalanine,phe,,,
+phe,,amino acid,,
+tyrosine,tyr,,,
+tyr,,amino acid,,

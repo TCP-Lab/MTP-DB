@@ -144,6 +144,8 @@ def explode_slc(data: pd.DataFrame) -> pd.DataFrame:
         [x in to_remove for x in data["exploded_solute"].tolist()], "exploded_solute"
     ] = pd.NA
 
+    log.info(f"Finished parsing SLC data. Total number of unique tokens: {len(set(data['exploded_solute']))}")
+
     log.info("Checking possible anomalies...")
     # I use the thesaurus + a manual list for approved symbols
     thesaurus = get_local_csv("thesaurus.csv")["original"].tolist()
@@ -385,11 +387,34 @@ def get_solute_carriers_transaction(hugo, iuphar, slc):
     ).drop(columns="id")
 
     solute_carriers = solute_carriers.merge(slc, on="hugo_symbol", how="left")
+    print(solute_carriers)
 
     solute_carriers = explode_slc(solute_carriers)
+    # Merge the 'exploded_solute' and the 'carried_solute' cols
+    # Hello, this is me 2 years later. The issue here is that I am a fucking idiot
+    # and I compute the "exploded solute" col just to immediately drop it.
+    # We just noticed now that the SLC tables are pretty empty.
+    # 
+    # I'm fixing it, but the issue is that it's not an easy sum, combining the
+    # "exploded_solute" and "carried_solute" columns.
+    # Get a list of ALL the unique genes
+    all_slcs = set(solute_carriers["ensg"])
+
+    # Keep ONLY the 'carried_solute' column, and drop the other.
+    only_original = solute_carriers.drop(columns=["exploded_solute"])
+    # We now do the same with the other col, and we rename it to "carried_solute"
+    only_slc = solute_carriers.drop(columns=["carried_solute"]).rename(columns={"exploded_solute": "carried_solute"})
+    # We can now do a merge
+    combined = pd.merge(only_original, only_slc, how="outer").drop_duplicates()
+    # Now we need to drop all the NAs in the "carried_solute" column that have
+    # a populated counterpart
+    solute_carriers = combined.groupby("ensg").apply(lambda x: x if x.shape[0] == 1 else x.dropna(subset=["carried_solute"]))
+
+    # Check that all SLCs are still there
+    assert all(all_slcs in solute_carriers["ensg"])
 
     solute_carriers = solute_carriers.drop(
-        columns=["hugo_symbol", "exploded_solute"]
+        columns=["hugo_symbol"]
     ).drop_duplicates()
 
     solute_carriers = apply_thesaurus(solute_carriers)
