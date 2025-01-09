@@ -40,7 +40,7 @@ def get_aquaporins_transaction(hugo, patlas):
 
     aquaporins = aquaporins.merge(tissue_expression, how="left", on="ensg")
 
-    aquaporins.drop_duplicates()
+    aquaporins = aquaporins.drop_duplicates()
 
     return to_transaction(aquaporins, "aquaporins")
 
