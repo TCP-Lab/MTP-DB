@@ -397,7 +397,7 @@ def retrieve_slc() -> pd.DataFrame:
     soup = BeautifulSoup(gzip.GzipFile(fileobj=bytes).read().decode("UTF-8"), "lxml")
 
     tables = soup.find_all("table")
-    frames = [pd.read_html(x.prettify(), header=0)[0] for x in tables]
+    frames = [pd.read_html(StringIO(x.prettify()), header=0)[0] for x in tables]
 
     frame = pd.concat(frames)
 

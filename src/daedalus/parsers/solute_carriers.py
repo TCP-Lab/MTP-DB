@@ -151,10 +151,6 @@ def explode_slc(data: pd.DataFrame) -> pd.DataFrame:
     thesaurus = get_local_csv("thesaurus.csv")["original"].tolist()
     data["exploded_solute"].apply(warn_long_solutes, possibilities=thesaurus)
 
-    solutes = data["exploded_solute"].dropna().tolist()
-    solutes = [x for x in solutes if x not in thesaurus]
-    print("\n".join(set(solutes)))
-
     return data
 
 
@@ -411,7 +407,7 @@ def get_solute_carriers_transaction(hugo, iuphar, slc):
     solute_carriers = combined.groupby("ensg").apply(lambda x: x if x.shape[0] == 1 else x.dropna(subset=["carried_solute"]))
 
     # Check that all SLCs are still there
-    assert all(all_slcs in solute_carriers["ensg"])
+    assert all([x in solute_carriers["ensg"] for x in all_slcs])
 
     solute_carriers = solute_carriers.drop(
         columns=["hugo_symbol"]

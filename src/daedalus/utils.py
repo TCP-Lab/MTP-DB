@@ -22,6 +22,11 @@ from daedalus.errors import Abort
 
 log = getLogger(__name__)
 
+# Set "Copy on write mode" to allow things like this
+# df["col"] = map(fn, df["col"])
+# to work reliably
+pd.options.mode.copy_on_write = True
+
 
 # For testing purposes
 def get_mock_data():
@@ -554,7 +559,7 @@ def explode_on(
         return [x]
 
     for col in columns:
-        data[col] = lmap(conservative_split, data[col])
+        data[col] = data[col].map(conservative_split)
 
     # lists in the cols may have different lengths, but as long as they are all
     # either the max or 1, we can still explode
