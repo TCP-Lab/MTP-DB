@@ -150,7 +150,7 @@ glucose activated Na+,$$DROP$$,,,
 Glucose6-phosphate,,carbohydrate,,18
 glucosylceramide,,lipid,???,16
 Glutamate,glutamate,,,9
-glutamate,glu,,,9
+glutamate,,,,9
 glutamateH+,glutamate,,!!! This should be split,11
 glutarate,,,,9
 glutathione,,peptide,,11
