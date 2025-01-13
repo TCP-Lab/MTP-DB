@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 import logging
+from collections import Counter
 
 import tabulate as tb
 from colorama import init
@@ -53,6 +54,20 @@ class TableColumn:
     """
     possible_values: Optional[int]
     """If this col is a factor, all levels of the factor"""
+    unique_values: int
+    """Number of unique non-null values in column"""
+    relative_uniqueness: float
+    """Number of unique values over total"""
+
+PRETTY_NAMES = {
+    "name": "Name",
+    "type": "Type",
+    "emptiness": "Emptiness",
+    "relative_emptiness": "Rel. Emptiness",
+    "possible_values": "Factor Levels",
+    "unique_values": "Unique non-nulls",
+    "relative_uniqueness": "% uniqueness"
+}
 
 
 @dataclass
@@ -65,18 +80,21 @@ class Table:
     """How many columns this table has"""
     emptiness: float
     """The number of NULL cells over all cells in this table"""
+    unique_rows: float
     cols: list[TableColumn]
 
     @property
     def pretty(self) -> str:
         out = f" ========== TABLE '{self.name}' ==========\n"
-        out += tb.tabulate(map(lambda x: x.__dict__, self.cols), headers="keys")
+        out += tb.tabulate(map(lambda x: x.__dict__, self.cols), headers=PRETTY_NAMES)
         out += "\n\n~~~~~ Summary ~~~~~\n"
         out += f"Total cols: {self.num_cols}\n"
         out += f"Total rows: {self.num_rows}\n"
         out += f"Total cells: {self.num_rows * self.num_cols}\n"
         if self.emptiness is not None:
             out += f"Total emptiness: {round(self.emptiness * 100, 2)}%\n"
+        if self.num_rows:
+            out += f"Unique rows (% of tot): {self.unique_rows} ({round(self.unique_rows / self.num_rows * 100,2)}%)"
 
         return out
 
@@ -191,8 +209,14 @@ def inspect_table(cursor: sqlite3.Cursor, table_name: str) -> Table:
                 emptiness=emptiness,
                 relative_emptiness=relative_emptiness,
                 possible_values=possible_values,
+                unique_values=len(set(clean_values)),
+                relative_uniqueness=(len(set(clean_values))/ len(clean_values) * 100) if clean_values else None,
             )
         )
+
+    rows_repr = [str(x) for x in data]
+    counts = Counter(rows_repr)
+    unique = len([elem for elem, cnt in counts.items() if cnt == 1])
 
     if max_len > 0:
         overall_emptiness = overall_emptiness / (max_len * len(colnames))
@@ -208,6 +232,7 @@ def inspect_table(cursor: sqlite3.Cursor, table_name: str) -> Table:
         cols=computed_cols,
         num_cols=len(colnames),
         num_rows=max_len,
+        unique_rows=unique
     )
 
 
