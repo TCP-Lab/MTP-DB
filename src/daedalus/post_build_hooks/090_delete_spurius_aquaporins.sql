@@ -25,3 +25,6 @@ DELETE FROM channels WHERE ensg IN (
 	SELECT ensg FROM pumps
 );
 
+DELETE FROM channels WHERE ensg IN (
+	SELECT ensg FROM ABC_transporters
+);

@@ -31,7 +31,7 @@ WHERE ensg IN (
     "ENSG00000105464",
     "ENSG00000198785",
     "ENSG00000116032"
-);
+) AND (gating_mechanism != "ligand" OR gating_mechanism IS NULL) AND (carried_solute != "Na+" OR carried_solute IS NULL);
 
 -- Second pass: specific permeabilities of subunits
 -- AMPAs, Kainate and NMDAs are also permeable to potassium
@@ -70,3 +70,12 @@ INSERT INTO channels (
     ("ENSG00000105464", "ligand", "Ca2+"),
     ("ENSG00000198785", "ligand", "Ca2+"),
     ("ENSG00000116032", "ligand", "Ca2+");
+
+-- This insert might duplicate some rows, so I add here a de-duplication hook.
+-- It's based on this answer: https://stackoverflow.com/questions/8190541/deleting-duplicate-rows-from-sqlite-database
+DELETE FROM channels
+WHERE rowid NOT IN (
+  SELECT MIN(rowid)
+  FROM channels
+  GROUP BY ensg, gating_mechanism, carried_solute, relative_conductance, absolute_conductance
+);

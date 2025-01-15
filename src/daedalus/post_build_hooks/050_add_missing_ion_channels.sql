@@ -26,3 +26,12 @@ VALUES
     ('ENSG00000183172','Ca2+',NULL),
     -- STIM1
     ('ENSG00000167323','Ca2+',NULL);
+
+-- This insert might duplicate some rows, so I add here a de-duplication hook.
+-- It's based on this answer: https://stackoverflow.com/questions/8190541/deleting-duplicate-rows-from-sqlite-database
+DELETE FROM channels
+WHERE rowid NOT IN (
+  SELECT MIN(rowid)
+  FROM channels
+  GROUP BY ensg, gating_mechanism, carried_solute, relative_conductance, absolute_conductance
+);

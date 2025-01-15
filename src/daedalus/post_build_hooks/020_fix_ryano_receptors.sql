@@ -11,4 +11,4 @@ INSERT INTO channels (
     "ENSG00000196218", -- ryr1
     "ENSG00000198626", -- ryr2
     "ENSG00000198838" -- ryr3
-  );
+  ) AND (gating_mechanism != "voltage" OR gating_mechanism IS NULL);

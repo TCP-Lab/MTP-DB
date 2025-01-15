@@ -163,6 +163,14 @@ def create_indexes(connection: Connection, id_cols: list[str]):
     
     log.info("Finished creating table indexes!")
 
+def check_changes(connection: Connection) -> bool:
+    """Check if anything has been affected by the last transaction"""
+    res = connection.execute("SELECT changes();")
+    data = res.fetchall()
+    # This 'data' looks like this: [(n,)] where n is the number of rows
+    # affected by the last transaction. See the SQLite docs for caveats.
+    return data[0][0] != 0
+
 def apply_manual_tweaks(connection: Connection):
     log.info("Looking for post-build transactions...")
     to_apply = get_local_post_build_hooks()
@@ -180,6 +188,9 @@ def apply_manual_tweaks(connection: Connection):
         for i, transaction in enumerate(sql_parts):
             log.info(f"Executing post-build hook {name} [{i + 1}]...")
             execute_transaction(connection, transaction)
+
+            if not check_changes(connection):
+                log.warn(f"Post-build hook {name} [{i + 1}] did not affect the database.")
 
 
 class Daedalus:

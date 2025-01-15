@@ -28,6 +28,13 @@ WHERE ensg IN (
     "ENSG00000146276",
     "ENSG00000111886",
     "ENSG00000183185"
+) AND (
+    gating_mechanism != "ligand" OR
+    carried_solute != "Cl-" OR
+    relative_conductance != 1 OR
+    gating_mechanism IS NULL OR
+    carried_solute IS NULL OR
+    relative_conductance IS NULL
 );
 
 -- Reviewed in https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2648504/
@@ -54,3 +61,12 @@ INSERT INTO channels (
     ("ENSG00000146276", "ligand", "HCO3-", 0.3, NULL),
     ("ENSG00000111886", "ligand", "HCO3-", 0.3, NULL),
     ("ENSG00000183185", "ligand", "HCO3-", 0.3, NULL);
+
+-- This insert might duplicate some rows, so I add here a de-duplication hook.
+-- It's based on this answer: https://stackoverflow.com/questions/8190541/deleting-duplicate-rows-from-sqlite-database
+DELETE FROM channels
+WHERE rowid NOT IN (
+  SELECT MIN(rowid)
+  FROM channels
+  GROUP BY ensg, gating_mechanism, carried_solute, relative_conductance, absolute_conductance
+);

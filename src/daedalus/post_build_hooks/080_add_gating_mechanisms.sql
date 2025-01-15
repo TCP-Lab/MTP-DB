@@ -20,5 +20,5 @@ UPDATE channels SET gating_mechanism = "voltage" WHERE ensg IN(
 	"ENSG00000171121",
 	"ENSG00000135643",
 	"ENSG00000136546"
-);
+) AND (gating_mechanism != "voltage" OR gating_mechanism IS NULL);
 

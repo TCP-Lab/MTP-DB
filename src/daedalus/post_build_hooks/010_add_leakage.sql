@@ -38,9 +38,9 @@ UPDATE channels SET gating_mechanism = "leakage" WHERE ensg IN (
     "ENSG00000102452"
     -- Chloride
     ------ ???
-);
+) AND (gating_mechanism != "leakage" OR gating_mechanism IS NULL);
 
 UPDATE channels SET gating_mechanism = "mechanosensitive" WHERE ensg IN (
     -- KCNK4
     "ENSG00000182450"
-)
+) AND (gating_mechanism != "mechanosensitive" OR gating_mechanism IS NULL);
