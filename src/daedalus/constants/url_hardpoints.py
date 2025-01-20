@@ -78,7 +78,7 @@ COSMIC = {
 }
 """COSMIC download urls of precompiled data"""
 
-IUPHAR_DB = "https://www.guidetopharmacology.org/DATA/public_iuphardb_v2023.2.zip"
+IUPHAR_DB = "https://www.guidetopharmacology.org/DATA/public_iuphardb_v2024.4.zip"
 """URL to the download of the full IUPHAR database"""
 
 IUPHAR_COMPILED = {
