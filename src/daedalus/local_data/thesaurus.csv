@@ -74,8 +74,8 @@ Ch?,$$DROP$$,,,3
 channel,$$DROP$$,,,7
 chiro-inositol,,,,14
 chloride,Cl-,,,8
-chloride bicarbonate,,Cl-,,20
-chloride cicarbonate,,Cl-,,20
+chloride bicarbonate,"Cl-,HCO3-",,,20
+chloride cicarbonate,"Cl-,HCO3-",,,20
 cholesterol,,lipid,,11
 cholic acid,,bile acid,,11
 choline,,cation,,7
@@ -93,7 +93,7 @@ ClO4-,,,,5
 CMP,cytidine monophosphate,,,3
 CMP-sialic acid,cytidine monophosphate,,,15
 Co2+,CO2+,,,4
-CO32*,,,,5
+CO32*,CO32+,,,5
 CoA,,,,3
 concentrative 1:1 sodium:nucleoside,$$DROP$$,,,35
 concentrative 2:1 sodium: nucleoside 1:1 proton: nucleoside probably 1:1:1 sodium:proton:nucleoside,$$DROP$$,,,99
@@ -338,8 +338,8 @@ small neutral amino acids,amino acid,,,25
 SO4,SO42-,,,3
 SO42-,,anion,,5
 sodium,Na+,,,6
-sodium bicarbonate,,,,18
-sodium bicarbonate chloride,,,,27
+sodium bicarbonate,HCO3-,,,18
+sodium bicarbonate chloride,"Cl-,HCO3-",,,27
 sphingolipid,,lipid,,12
 sphingolipids,sphingolipid,,,13
 Sr2+,,cation,,4
@@ -419,3 +419,24 @@ MxD,$$DROP$$,,,
 L-Lys,lys,,,
 L-canavenine,canavanine,,,
 canavanine,,amino acid,,
+also inhibited by 2-DG,$$DROP$$,,,
+D-glucose,,,,
+amino sulfonic acid,,,,
+drug,$$DROP$$,,,
+adenosine,,,,
+phloretin,,,,
+CO2+,,,,
+uracil,,,,
+Na  +   uptake,Na+,,,
+neurotransmitter,,,,
+A*P,,,,
+Molybdate,molybdate,,,
+G*P,,,,
+leukotriene,,,,
+vitamin,,,,
+U*P,,,,
+slightly by fructose,$$DROP$$,,,
+thyroid hormone,,,,
+inhibited by phlorizin,$$DROP$$,,,
+?-Me-glucose,,,,
+dephosphorilated-CoA,,,,
