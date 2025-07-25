@@ -27,6 +27,14 @@ VALUES
     -- STIM1
     ('ENSG00000167323','Ca2+',NULL);
 
+
+INSERT INTO channels (ensg) VALUES
+    ('ENSG00000133962'), -- CATSPERB
+    ('ENSG00000174898'), -- CATSPERD
+    ('ENSG00000179397'), -- CATSPERE
+    ('ENSG00000099338'), -- CATSPERG
+    ('ENSG00000219435'); -- CATSPERZ
+
 -- This insert might duplicate some rows, so I add here a de-duplication hook.
 -- It's based on this answer: https://stackoverflow.com/questions/8190541/deleting-duplicate-rows-from-sqlite-database
 DELETE FROM channels
